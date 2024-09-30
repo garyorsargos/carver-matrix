@@ -1,0 +1,47 @@
+FROM docker.io/maven:3.9.8-eclipse-temurin-21-alpine AS compiler
+
+WORKDIR /app
+COPY ./backend ./
+
+RUN mvn -Dmaven.test.skip=true clean package
+
+RUN jlink  \
+    --add-modules java.base,java.compiler,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.management.rmi,java.naming,java.net.http,java.prefs,java.rmi,java.scripting,java.se,java.security.jgss,java.security.sasl,java.smartcardio,java.sql,java.sql.rowset,java.transaction.xa,java.xml,java.xml.crypto,jdk.accessibility,jdk.attach,jdk.charsets,jdk.compiler,jdk.crypto.cryptoki,jdk.crypto.ec,jdk.dynalink,jdk.editpad,jdk.hotspot.agent,jdk.httpserver,jdk.incubator.vector,jdk.internal.ed,jdk.internal.jvmstat,jdk.internal.le,jdk.internal.opt,jdk.internal.vm.ci,jdk.internal.vm.compiler,jdk.internal.vm.compiler.management,jdk.jartool,jdk.javadoc,jdk.jcmd,jdk.jconsole,jdk.jdeps,jdk.jdi,jdk.jdwp.agent,jdk.jfr,jdk.jlink,jdk.jpackage,jdk.jshell,jdk.jsobject,jdk.jstatd,jdk.localedata,jdk.management,jdk.management.agent,jdk.management.jfr,jdk.naming.dns,jdk.naming.rmi,jdk.net,jdk.nio.mapmode,jdk.random,jdk.sctp,jdk.security.auth,jdk.security.jgss,jdk.unsupported,jdk.unsupported.desktop,jdk.xml.dom,jdk.zipfs \
+    --compress=2  \
+    --strip-debug  \
+    --no-header-files  \
+    --no-man-pages  \
+    --output /javaruntime
+
+RUN adduser user -u 1001 -D
+
+FROM alpine:3.14 AS config
+
+RUN apk add --no-cache bash
+
+WORKDIR /app/config
+
+COPY global-config.yml /backend/src/resources/application.yml
+
+COPY /docker/config-entrypoint.sh /config-entrypoint.sh
+
+RUN chmod +x /config-entrypoint.sh
+
+CMD ["sh", "-c", "./config-entrypoint.sh"]
+
+FROM alpine:latest AS final
+RUN apk add curl
+
+COPY --from=compiler /javaruntime /javaruntime
+
+COPY --from=compiler ./app/target/ ./
+
+COPY --from=config /backend/src/resources/*.yml /backend/src/resources/
+
+COPY --from=compiler /etc/passwd /etc/passwd
+USER user
+
+HEALTHCHECK --interval=20s --timeout=5s --start-period=30s --retries=3 \
+  CMD [ "wget", "-T5", "-qO-", "http://127.0.0.1:9002/api/health" ]
+
+ENTRYPOINT ["/javaruntime/bin/java", "-jar", "/starter-app-0.0.1-SNAPSHOT.jar"]

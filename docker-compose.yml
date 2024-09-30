@@ -1,0 +1,163 @@
+services:
+  api:
+    image: starter_app:api
+    container_name: api
+    build:
+      context: .
+      dockerfile: docker/dockerfile-java
+    ports:
+      - "9002:9002"
+    environment:
+      PROFILE: default
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: root
+      POSTGRES_PORT: 5432
+      POSTGRES_HOST: postgres_dev
+      KEYCLOAK_ISSUER: https://keycloak.zeus.socom.dev/realms/zeus-apps
+      KEYCLOAK_JWK_URI: http://keycloak_dev:8080/realms/zeus-apps/protocol/openid-connect/certs
+    depends_on:
+     postgres_dev:
+       condition: service_healthy
+    networks:
+      - starter-network
+    restart: always
+
+  postgres_dev:
+    image: starter_app:postgres
+    container_name: postgres_dev
+    build:
+      context: .
+      dockerfile: docker/dockerfile-postgresdb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: starter_app
+      PROFILE: local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "starter_app"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - starter-network
+
+  ui: #note that to run this use ```docker-compose watch web```
+    image: starter_app:frontend
+    container_name: ui
+    build:
+      context: .
+      dockerfile: docker/dockerfile-frontend
+    develop:
+      watch:
+        - action: rebuild
+          path: ./ui/src
+          target: /usr/share/nginx/html
+    ports:
+      - 3000:8080
+    restart: unless-stopped
+    networks:
+      - starter-network
+
+
+  keycloak_dev:
+    image: "quay.io/keycloak/keycloak:23.0"
+    container_name: keycloak_dev
+    restart: always
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - 8081:8080
+    environment:
+      KEYCLOAK_ADMIN: "admin"
+      KEYCLOAK_ADMIN_PASSWORD: "password"
+      KC_PROXY: "edge"
+      PROXY_ADDRESS_FORWARDING: "true"
+    depends_on:
+      postgres_dev:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: timeout 10s bash -c ':> /dev/tcp/localhost/8080'
+      start_interval: 10s
+    volumes:
+      - ./dev/keycloak:/opt/keycloak/data/import
+    networks:
+      - starter-network
+
+  nginx_dev:
+    image: nginx
+    container_name: nginx_dev
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      APP_FRONTEND_ADDR: ui
+      APP_FRONTEND_PORT: 8080
+      APP_BACKEND_ADDR: api
+      APP_BACKEND_PORT: 9002
+    depends_on:
+      keycloak_dev:
+        condition: service_healthy
+        restart: true
+    volumes:
+      - ./dev/nginx/templates:/etc/nginx/templates:ro
+      - ./dev/tls:/etc/nginx/certs:ro
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - starter-network
+
+  oauth2proxy_dev:
+    image: "docker.io/bitnami/oauth2-proxy:7.6.0"
+    container_name: oauth2proxy_dev
+    restart: always
+    command: --config /oauth2-proxy.cfg
+    environment:
+      OAUTH2_PROXY_CLIENT_ID: "starter-app"
+      OAUTH2_PROXY_UPSTREAMS: "http://starter-app.zeus.socom.dev"
+      OAUTH2_PROXY_COOKIE_NAME: "__Secure-oauth_proxy_starter-app"
+      OAUTH2_PROXY_CLIENT_SECRET: "52f81DodPlYafGR23xJenW6UXizwOv0H"
+      OAUTH2_PROXY_COOKIE_SECRET: "68W9GCfJxthaPQFZ3itOJ48HBNFzDTt0iZtfP1L8YjI="
+      OAUTH2_PROXY_OIDC_ISSUER_URL: "https://keycloak.zeus.socom.dev/realms/zeus-apps"
+    depends_on:
+      keycloak_dev:
+        condition: service_healthy
+      redis_dev:
+        condition: service_healthy
+    extra_hosts:
+      - keycloak.zeus.socom.dev:host-gateway
+    volumes:
+      - ./dev/oauth2-proxy.cfg:/oauth2-proxy.cfg
+      - ./dev/tls/rootCA.pem:/etc/ssl/certs/rootCA.pem:ro
+    networks:
+      - starter-network
+
+  redis_dev:
+    image: "docker.io/redis:7.2.5"
+    container_name: redis_dev
+    restart: unless-stopped
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+      MASTER_PERSISTENCE_ENABLED: "false"
+    healthcheck:
+      test: redis-cli ping
+    volumes:
+      - cache:/data
+    networks:
+      - starter-network
+
+volumes:
+  postgres-data:
+  cache:
+
+networks:
+  starter-network:
+    driver: bridge

@@ -1,0 +1,9 @@
+FROM registry1.dso.mil/ironbank/opensource/postgres/postgresql-alpine:15.8
+USER root
+RUN adduser user -u 1001 -D
+WORKDIR /app
+
+RUN chown -R user:user /var/lib/postgresql/data
+USER user
+# Add a health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 CMD pg_isready -d $POSTGRES_DB -U $POSTGRES_USER || exit 1

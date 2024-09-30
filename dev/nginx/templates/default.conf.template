@@ -1,0 +1,72 @@
+server {
+  listen                    8080;
+  server_name               starter-app.*;
+  client_max_body_size      100G;
+  client_body_buffer_size   128k;
+  proxy_buffer_size         128k;
+  proxy_buffers             4 256k;
+  proxy_busy_buffers_size   256k;
+
+  proxy_read_timeout        3600s;
+  proxy_connect_timeout     3600s;
+  proxy_send_timeout        3600s;
+
+
+  location /oauth2/ {
+    proxy_pass              http://127.0.0.1:4180;
+
+    proxy_set_header        Host $host;
+    proxy_set_header        Content-Length "";
+    proxy_set_header        X-Auth-Request-Redirect $request_uri;
+  }
+
+  location / {
+    proxy_pass              http://${APP_FRONTEND_ADDR}:${APP_FRONTEND_PORT};
+
+    proxy_set_header        Host $host;
+    proxy_set_header        Authorization $access_token;
+    auth_request            /oauth2/auth;
+    error_page              401 = /oauth2/start;
+    auth_request_set        $access_token $upstream_http_authorization;
+  }
+
+  location /api {        
+    proxy_pass              http://${APP_BACKEND_ADDR}:${APP_BACKEND_PORT};
+
+    proxy_set_header        Host $host;
+    proxy_set_header        Authorization $access_token;
+    auth_request            /oauth2/auth;
+    error_page              401 = /oauth2/start;
+    auth_request_set        $access_token $upstream_http_authorization;
+  }
+}
+
+server {
+  listen 8080;
+  server_name keycloak.*;
+
+  location / {
+    proxy_pass                http://keycloak_dev:8080;
+
+    proxy_set_header          Host $host;
+    proxy_buffer_size         128k;
+    proxy_buffers             4 256k;
+    proxy_busy_buffers_size   256k;
+  }
+}
+
+server {
+    listen 127.0.0.1:4180 default_server;
+
+    resolver 127.0.0.11 valid=30s ipv6=off;
+
+    location / {
+        proxy_set_header Host $host;
+        set $backend "oauth2proxy_dev";
+        proxy_pass http://$backend:4180;
+
+        proxy_buffer_size         128k;
+        proxy_buffers             4 256k;
+        proxy_busy_buffers_size   256k;
+    }
+}

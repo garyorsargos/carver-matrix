@@ -1,0 +1,41 @@
+spring:
+  profiles:
+    active:
+      - default
+      - ${PROFILE}
+  servlet:
+    multipart:
+      max-file-size: 256MB
+      max-request-size: 256MB
+      enabled: true
+  datasource:
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 5
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/starter_app
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI}
+
+# create and drop table, good for testing, production set to none or comment it
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+server:
+  port: 9002
+#  ssl:
+#    enabled: true
+#    key-store-type: PKCS12
+logging:
+  level:
+    org:
+      springframework:
+        security: TRACE

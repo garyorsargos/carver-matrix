@@ -1,0 +1,29 @@
+####################################
+#   Build the client application   #
+####################################
+FROM docker.io/node:22-alpine3.19 AS client
+
+WORKDIR /usr/app
+
+COPY ui/package.json /ui/yarn.lock ./
+RUN yarn install --frozen-lockfile
+
+COPY ui/ ./
+RUN yarn build
+
+
+###################################
+#   Build the deployment server   #
+###################################
+FROM docker.io/nginxinc/nginx-unprivileged:stable-alpine-slim
+
+USER nginx
+
+COPY --from=client --chown=nginx:nginx /usr/app/dist /usr/share/nginx/html
+COPY --from=client --chown=nginx:nginx usr/app/dev/nginx/default.conf /etc/nginx/conf.d
+
+HEALTHCHECK --interval=20s --timeout=5s --start-period=30s --retries=3 \
+  CMD [ "wget", "-T5", "-qO-", "http://127.0.0.1:8080" ]
+
+CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 8080
