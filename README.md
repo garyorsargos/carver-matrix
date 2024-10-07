@@ -52,7 +52,7 @@ Ongoing work and documentation
 - If you run into errors, refer to the [mkcert documentation](https://github.com/FiloSottile/mkcert)
 
 ### Install a docker daemon
-- Use one of the methods below to run Docker on your development computer:
+- Use one of the methods below to run Docker on your development computer :
   - `Docker Desktop`
     - Docker Desktop is the easiest way to turn on your docker daemon.
     - Download and install Docker Desktop from: [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
