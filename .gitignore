@@ -1,0 +1,14 @@
+# Ignore IntelliJ IDEA files
+.idea/
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore environment variables
+.env
+
+# Ignore Maven build artifacts
+target/
+
+# Ignore development certificates and keys
+dev/tls/
