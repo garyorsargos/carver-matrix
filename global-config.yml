@@ -12,7 +12,7 @@ spring:
     hikari:
       connection-timeout: 20000
       maximum-pool-size: 5
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/starter_app
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/carver_app
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   security:
@@ -22,7 +22,7 @@ spring:
           issuer-uri: ${KEYCLOAK_ISSUER}
           jwk-set-uri: ${KEYCLOAK_JWK_URI}
 
-# create and drop table, good for testing, production set to none or comment it
+  # create and drop table, good for testing, production set to none or comment it
   jpa:
     hibernate:
       ddl-auto: create

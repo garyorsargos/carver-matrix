@@ -244,7 +244,7 @@
         "containerId" : "c74527d8-07ac-4405-b96d-a38b4f321956",
         "attributes" : { }
       } ],
-      "starter-app" : [ ],
+      "carver-app" : [ ],
       "security-admin-console" : [ ],
       "admin-cli" : [ ],
       "account-console" : [ ],
@@ -609,8 +609,8 @@
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
     "id" : "a8652871-b808-4272-8c2d-6f0bfabbd775",
-    "clientId" : "starter-app",
-    "name" : "starter-app",
+    "clientId" : "carver-app",
+    "name" : "carver-app",
     "description" : "",
     "rootUrl" : "",
     "adminUrl" : "",
@@ -651,11 +651,11 @@
       "protocolMapper" : "oidc-audience-mapper",
       "consentRequired" : false,
       "config" : {
-        "included.client.audience" : "starter-app",
+        "included.client.audience" : "carver-app",
         "id.token.claim" : "true",
         "access.token.claim" : "true",
         "introspection.token.claim" : "true",
-        "included.custom.audience" : "starter-app"
+        "included.custom.audience" : "carver-app"
       }
     } ],
     "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "email" ],

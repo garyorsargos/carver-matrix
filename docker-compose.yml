@@ -1,6 +1,6 @@
 services:
   api:
-    image: starter_app:api
+    image: carver_app:api
     container_name: api
     build:
       context: .
@@ -16,14 +16,14 @@ services:
       KEYCLOAK_ISSUER: https://keycloak.zeus.socom.dev/realms/zeus-apps
       KEYCLOAK_JWK_URI: http://keycloak_dev:8080/realms/zeus-apps/protocol/openid-connect/certs
     depends_on:
-     postgres_dev:
-       condition: service_healthy
+      postgres_dev:
+        condition: service_healthy
     networks:
-      - starter-network
+      - carver-network
     restart: always
 
   postgres_dev:
-    image: starter_app:postgres
+    image: carver_app:postgres
     container_name: postgres_dev
     build:
       context: .
@@ -33,10 +33,10 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: root
-      POSTGRES_DB: starter_app
+      POSTGRES_DB: carver_app
       PROFILE: local
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "starter_app"]
+      test: ["CMD-SHELL", "pg_isready", "-d", "carver_app"]
       interval: 5s
       timeout: 10s
       retries: 5
@@ -45,10 +45,10 @@ services:
       - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
     networks:
-      - starter-network
+      - carver-network
 
   ui: #note that to run this use ```docker-compose watch web```
-    image: starter_app:frontend
+    image: carver_app:frontend
     container_name: ui
     build:
       context: .
@@ -62,8 +62,7 @@ services:
       - 3000:8080
     restart: unless-stopped
     networks:
-      - starter-network
-
+      - carver-network
 
   keycloak_dev:
     image: "quay.io/keycloak/keycloak:23.0"
@@ -89,7 +88,7 @@ services:
     volumes:
       - ./dev/keycloak:/opt/keycloak/data/import
     networks:
-      - starter-network
+      - carver-network
 
   nginx_dev:
     image: nginx
@@ -113,7 +112,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
-      - starter-network
+      - carver-network
 
   oauth2proxy_dev:
     image: "docker.io/bitnami/oauth2-proxy:7.6.0"
@@ -121,9 +120,9 @@ services:
     restart: always
     command: --config /oauth2-proxy.cfg
     environment:
-      OAUTH2_PROXY_CLIENT_ID: "starter-app"
-      OAUTH2_PROXY_UPSTREAMS: "http://starter-app.zeus.socom.dev"
-      OAUTH2_PROXY_COOKIE_NAME: "__Secure-oauth_proxy_starter-app"
+      OAUTH2_PROXY_CLIENT_ID: "carver-app"
+      OAUTH2_PROXY_UPSTREAMS: "http://carver-matrix.zeus.socom.dev"
+      OAUTH2_PROXY_COOKIE_NAME: "__Secure-oauth_proxy_carver-app"
       OAUTH2_PROXY_CLIENT_SECRET: "52f81DodPlYafGR23xJenW6UXizwOv0H"
       OAUTH2_PROXY_COOKIE_SECRET: "68W9GCfJxthaPQFZ3itOJ48HBNFzDTt0iZtfP1L8YjI="
       OAUTH2_PROXY_OIDC_ISSUER_URL: "https://keycloak.zeus.socom.dev/realms/zeus-apps"
@@ -138,7 +137,7 @@ services:
       - ./dev/oauth2-proxy.cfg:/oauth2-proxy.cfg
       - ./dev/tls/rootCA.pem:/etc/ssl/certs/rootCA.pem:ro
     networks:
-      - starter-network
+      - carver-network
 
   redis_dev:
     image: "docker.io/redis:7.2.5"
@@ -152,12 +151,12 @@ services:
     volumes:
       - cache:/data
     networks:
-      - starter-network
+      - carver-network
 
 volumes:
   postgres-data:
   cache:
 
 networks:
-  starter-network:
+  carver-network:
     driver: bridge

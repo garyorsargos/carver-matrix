@@ -1,5 +1,5 @@
 TLS_FOLDER=dev/tls
-APP_NAME=starter-app
+APP_NAME=carver-app
 APP_DOMAIN=zeus.socom.dev
 
 

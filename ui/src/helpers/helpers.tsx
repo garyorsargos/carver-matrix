@@ -6,9 +6,9 @@ import ChatBot from "../pages/ChatBot";
 
 // User Roles
 export const USER_ROLES = {
-  admin: "STARTER_ADMIN",
-  read: "STARTER_READ",
-  write: "STARTER_WRITE",
+  admin: "CARVER_ADMIN",
+  read: "CARVER_READ",
+  write: "CARVER_WRITE",
 };
 
 // The Red Theme Object

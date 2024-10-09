@@ -14,7 +14,7 @@ export class Api {
     // this.roleSetter(roles);
     const { data } = await axios.get("/api/health");
     console.log("This is it, Johnny Boi: ", data);
-    this.roleSetter(["STARTER_ADMIN"]);
+    this.roleSetter(["CARVER_ADMIN"]);
     return "Test Response";
   }
 }
