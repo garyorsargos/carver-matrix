@@ -26,6 +26,13 @@ docker-start:
 	@docker compose build
 	@docker compose watch ui
 
+docker-start-no-cache:
+  # Builds the docker images based on the `docker-compose.yaml` file with no cache, and starts new containers
+	@docker-compose build --no-cache
+	@docker-compose down
+	@docker-compose up -d --force-recreate
+	@docker compose watch ui
+
 docker-stop:
   # Stops the running containers associated with the `docker-compose.yaml` file
 	@docker compose down
@@ -45,9 +52,20 @@ start-dev:
 		delete-override \
 		start
 
+start-dev-no-cache:
+	@${MAKE} \
+		delete-override \
+		docker-start-no-cache
+
 start-dev-rancher:
 	@${MAKE} \
 	  create-override \
+		start
+
+restart-dev:
+	@${MAKE} \
+		delete-override \
+		docker-stop \
 		start
 
 stop-dev:
