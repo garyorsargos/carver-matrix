@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>fmc</groupId>
-    <artifactId>starter-app</artifactId>
+    <artifactId>carver-app</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>starter-app</name>
-    <description>Backend for starter application</description>
+    <name>carver-app</name>
+    <description>Backend for carver application</description>
     <properties>
         <java.version>17</java.version>
         <snakeyaml.version>2.2</snakeyaml.version>
