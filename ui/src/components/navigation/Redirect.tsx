@@ -115,7 +115,7 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
                 <IconButton onClick={() => navigate(ROUTES.home)}>
                   <img src="/AIDIV-logo.svg" />
                 </IconButton>
-                <Typography variant="h5">Chat AI Bot</Typography>
+                <Typography variant="h5">CARVER Matrix App</Typography>
               </Box>
               <Box
                 style={{
