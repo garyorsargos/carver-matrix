@@ -4,6 +4,7 @@ import { Redirect } from "../components/navigation/Redirect";
 import Admin from "../pages/Admin";
 import CreateMatrix from "../pages/CreateMatrix";
 import EditMatrix from "../pages/EditMatrix";
+import Register from "../pages/Register";
 
 // User Roles
 export const USER_ROLES = {
@@ -149,7 +150,8 @@ export const ROUTES: { [key: string]: string } = {
   home: "/Home",
   admin: "/Admin",
   createMatrix: "/ModifyMatrix",
-  editMatrix: "/EditMatrix"
+  editMatrix: "/EditMatrix",
+  register: "/Register",
 };
 
 export const ADMIN_ROUTES: string[] = [ROUTES.admin];
@@ -186,6 +188,10 @@ export const routesConfig = [
       {
         path: ROUTES.editMatrix,
         element: <EditMatrix />,
+      },
+      {
+        path: ROUTES.register,
+        element: <Register />,
       },
     ],
   },
