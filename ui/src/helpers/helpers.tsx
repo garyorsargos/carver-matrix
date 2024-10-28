@@ -2,7 +2,8 @@ import { Outlet } from "react-router-dom";
 import App from "../App";
 import { Redirect } from "../components/navigation/Redirect";
 import Admin from "../pages/Admin";
-import ChatBot from "../pages/ChatBot";
+import CreateMatrix from "../pages/CreateMatrix";
+import EditMatrix from "../pages/EditMatrix";
 
 // User Roles
 export const USER_ROLES = {
@@ -146,8 +147,9 @@ export const blueTheme: object = {
 
 export const ROUTES: { [key: string]: string } = {
   home: "/Home",
-  chat: "/Chat",
   admin: "/Admin",
+  createMatrix: "/ModifyMatrix",
+  editMatrix: "/EditMatrix"
 };
 
 export const ADMIN_ROUTES: string[] = [ROUTES.admin];
@@ -174,12 +176,16 @@ export const routesConfig = [
         element: <App />,
       },
       {
-        path: ROUTES.chat,
-        element: <ChatBot />,
-      },
-      {
         path: ROUTES.admin,
         element: <Admin />,
+      },
+      {
+        path: ROUTES.createMatrix,
+        element: <CreateMatrix />,
+      },
+      {
+        path: ROUTES.editMatrix,
+        element: <EditMatrix />,
       },
     ],
   },
