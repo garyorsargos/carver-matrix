@@ -92,6 +92,10 @@ services:
       KEYCLOAK_ADMIN: "admin"
       KEYCLOAK_ADMIN_PASSWORD: "password"
       KC_PROXY: "edge"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres_dev:5432/postgres
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: root
       PROXY_ADDRESS_FORWARDING: "true"
     depends_on:
       postgres_dev:
