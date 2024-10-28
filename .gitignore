@@ -12,3 +12,5 @@ target/
 
 # Ignore development certificates and keys
 dev/tls/
+
+**/.DS_Store
