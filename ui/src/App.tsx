@@ -50,6 +50,14 @@ export const App = () => {
           >
             Create
           </Button>
+          <Button
+            data-testid="start-register"
+            variant="contained"
+            sx={{ borderRadius: "18px" }}
+            onClick={() => navigate(ROUTES.register)}
+          >
+            Register
+          </Button>
         </Box>
         <Card
           sx={{
@@ -73,24 +81,16 @@ export const App = () => {
           </Typography>
           <List dense>
             <ListItem>
-              <ListItemText
-                primary="Ease of use: Our tools make it straightforward to fill out a matrix."
-              />
+              <ListItemText primary="Ease of use: Our tools make it straightforward to fill out a matrix." />
             </ListItem>
             <ListItem>
-              <ListItemText
-                primary="EXAMPLE: description."
-              />
+              <ListItemText primary="EXAMPLE: description." />
             </ListItem>
             <ListItem>
-              <ListItemText
-                primary="EXAMPLE: description."
-              />
+              <ListItemText primary="EXAMPLE: description." />
             </ListItem>
             <ListItem>
-              <ListItemText
-                primary="EXAMPLE: description."
-              />
+              <ListItemText primary="EXAMPLE: description." />
             </ListItem>
           </List>
         </Card>
