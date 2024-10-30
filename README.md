@@ -155,12 +155,13 @@ This should also be where you place your Local Repository to help project consis
   - Once the `make start-dev` command has completed you should see:
     ```
     [+] Running 7/7
-    ✔ Container redis_dev        Healthy       30.3s 
-    ✔ Container postgres_dev     Healthy        5.7s 
-    ✔ Container api              Started        5.8s 
-    ✔ Container ui               Started        0.2s 
-    ✔ Container keycloak_dev     Healthy       36.3s 
-    ✔ Container oauth2proxy_dev  Started       36.5s 
+    ✔ Container redis_dev        Healthy       30.3s
+    ✔ Container postgres_dev     Healthy        5.7s
+    ✔ Container api              Started        5.8s
+    ✔ Container ui               Started        0.2s
+    ✔ Container keycloak_dev     Healthy       36.3s
+    ✔ Container pgadmin          Started        1.0s
+    ✔ Container oauth2proxy_dev  Started       36.5s
     ✔ Container nginx_dev        Started       36.5s
     ```
 
@@ -240,23 +241,40 @@ If the Certificate ever changes, you will have to repeat these steps again
 - You should see all of the containers stop running:
   ```
   [+] Running 8/7
-  ✔ Container api                        Removed     0.0s 
-  ✔ Container ui                         Removed     0.2s 
-  ✔ Container nginx_dev                  Removed     0.2s 
-  ✔ Container oauth2proxy_dev            Removed     0.1s 
-  ✔ Container redis_dev                  Removed     0.1s 
-  ✔ Container keycloak_dev               Removed     0.2s 
-  ✔ Container postgres_dev               Removed     0.1s 
+  ✔ Container api                        Removed     0.0s
+  ✔ Container ui                         Removed     0.2s
+  ✔ Container nginx_dev                  Removed     0.2s
+  ✔ Container oauth2proxy_dev            Removed     0.1s
+  ✔ Container redis_dev                  Removed     0.1s
+  ✔ Container keycloak_dev               Removed     0.2s
+  ✔ Container pgadmin                    Removed     0.1s
+  ✔ Container postgres_dev               Removed     0.1s
   ✔ Network starter-app_starter-network  Removed     0.1s
   ```
 
+# Exporting Keycloak JSON
+
+- To export Keycloak configuration, the following operations need to be performed
+- Provide Keycloak Privlleges to allow Keycloak to edit a persistant volume:
+  ```
+  docker run --rm -v keycloak_export:/opt/keycloak/data alpine sh -c "chmod -R 777 /opt/keycloak/data"
+  ```
+- Temporarily open a keycloak_dev instance and perform realm export to a persistant volume.
+  ```
+  docker exec --user root keycloak_dev /opt/keycloak/bin/kc.sh export --realm=zeus-apps --dir=/opt/keycloak/data/export
+  ```
+- Access `carver-matrix_keycloak_export` in Docker Volumes to retrive zeus-apps-realm.json and zeus-apps-users-0.json.
+  - zeus-apps-realm.json can be used to update keycloak configuration by overriding dev/keycloak/zeus-apps.json
+
 # Micro-services in Development Environment
-  Service | Function
-  -- | --
-  **NGINX** | Provides SSL termination and reverse proxy services to other micro-services
-  **Oath2Proxy** | Provides Oauth redirection for the application UI and API to the Keycloak OIDC endpoint
-  **Keycloak** | An OIDC endpoint that provides SSO, RBAC, and signed JWTs for application access and authorization
-  **Redis** | Provides a caching mechanism to Oauth2Proxy
-  **Postgres** | Relational database used for storing application data
-  **User Interface (UI)** | Containerized version of the starter-app application's front-end running as a Single Page Application (SPA) served from an NGINX container (static file server)
-  **Application Program Interface (API)** | Containerized version of the starter-app application's back-end
+
+| Service                                 | Function                                                                                                                                                                                       |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **NGINX**                               | Provides SSL termination and reverse proxy services to other micro-services                                                                                                                    |
+| **Oath2Proxy**                          | Provides Oauth redirection for the application UI and API to the Keycloak OIDC endpoint                                                                                                        |
+| **Keycloak**                            | An OIDC endpoint that provides SSO, RBAC, and signed JWTs for application access and authorization                                                                                             |
+| **Redis**                               | Provides a caching mechanism to Oauth2Proxy                                                                                                                                                    |
+| **Postgres**                            | Relational database used for storing application data                                                                                                                                          |
+| **pgAdmin 4**                           | Provides a graphical user interface for managing and interacting with the Postgres database, allowing users to execute queries, visualize data, and perform database administration tasks data |
+| **User Interface (UI)**                 | Containerized version of the starter-app application's front-end running as a Single Page Application (SPA) served from an NGINX container (static file server)                                |
+| **Application Program Interface (API)** | Containerized version of the starter-app application's back-end                                                                                                                                |

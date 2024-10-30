@@ -106,6 +106,7 @@ services:
       start_interval: 10s
     volumes:
       - ./dev/keycloak:/opt/keycloak/data/import
+      - keycloak_export:/opt/keycloak/data/export
     networks:
       - starter-network
 
@@ -175,6 +176,7 @@ services:
 volumes:
   postgres-data:
   cache:
+  keycloak_export:
 
 networks:
   starter-network:
