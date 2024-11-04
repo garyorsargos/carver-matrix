@@ -8,7 +8,6 @@ on:
 jobs:
   update-code:
     runs-on: ubuntu-latest
-    environment: SSH_PRIVATE_KEY
     steps:
       - name: Install SSH and Git
         run: |
@@ -18,9 +17,13 @@ jobs:
       - name: Set up SSH key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          AWS_CONTAINER_IP: ${{ secrets.AWS_CONTAINER_IP }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
           ssh-keyscan -H "$AWS_CONTAINER_IP" >> ~/.ssh/known_hosts
           
       - name: Pull Latest Code on Remote AWS Container
