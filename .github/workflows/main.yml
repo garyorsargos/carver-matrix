@@ -1,0 +1,19 @@
+stages:
+  - update-code
+  - deploy-changes
+
+update-code:
+  stage: update-code
+  image: alpine:latest
+  script:
+    # Install SSH client and git in the container
+    - apk add --no-cache openssh git
+    # Set up SSH key from GitLab CI/CD environment variable
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    # Add host to known_hosts to avoid prompt
+    - mkdir -p ~/.ssh
+    - ssh-keyscan -H "$AWS_CONTAINER_IP" >> ~/.ssh/known_hosts
+    # SSH into AWS container and pull the latest code
+    - ssh "$AWS_USER@$AWS_CONTAINER_IP" "git pull origin main"
+  only:
+    - main
