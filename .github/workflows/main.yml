@@ -1,6 +1,5 @@
 stages:
   - update-code
-  - deploy-changes
 
 update-code:
   stage: update-code
