@@ -8,6 +8,7 @@ on:
 jobs:
   update-code:
     runs-on: ubuntu-latest
+    environment: SSH_PRIVATE_KEY
     steps:
       - name: Install SSH and Git
         run: |
