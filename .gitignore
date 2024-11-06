@@ -4,8 +4,11 @@
 # Ignore VS Code settings
 .vscode/
 
-# Ignore environment variables
-.env
+# Ignore environment variables in all subdirectories
+**/.env
+
+# Ignore node_modules folder in all subdirectories
+**/node_modules/
 
 # Ignore Maven build artifacts
 target/
