@@ -1,5 +1,5 @@
 import { Card } from '@mui/material'
-import React, { Component } from 'react'
+import { Component } from 'react'
 
 export default class matrixCardLg extends Component {
   render() {
