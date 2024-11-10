@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { Box, Button } from "@mui/material";
 import LoginRegisterForm from "../components/LoginRegisterForm";
 
-// TODO: add logic to handle the form submission
-
 // Defines Register as a functional component
 export const Register: React.FC = () => {
   // State for the login and register mode

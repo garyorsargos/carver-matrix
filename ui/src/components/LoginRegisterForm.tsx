@@ -82,7 +82,7 @@ const LoginRegisterForm: React.FC<LoginRegisterFormProps> = ({
 }) => {
   // Reducer to manage the form state
   const [state, dispatch] = useReducer(formReducer, initialState);
-  // State for loading indicator
+  // useState hook to manage the loading state
   const [loading, setLoading] = useState(false);
   // State for error message
   const [error, setError] = useState<string | null>(null);
@@ -127,14 +127,14 @@ const LoginRegisterForm: React.FC<LoginRegisterFormProps> = ({
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // starts the async operation and enables loading state
     try {
       await onSubmit(state);
       dispatch({ type: "RESET" });
     } catch (err) {
       setError("An error occurred. Please try again.");
     } finally {
-      setLoading(false);
+      setLoading(false); // disables loading state after operation is completed of fails
     }
   };
 
@@ -203,7 +203,11 @@ const LoginRegisterForm: React.FC<LoginRegisterFormProps> = ({
             error && state.password.length < 6 ? "Minimum 6 characters" : ""
           }
         />
-        {/* Submit button with loading state */}
+        {/**
+         * Loading state affects the submit button:
+         * - Disables the button during loading
+         * - Shows CircularProgress component instead of text
+         */}
         <Button
           type="submit"
           variant="contained"
