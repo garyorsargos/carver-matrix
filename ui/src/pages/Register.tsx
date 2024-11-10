@@ -16,7 +16,7 @@ export const Register: React.FC = () => {
     lastName?: string;
   }) => {
     console.log("Form submitted:", data);
-    // Add logic for form submission
+    // TODO: Add logic for form submission
   };
 
   return (

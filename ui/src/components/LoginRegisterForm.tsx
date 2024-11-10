@@ -9,6 +9,12 @@ import {
   Alert,
 } from "@mui/material";
 
+/**
+ * Props interface for the Form component
+ * @param mode - Determines whether the form is in 'login' or 'register' mode
+ * @param onSubmit - Callback function to handle form submission
+ */
+
 type LoginRegisterFormProps = {
   mode: "login" | "register";
   onSubmit: (data: {
@@ -19,6 +25,9 @@ type LoginRegisterFormProps = {
   }) => void;
 };
 
+/**
+ * Interface to define the structure of the form state
+ */
 type FormState = {
   firstName: string;
   lastName: string;
@@ -26,10 +35,16 @@ type FormState = {
   password: string;
 };
 
+/**
+ * Union type defining all possible actions for the form reducer
+ */
 type ActionType =
   | { type: "SET_FIELD"; field: keyof FormState; value: string }
   | { type: "RESET" };
 
+/**
+ * Initial state of the form
+ */
 const initialState: FormState = {
   firstName: "",
   lastName: "",
@@ -37,6 +52,12 @@ const initialState: FormState = {
   password: "",
 };
 
+/**
+ * Reducer function to handle form state updates
+ * @param state - Current form state
+ * @param action - Action to be performed on the state
+ * @returns Updated form state
+ */
 const formReducer = (state: FormState, action: ActionType): FormState => {
   switch (action.type) {
     case "SET_FIELD":
@@ -47,15 +68,29 @@ const formReducer = (state: FormState, action: ActionType): FormState => {
       return state;
   }
 };
-
+/**
+ * A reusable form component that handles both login and registration
+ * Features:
+ * - Form validation
+ * - Loading state management
+ * - Error handling
+ * - Responsive design using Material-UI
+ */
 const LoginRegisterForm: React.FC<LoginRegisterFormProps> = ({
   mode,
   onSubmit,
 }) => {
+  // Reducer to manage the form state
   const [state, dispatch] = useReducer(formReducer, initialState);
+  // State for loading indicator
   const [loading, setLoading] = useState(false);
+  // State for error message
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Handles input field changes
+   * @param e - Change event from input field
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({
       type: "SET_FIELD",
@@ -64,8 +99,21 @@ const LoginRegisterForm: React.FC<LoginRegisterFormProps> = ({
     });
   };
 
+  /**
+   * Validates email format using regex
+   * @param email - Email string to validate
+   * @returns boolean indicating if email is valid
+   */
   const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
+  /**
+   * Handles form submission
+   * - Prevents default form behavior
+   * - Validates inputs
+   * - Manages loading state
+   * - Handles submission errors
+   * @param e - Form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -92,19 +140,24 @@ const LoginRegisterForm: React.FC<LoginRegisterFormProps> = ({
 
   return (
     <Card sx={{ padding: 4, maxWidth: 400, margin: "auto" }}>
+      {/* Form title */}
       <Typography variant="h4" sx={{ marginBottom: 2 }}>
         {mode === "login" ? "Login" : "Register"}
       </Typography>
+
+      {/* Error alert */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
+      {/* Form container */}
       <Box
         component="form"
         onSubmit={handleSubmit}
         sx={{ display: "flex", flexDirection: "column", gap: 2 }}
       >
+        {/* Conditional rendering of name fields for registration */}
         {mode === "register" && (
           <>
             <TextField
@@ -123,6 +176,7 @@ const LoginRegisterForm: React.FC<LoginRegisterFormProps> = ({
             />
           </>
         )}
+        {/* Email field with validation */}
         <TextField
           label="Email"
           name="email"
@@ -132,9 +186,11 @@ const LoginRegisterForm: React.FC<LoginRegisterFormProps> = ({
           required
           error={Boolean(error) && !validateEmail(state.email)}
           helperText={
-            error && !validateEmail(state.email) ? "Invalid email format" : ""
+            error && !validateEmail(state.email) ? "Invalid email address" : ""
           }
         />
+
+        {/* Password field with validation */}
         <TextField
           label="Password"
           name="password"
@@ -147,6 +203,7 @@ const LoginRegisterForm: React.FC<LoginRegisterFormProps> = ({
             error && state.password.length < 6 ? "Minimum 6 characters" : ""
           }
         />
+        {/* Submit button with loading state */}
         <Button
           type="submit"
           variant="contained"
