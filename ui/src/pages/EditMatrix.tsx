@@ -1,25 +1,33 @@
-import { Box, Typography } from "@mui/material";
-import FiltersInterface from "../components/custom/search/filtersInterface";
+import { Box } from "@mui/material";
 import MatrixExplorer from "../components/custom/search/matrixExplorer";
+import TargetGroup from "../components/custom/editMatrix/targetGroup";
 
 export const EditMatrix: React.FC = () => {
   return (
     <>
-      <Typography data-testid="edit-page" sx={{ color: "#FFF" }}>
-        This is the edit page.
-      </Typography>
-      <Box id="searchFiltersBox">
-        <FiltersInterface/>
-      </Box>
-      <Box id="matrixExplorerBox">
-        <MatrixExplorer/>
-      </Box>
-      <Box id="matrixEditorBox">
-        <Box id="userListBox">
-
+      <Box display="flex" flexDirection="row" justifyContent="space-around" sx={{height:'80vh'}} alignItems="stretch">
+        <Box
+          id="matrixExplorerBox"
+          sx={{
+            width: "20%",
+            borderRadius: 1,
+            backgroundColor: "white",
+          }}
+        >
+          <MatrixExplorer />
         </Box>
-        <Box id="editMatrixBox">
-
+        <Box
+          id="matrixEditorBox"
+          sx={{
+            width: "70%",
+            borderRadius: 1,
+            backgroundColor: "white",
+          }}
+        >
+          <Box id="editMatrixBox">
+            <TargetGroup targetName="Example Target 1"/>
+          </Box>
+          <Box id="userListBox"></Box>
         </Box>
       </Box>
     </>
