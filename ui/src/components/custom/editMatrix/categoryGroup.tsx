@@ -42,13 +42,18 @@ export class CategoryGroup extends Component<
         <div>
           <Typography>{category}</Typography>
         </div>
-        <FormControl fullWidth>
+        <FormControl fullWidth sx={{ mt: 2 }}>
           <InputLabel id="score-select-label">Score</InputLabel>
           <Select
             id="score-select"
             value={score}
             label="Score"
             onChange={this.handleInputChange}
+            sx={{
+              ".MuiSelect-select": {
+                color: "black",
+              },
+            }}
           >
             <MenuItem value={1}>1</MenuItem>
             <MenuItem value={2}>2</MenuItem>

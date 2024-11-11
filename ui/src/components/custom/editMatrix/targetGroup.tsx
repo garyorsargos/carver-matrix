@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Grid } from "@mui/material";
 import { Component } from "react";
 import CategoryGroup from "./categoryGroup";
 
@@ -11,13 +11,27 @@ export class TargetGroup extends Component<TargetGroupProps> {
     const { targetName } = this.props;
     return (
       <Box>
-        <Typography>{targetName}</Typography>
-        <CategoryGroup category="Criticality" />
-        <CategoryGroup category="Accessibility" />
-        <CategoryGroup category="Recuperability" />
-        <CategoryGroup category="Vulnerability" />
-        <CategoryGroup category="Effect" />
-        <CategoryGroup category="Recognizability" />
+        <Typography variant='h4'>{targetName}</Typography>
+        <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <CategoryGroup category="Criticality" />
+        </Grid>
+        <Grid item xs={6}>
+          <CategoryGroup category="Accessibility" />
+        </Grid>
+        <Grid item xs={6}>
+          <CategoryGroup category="Recuperability" />
+        </Grid>
+        <Grid item xs={6}>
+          <CategoryGroup category="Vulnerability" />
+        </Grid>
+        <Grid item xs={6}>
+          <CategoryGroup category="Effect" />
+        </Grid>
+        <Grid item xs={6}>
+          <CategoryGroup category="Recognizability" />
+        </Grid>
+      </Grid>
       </Box>
     );
   }
