@@ -149,7 +149,7 @@ export const blueTheme: object = {
 export const ROUTES: { [key: string]: string } = {
   home: "/Home",
   admin: "/Admin",
-  createMatrix: "/CreateMatrix",
+  createMatrix: "/ModifyMatrix",
   editMatrix: "/EditMatrix",
   register: "/Register",
 };
