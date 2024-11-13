@@ -260,11 +260,21 @@ If the Certificate ever changes, you will have to repeat these steps again
   docker run --rm -v keycloak_export:/opt/keycloak/data alpine sh -c "chmod -R 777 /opt/keycloak/data"
   ```
 - Temporarily open a keycloak_dev instance and perform realm export to a persistant volume.
+
   ```
-  docker exec --user root keycloak_dev /opt/keycloak/bin/kc.sh export --realm=zeus-apps --dir=/opt/keycloak/data/export
+  # Export with users and move to zeus-apps-realm.json
+  docker exec --user root keycloak_dev /opt/keycloak/bin/kc.sh export --realm=zeus-apps --dir=/opt/keycloak/data/export/with-users --users realm_file
+  docker exec --user root keycloak_dev mv /opt/keycloak/data/export/with-users/zeus-apps-realm.json /opt/keycloak/data/export/with-users/zeus-apps-realm.json
+
+
+  # Export without users and move to zeus-apps-realm.json.bak
+  docker exec --user root keycloak_dev /opt/keycloak/bin/kc.sh export --realm=zeus-apps --dir=/opt/keycloak/data/export/without-users
+  docker exec --user root keycloak_dev mv /opt/keycloak/data/export/without-users/zeus-apps-realm.json /opt/keycloak/data/export/without-users/zeus-apps-realm.json.bak
+
   ```
-- Access `carver-matrix_keycloak_export` in Docker Volumes to retrive zeus-apps-realm.json and zeus-apps-users-0.json.
-  - zeus-apps-realm.json can be used to update keycloak configuration by overriding dev/keycloak/zeus-apps.json
+
+- Access `carver-matrix_keycloak_export` in Docker Volumes to retrive zeus-apps-realm.json and zeus-apps-realm.json.bak.
+  - zeus-apps-realm.json can be used to update keycloak configuration by overriding dev/keycloak/zeus-apps.json and dev/zeus-apps.json.bak
 
 # Micro-services in Development Environment
 
