@@ -15,22 +15,22 @@ export class TargetGroup extends Component<TargetGroupProps> {
         <Typography variant='h4'>{targetName}</Typography>
         <Grid container spacing={2}>
         <Grid item xs={6}>
-          <CategoryGroup category="Criticality" />
+          <CategoryGroup category="Criticality" targetTitle={targetName} />
         </Grid>
         <Grid item xs={6}>
-          <CategoryGroup category="Accessibility" />
+          <CategoryGroup category="Accessibility" targetTitle={targetName} /> 
         </Grid>
         <Grid item xs={6}>
-          <CategoryGroup category="Recuperability" />
+          <CategoryGroup category="Recuperability" targetTitle={targetName} />
         </Grid>
         <Grid item xs={6}>
-          <CategoryGroup category="Vulnerability" />
+          <CategoryGroup category="Vulnerability" targetTitle={targetName} />
         </Grid>
         <Grid item xs={6}>
-          <CategoryGroup category="Effect" />
+          <CategoryGroup category="Effect" targetTitle={targetName} />
         </Grid>
         <Grid item xs={6}>
-          <CategoryGroup category="Recognizability" />
+          <CategoryGroup category="Recognizability" targetTitle={targetName} />
         </Grid>
       </Grid>
       </Box>
