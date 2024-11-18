@@ -2,6 +2,7 @@ import { Box, Typography, Grid } from "@mui/material";
 import { Component } from "react";
 import CategoryGroup from "./categoryGroup";
 
+
 interface TargetGroupProps {
   targetName: string;
 }

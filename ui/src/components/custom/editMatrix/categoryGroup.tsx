@@ -8,9 +8,12 @@ import {
   Typography,
 } from "@mui/material";
 import { Component } from "react";
+import { useMultiMatrix } from "../multiMatrixProvider";
+
 
 interface CategoryDisplayProps {
   category: string;
+  targetTitle: string;
 }
 
 interface CategoryGroupState {
@@ -35,7 +38,7 @@ export class CategoryGroup extends Component<
   };
 
   render() {
-    const { category } = this.props;
+    const { category, targetTitle } = this.props;
     const { score } = this.state;
     return (
       <Box>
