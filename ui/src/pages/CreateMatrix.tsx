@@ -1,4 +1,4 @@
-import { Box, FormControl, FormControlLabel, FormLabel, Grid, MenuItem, Select, SelectChangeEvent, Switch, Typography } from "@mui/material";
+import { Box, Button, FormControl, FormControlLabel, FormLabel, Grid, MenuItem, Select, SelectChangeEvent, Switch, Typography } from "@mui/material";
 import { useState } from "react";
 export const CreateMatrix: React.FC = () => {
   
@@ -77,10 +77,7 @@ export const CreateMatrix: React.FC = () => {
       >
         <Typography variant="h2">Example Matrix Title</Typography>
         <Typography variant="body1">Example Matrix Description...</Typography>
-        
-        {/* Space of 50px (INEFFICIENT, CONSIDER USING STACK COMPONENT INSTEAD) */}
-        <Box sx={{ height: '50px' }}></Box>
-
+      
         {/* This Box is for the Matrix Parameters */}
         <Box
         id='matrixParametersBox'
@@ -92,7 +89,8 @@ export const CreateMatrix: React.FC = () => {
           display: 'flex',
           alignItems: 'flex-start',
           flexDirection: 'column',
-          marginBottom: "40px"
+          marginBottom: "40px",
+          marginTop: "30px"
         }}
         >
           <Typography variant="h4">Matrix Parameters</Typography>
@@ -223,22 +221,35 @@ export const CreateMatrix: React.FC = () => {
 
       {/* This Box is the Right-Half of the screen and it deals with managing participants */}
       <Box
-        id='manageParticipantsBox'
+        id="manageParticipantsBox"
         sx={{
-          backgroundColor: 'white',
+          backgroundColor: "white",
           p: 2,
           borderRadius: 2,
-          width: '50%',
-          height: '85%',
+          width: "50%",
+          height: "85%",
           boxShadow: 3,
-          position: 'center',
-          top: '10px',
-          display: 'flex',
-          alignItems: 'flex-start',
-          flexDirection: 'column'
+          position: "center",
+          top: "10px",
+          display: "flex",
+          alignItems: "flex-start",
+          flexDirection: "column",
         }}
       >
-        Work in progress...
+        {/* Container for Typography and Button */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between", // Spreads items to opposite sides
+            width: "50%",
+          }}
+        >
+          <Typography variant="h4">Manage Participants</Typography>
+          <Button variant="contained" sx={{ borderRadius: "20px", width: "100px" }}>
+            Invite
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
