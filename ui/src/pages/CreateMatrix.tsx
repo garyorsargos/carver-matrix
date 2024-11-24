@@ -113,6 +113,7 @@ export const CreateMatrix: React.FC = () => {
                   },
                   border: "1px solid lightgray",
                   borderRadius: "20px",
+                  marginBottom: "10px"
                 }}
               >
               <MenuItem value={5}>5-Point Scoring</MenuItem>
@@ -128,10 +129,8 @@ export const CreateMatrix: React.FC = () => {
               opacity: 1,
             },}} />}
             label={RoleBasedChecked ? "Enabled" : "Disabled"}
+            sx={{marginBottom: "20px"}}
           />
-
-          {/* Space of 50px */}
-          <Box sx={{ height: '30px' }}></Box>
           
           {/* Data Entry Assignment Method Label Box */}
           <FormControl sx={{ width: "50%" }}>
@@ -151,6 +150,7 @@ export const CreateMatrix: React.FC = () => {
                   },
                   border: "1px solid lightgray",
                   borderRadius: "20px",
+                  marginBottom: "10px"
                 }}
               >
               <MenuItem value={"random"}>Random</MenuItem>
