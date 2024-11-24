@@ -1,11 +1,11 @@
-import { Box, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Switch, Typography } from "@mui/material";
+import { Box, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, SelectChangeEvent, Switch, Typography } from "@mui/material";
 import { useState } from "react";
 export const CreateMatrix: React.FC = () => {
   
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
   const [AnonymousEntryChecked, setAnonymousEntryChecked] = useState(false);
   const [value, setValue] = useState<number>(5);
-
+  const [randomAssigned, setRandomAssigned] = useState<string>("random");
 
   const roleBasedHandleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRoleBasedChecked(event.target.checked);
@@ -17,6 +17,10 @@ export const CreateMatrix: React.FC = () => {
 
   const scoreRangeHandleChange = (event: SelectChangeEvent<number>) => {
     setValue(event.target.value as number);
+  };
+
+  const dataEntryHandleChange = (event: SelectChangeEvent<string>) => {
+    setRandomAssigned(event.target.value as string);
   };
 
   return (
@@ -75,7 +79,7 @@ export const CreateMatrix: React.FC = () => {
         >
           {/* Score Range Label Box */}
           <FormControl sx={{ width: "50%" }}>
-            <InputLabel id="score-range-label">Score Range</InputLabel>
+            {/* <InputLabel id="score-range-label">Score Range</InputLabel>
               <Select
                 labelId="score-range-label"
                 id="score-range-select"
@@ -93,8 +97,8 @@ export const CreateMatrix: React.FC = () => {
               >
               <MenuItem value={5}>5-Point Scoring</MenuItem>
               <MenuItem value={10}>10-Point Scoring</MenuItem>
-            </Select>
-            {/* <FormLabel id="score-range-label">Score Range</FormLabel>
+            </Select> */}
+            <FormLabel id="score-range-label">Score Range</FormLabel>
             <RadioGroup
               aria-labelledby="score-range-label"
               name="controlled-radio-buttons-group"
@@ -103,7 +107,7 @@ export const CreateMatrix: React.FC = () => {
             >
               <FormControlLabel value="5" control={<Radio />} label="5-Point Scoring" />
               <FormControlLabel value="10" control={<Radio />} label="10-Point Scoring" />
-          </RadioGroup> */}
+          </RadioGroup>
           </FormControl>
 
           <Typography>Role-Based Matrix</Typography>
@@ -115,22 +119,41 @@ export const CreateMatrix: React.FC = () => {
             },}} />}
             label={RoleBasedChecked ? "Enabled" : "Disabled"}
           />
+
+          {/* Space of 50px (INEFFICIENT, CONSIDER USING STACK COMPONENT INSTEAD) */}
+          <Box sx={{ height: '30px' }}></Box>
           
           {/* Data Entry Assignment Method Label Box */}
-          <InputLabel id="data-entry-label">Data Entry Assignment Method</InputLabel>
-          <FormControl sx={{ border: '1px solid lightgray', borderRadius: '50px', width: "50%"}}>
+          <FormControl sx={{ width: "50%" }}>
+          <FormLabel id="data-entry-label">Data Entry Assignment Method</FormLabel>
+            <RadioGroup
+              aria-labelledby="data-entry-label"
+              name="controlled-radio-buttons-group"
+              value={randomAssigned}
+              onChange={dataEntryHandleChange}
+            >
+              <FormControlLabel value="random" control={<Radio />} label="Random" />
+              <FormControlLabel value="assigned" control={<Radio />} label="Assigned" />
+          </RadioGroup>
+            {/* <InputLabel id="data-entry-label">Data Entry Assignment Method</InputLabel>
               <Select
                 labelId="data-entry-label"
                 id="data-entry-select"
-                value={0}
-                label="Data Entry Assignment Method"
-                variant="outlined"
-                sx={{ borderRadius: '50px'}}
+                value={randomAssigned} // NOT CORRECT, haven't implemented this one; just reused the one from score range above for example's sake
+                onChange={dataEntryHandleChange} // NOT CORRECT, haven't implemented this one; just reused the one from score range above for example's sake
+                label="Data Entry"
+                sx = {{ 
+                  "& .MuiInputBase-input": {
+                    color: "black", // Text color inside the Select box
+                  }, 
+                  "& .MuiSelect-icon": {
+                    color: "black", // Select icon color
+                  },
+                }}
               >
-              <MenuItem value={10}>Ten</MenuItem>
-              <MenuItem value={20}>Twenty</MenuItem>
-              <MenuItem value={30}>Thirty</MenuItem>
-            </Select>
+              <MenuItem value={"random"}>Random</MenuItem>
+              <MenuItem value={"assigned"}>Assigned</MenuItem>
+            </Select> */}
           </FormControl>
 
           <Typography>Anonymous Entry</Typography>
@@ -143,6 +166,9 @@ export const CreateMatrix: React.FC = () => {
             label={AnonymousEntryChecked ? "Enabled" : "Disabled"}
           />
         </Box>
+          
+        {/* Space between the Boxes */}
+        <Box sx={{ width: '20px' }} /> 
 
         {/* This Box is for the Global Category Multipliers */}
         <Box
@@ -157,7 +183,7 @@ export const CreateMatrix: React.FC = () => {
           flexDirection: 'column'
         }}
         >
-          {/* TO DO: implement CARVER Global Category Multipliers (i.e., 1.2x Criticality, 0.8x Recognizability, etc) */}
+
         </Box>
       </Box>
 
