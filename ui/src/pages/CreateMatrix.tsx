@@ -1,4 +1,4 @@
-import { Box, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, SelectChangeEvent, Switch, Typography } from "@mui/material";
+import { Box, FormControl, FormControlLabel, FormLabel, Grid, MenuItem, Select, SelectChangeEvent, Switch, Typography } from "@mui/material";
 import { useState } from "react";
 export const CreateMatrix: React.FC = () => {
   
@@ -7,6 +7,28 @@ export const CreateMatrix: React.FC = () => {
   const [value, setValue] = useState<number>(5);
   const [randomAssigned, setRandomAssigned] = useState<string>("random");
 
+  const initialMultipliers = {
+    Criticality: 1.0,
+    Vulnerability: 1.0,
+    Accessibility: 1.0,
+    Effect: 1.0,
+    Recoverability: 1.0,
+    Recognizability: 1.0,
+  };
+
+  const [multipliers, setMultipliers] = useState(initialMultipliers);
+
+  // Options for the dropdown for Global Category Multipliers
+  const options = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0];
+
+  const multipliersHandleChange = (label: string) => (event: SelectChangeEvent<unknown>) => {
+    const val = event.target.value as number;
+    setMultipliers((prev) => ({
+      ...prev,
+      [label]: val,
+    }));
+  };
+  
   const roleBasedHandleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRoleBasedChecked(event.target.checked);
   };
@@ -58,11 +80,6 @@ export const CreateMatrix: React.FC = () => {
         
         {/* Space of 50px (INEFFICIENT, CONSIDER USING STACK COMPONENT INSTEAD) */}
         <Box sx={{ height: '50px' }}></Box>
-        
-        <Typography variant="h4">Matrix Parameters</Typography>
-
-        {/* Space of 50px (INEFFICIENT, CONSIDER USING STACK COMPONENT INSTEAD) */}
-        <Box sx={{ height: '50px' }}></Box>
 
         {/* This Box is for the Matrix Parameters */}
         <Box
@@ -74,12 +91,13 @@ export const CreateMatrix: React.FC = () => {
           position: 'center',
           display: 'flex',
           alignItems: 'flex-start',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          marginBottom: "40px"
         }}
         >
-          {/* Score Range Label Box */}
+          <Typography variant="h4">Matrix Parameters</Typography>
           <FormControl sx={{ width: "50%" }}>
-            {/* <InputLabel id="score-range-label">Score Range</InputLabel>
+            <FormLabel id="score-range-label">Score Range</FormLabel>
               <Select
                 labelId="score-range-label"
                 id="score-range-select"
@@ -91,23 +109,15 @@ export const CreateMatrix: React.FC = () => {
                     color: "black", // Text color inside the Select box
                   }, 
                   "& .MuiSelect-icon": {
-                    color: "black", // Select icon color
+                    color: "black",
                   },
+                  border: "1px solid lightgray",
+                  borderRadius: "20px",
                 }}
               >
               <MenuItem value={5}>5-Point Scoring</MenuItem>
               <MenuItem value={10}>10-Point Scoring</MenuItem>
-            </Select> */}
-            <FormLabel id="score-range-label">Score Range</FormLabel>
-            <RadioGroup
-              aria-labelledby="score-range-label"
-              name="controlled-radio-buttons-group"
-              value={value}
-              onChange={scoreRangeHandleChange}
-            >
-              <FormControlLabel value="5" control={<Radio />} label="5-Point Scoring" />
-              <FormControlLabel value="10" control={<Radio />} label="10-Point Scoring" />
-          </RadioGroup>
+            </Select>
           </FormControl>
 
           <Typography>Role-Based Matrix</Typography>
@@ -120,40 +130,32 @@ export const CreateMatrix: React.FC = () => {
             label={RoleBasedChecked ? "Enabled" : "Disabled"}
           />
 
-          {/* Space of 50px (INEFFICIENT, CONSIDER USING STACK COMPONENT INSTEAD) */}
+          {/* Space of 50px */}
           <Box sx={{ height: '30px' }}></Box>
           
           {/* Data Entry Assignment Method Label Box */}
           <FormControl sx={{ width: "50%" }}>
           <FormLabel id="data-entry-label">Data Entry Assignment Method</FormLabel>
-            <RadioGroup
-              aria-labelledby="data-entry-label"
-              name="controlled-radio-buttons-group"
-              value={randomAssigned}
-              onChange={dataEntryHandleChange}
-            >
-              <FormControlLabel value="random" control={<Radio />} label="Random" />
-              <FormControlLabel value="assigned" control={<Radio />} label="Assigned" />
-          </RadioGroup>
-            {/* <InputLabel id="data-entry-label">Data Entry Assignment Method</InputLabel>
               <Select
                 labelId="data-entry-label"
                 id="data-entry-select"
-                value={randomAssigned} // NOT CORRECT, haven't implemented this one; just reused the one from score range above for example's sake
-                onChange={dataEntryHandleChange} // NOT CORRECT, haven't implemented this one; just reused the one from score range above for example's sake
+                value={randomAssigned}
+                onChange={dataEntryHandleChange}
                 label="Data Entry"
                 sx = {{ 
                   "& .MuiInputBase-input": {
                     color: "black", // Text color inside the Select box
                   }, 
                   "& .MuiSelect-icon": {
-                    color: "black", // Select icon color
+                    color: "black",
                   },
+                  border: "1px solid lightgray",
+                  borderRadius: "20px",
                 }}
               >
               <MenuItem value={"random"}>Random</MenuItem>
               <MenuItem value={"assigned"}>Assigned</MenuItem>
-            </Select> */}
+            </Select>
           </FormControl>
 
           <Typography>Anonymous Entry</Typography>
@@ -166,9 +168,6 @@ export const CreateMatrix: React.FC = () => {
             label={AnonymousEntryChecked ? "Enabled" : "Disabled"}
           />
         </Box>
-          
-        {/* Space between the Boxes */}
-        <Box sx={{ width: '20px' }} /> 
 
         {/* This Box is for the Global Category Multipliers */}
         <Box
@@ -183,7 +182,39 @@ export const CreateMatrix: React.FC = () => {
           flexDirection: 'column'
         }}
         >
-
+        <Typography variant="h4">Global Category Multipliers</Typography>
+        <Grid container spacing={2}>
+        {/* Each row */}
+        {Object.entries(initialMultipliers).map(([label], index) => (
+          <Grid item xs={6} key={index}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <Typography>{label}</Typography>
+              <Select
+                value={multipliers[label as keyof typeof initialMultipliers]}
+                onChange={multipliersHandleChange(label)}
+                size="small"
+                sx = {{ 
+                  "& .MuiInputBase-input": {
+                    color: "black", // Text color inside the Select box
+                  }, 
+                  "& .MuiSelect-icon": {
+                    color: "black",
+                  },
+                  border: "1px solid lightgray",
+                  borderRadius: "20px",
+                }}
+              >
+                {options.map((option) => (
+                  <MenuItem
+                    value={option}>
+                    {option.toFixed(1)}x
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+          </Grid>
+        ))}
+      </Grid>
         </Box>
       </Box>
 
