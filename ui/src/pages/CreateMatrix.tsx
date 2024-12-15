@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, FormControlLabel, FormLabel, Grid, MenuItem, Select, SelectChangeEvent, Switch, Typography } from "@mui/material";
+import { Box, Button, FormControl, FormControlLabel, FormLabel, Grid, MenuItem, Paper, Select, SelectChangeEvent, Switch, Typography } from "@mui/material";
 import { useState } from "react";
 export const CreateMatrix: React.FC = () => {
   
@@ -20,6 +20,15 @@ export const CreateMatrix: React.FC = () => {
 
   // Options for the dropdown for Global Category Multipliers
   const options = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0];
+
+  const [roles, setRoles] = useState(["Role Type", "Role Type", "Role Type", "Role Type", "Role Type"]);
+
+  // Function to handle dropdown changes
+  const handleChange = (index: number, event: SelectChangeEvent<string>) => {
+    const newRoles = [...roles];
+    newRoles[index] = event.target.value;
+    setRoles(newRoles);
+  };
 
   const multipliersHandleChange = (label: string) => (event: SelectChangeEvent<unknown>) => {
     const val = event.target.value as number;
@@ -72,7 +81,8 @@ export const CreateMatrix: React.FC = () => {
           top: '10px',
           display: 'flex',
           alignItems: 'flex-start',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          overflow: 'auto'
         }}
       >
         <Typography variant="h2">Example Matrix Title</Typography>
@@ -234,6 +244,7 @@ export const CreateMatrix: React.FC = () => {
           display: "flex",
           alignItems: "flex-start",
           flexDirection: "column",
+          overflow: 'auto'
         }}
       >
         {/* Container for Typography and Button */}
@@ -243,6 +254,7 @@ export const CreateMatrix: React.FC = () => {
             alignItems: "center",
             justifyContent: "space-between", // Spreads items to opposite sides
             width: "50%",
+            marginBottom: "40px",
           }}
         >
           <Typography variant="h4">Manage Participants</Typography>
@@ -250,6 +262,41 @@ export const CreateMatrix: React.FC = () => {
             Invite
           </Button>
         </Box>
+        {/* Participant Rows */}
+      {roles.map((role, index) => (
+        <Paper
+          key={index}
+          elevation={0} // Remove shadow
+          sx={{
+            color: "black",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            p: 2,
+            gap: 4,
+            border: "1px solid #ccc", // Light gray border
+            borderRadius: "20px",
+            backgroundColor: "white", // Ensure white background
+            mb: 1
+          }}
+        >
+          <Typography variant="body1">Example User</Typography>
+          <Select
+            value={role}
+            onChange={(event) => handleChange(index, event)}
+            sx={{
+              color: "gray",
+              backgroundColor: "white", // White background
+              height: "40px",
+            }}
+          >
+            <MenuItem value="Role Type">Role Type</MenuItem>
+            <MenuItem value="Admin">Admin</MenuItem>
+            <MenuItem value="Editor">Editor</MenuItem>
+            <MenuItem value="Viewer">Viewer</MenuItem>
+          </Select>
+        </Paper>
+      ))}
       </Box>
     </Box>
   );
