@@ -24,7 +24,7 @@ export const CreateMatrix: React.FC = () => {
   const [roles, setRoles] = useState(["Role Type", "Role Type", "Role Type", "Role Type", "Role Type"]);
 
   // Function to handle dropdown changes
-  const handleChange = (index: number, event: SelectChangeEvent<string>) => {
+  const handleUserRoleChange = (index: number, event: SelectChangeEvent<string>) => {
     const newRoles = [...roles];
     newRoles[index] = event.target.value;
     setRoles(newRoles);
@@ -262,41 +262,42 @@ export const CreateMatrix: React.FC = () => {
             Invite
           </Button>
         </Box>
+
         {/* Participant Rows */}
-      {roles.map((role, index) => (
-        <Paper
-          key={index}
-          elevation={0} // Remove shadow
-          sx={{
-            color: "black",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            p: 2,
-            gap: 4,
-            border: "1px solid #ccc", // Light gray border
-            borderRadius: "20px",
-            backgroundColor: "white", // Ensure white background
-            mb: 1
-          }}
-        >
-          <Typography variant="body1">Example User</Typography>
-          <Select
-            value={role}
-            onChange={(event) => handleChange(index, event)}
+        {roles.map((role, index) => (
+          <Paper
+            key={index}
+            elevation={0} // Remove shadow
             sx={{
-              color: "gray",
-              backgroundColor: "white", // White background
-              height: "40px",
+              color: "black",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              p: 2,
+              gap: 4,
+              border: "1px solid #ccc",
+              borderRadius: "20px",
+              backgroundColor: "white",
+              mb: 1
             }}
           >
-            <MenuItem value="Role Type">Role Type</MenuItem>
-            <MenuItem value="Admin">Admin</MenuItem>
-            <MenuItem value="Editor">Editor</MenuItem>
-            <MenuItem value="Viewer">Viewer</MenuItem>
-          </Select>
-        </Paper>
-      ))}
+            <Typography variant="body1">Example User</Typography>
+            <Select
+              value={role}
+              onChange={(event) => handleUserRoleChange(index, event)}
+              sx={{
+                color: "gray",
+                backgroundColor: "white",
+                height: "40px",
+              }}
+            >
+              <MenuItem value="Role Type">Role Type</MenuItem>
+              <MenuItem value="Admin">Admin</MenuItem>
+              <MenuItem value="Editor">Editor</MenuItem>
+              <MenuItem value="Viewer">Viewer</MenuItem>
+            </Select>
+          </Paper>
+        ))}
       </Box>
     </Box>
   );
