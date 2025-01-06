@@ -16,8 +16,8 @@ services:
       KEYCLOAK_ISSUER: https://keycloak.zeus.socom.dev/realms/zeus-apps
       KEYCLOAK_JWK_URI: http://keycloak_dev:8080/realms/zeus-apps/protocol/openid-connect/certs
     depends_on:
-     postgres_dev:
-       condition: service_healthy
+      postgres_dev:
+        condition: service_healthy
     networks:
       - starter-network
     restart: always
@@ -46,7 +46,7 @@ services:
     restart: unless-stopped
     networks:
       - starter-network
-  
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -54,7 +54,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: password
       PGADMIN_LISTEN_PORT: 8001
-    ports: 
+    ports:
       - "8001:8001"
     depends_on:
       - postgres_dev
@@ -78,7 +78,6 @@ services:
     networks:
       - starter-network
 
-
   keycloak_dev:
     image: "quay.io/keycloak/keycloak:23.0"
     container_name: keycloak_dev
@@ -92,11 +91,16 @@ services:
       KEYCLOAK_ADMIN: "admin"
       KEYCLOAK_ADMIN_PASSWORD: "password"
       KC_PROXY: "edge"
+      PROXY_ADDRESS_FORWARDING: "true"
+      # Tells Keycloak your external hostname
+      KC_HOSTNAME: "keycloak.zeus.socom.dev"
+      # Possibly add these to relax strictness (until things work):
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres_dev:5432/postgres
       KC_DB_USERNAME: admin
       KC_DB_PASSWORD: root
-      PROXY_ADDRESS_FORWARDING: "true"
     depends_on:
       postgres_dev:
         condition: service_healthy
@@ -131,7 +135,9 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
-      - starter-network
+      starter-network:
+        aliases:
+          - keycloak.zeus.socom.dev
 
   oauth2proxy_dev:
     image: "docker.io/bitnami/oauth2-proxy:7.6.0"
@@ -150,8 +156,6 @@ services:
         condition: service_healthy
       redis_dev:
         condition: service_healthy
-    extra_hosts:
-      - keycloak.zeus.socom.dev:host-gateway
     volumes:
       - ./dev/oauth2-proxy.cfg:/oauth2-proxy.cfg
       - ./dev/tls/rootCA.pem:/etc/ssl/certs/rootCA.pem:ro
