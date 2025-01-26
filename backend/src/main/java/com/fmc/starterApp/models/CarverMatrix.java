@@ -1,15 +1,9 @@
 package com.fmc.starterApp.models;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,4 +37,17 @@ public class CarverMatrix {
 
     @Column(columnDefinition = "TEXT[]")
     private String[] participants;
+
+    @OneToMany(mappedBy = "carverMatrix", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CarverItem> items;
+
+    public void addItem(CarverItem item) {
+        items.add(item);
+        item.setCarverMatrix(this);
+    }
+
+    public void removeItem(CarverItem item) {
+        items.remove(item);
+        item.setCarverMatrix(null);
+    }
 }
