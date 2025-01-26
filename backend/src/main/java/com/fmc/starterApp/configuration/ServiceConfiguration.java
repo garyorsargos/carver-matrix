@@ -13,6 +13,9 @@ import com.fmc.starterApp.services.AdminService;
 import com.fmc.starterApp.services.CarverMatrixService;
 import com.fmc.starterApp.services.PostGresExampleService;
 import com.fmc.starterApp.services.User2Service;
+import com.fmc.starterApp.repositories.MatrixImageRepository;
+import com.fmc.starterApp.services.ImageService;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
 @EnableConfigurationProperties({})
@@ -34,5 +37,9 @@ public class ServiceConfiguration {
         return new PostGresExampleService(postgresRepository);
     }
 
+    @Bean
+    ImageService imageService(final MatrixImageRepository matrixImageRepository, final CarverMatrixRepository carverMatrixRepository, final S3Client s3Client) {
+        return new ImageService(matrixImageRepository, carverMatrixRepository, s3Client);
+    }
 
 }
