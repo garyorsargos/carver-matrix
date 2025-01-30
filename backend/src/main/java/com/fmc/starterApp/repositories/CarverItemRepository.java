@@ -1,8 +1,9 @@
 package com.fmc.starterApp.repositories;
 
-import com.fmc.starterApp.models.CarverItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.fmc.starterApp.models.entity.CarverItem;
 
 import java.util.List;
 

@@ -6,8 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.fmc.starterApp.models.entity.MatrixImage;
 import com.fmc.starterApp.repositories.MatrixImageRepository;
-import com.fmc.starterApp.models.MatrixImage;
+
 import org.springframework.beans.factory.annotation.Value;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;

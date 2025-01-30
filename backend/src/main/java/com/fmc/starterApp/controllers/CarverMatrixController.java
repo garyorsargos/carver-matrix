@@ -1,6 +1,6 @@
 package com.fmc.starterApp.controllers;
 
-import com.fmc.starterApp.models.CarverMatrix;
+import com.fmc.starterApp.models.entity.CarverMatrix;
 import com.fmc.starterApp.services.CarverMatrixService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

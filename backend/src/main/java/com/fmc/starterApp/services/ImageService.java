@@ -1,7 +1,7 @@
 package com.fmc.starterApp.services;
 
-import com.fmc.starterApp.models.CarverMatrix;
-import com.fmc.starterApp.models.MatrixImage;
+import com.fmc.starterApp.models.entity.CarverMatrix;
+import com.fmc.starterApp.models.entity.MatrixImage;
 import com.fmc.starterApp.repositories.CarverMatrixRepository;
 import com.fmc.starterApp.repositories.MatrixImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;

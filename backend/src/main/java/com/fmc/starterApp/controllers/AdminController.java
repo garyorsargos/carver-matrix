@@ -1,6 +1,6 @@
 package com.fmc.starterApp.controllers;
 
-import com.fmc.starterApp.models.AppUser;
+import com.fmc.starterApp.models.entity.AppUser;
 import com.fmc.starterApp.services.AdminService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

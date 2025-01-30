@@ -1,6 +1,6 @@
 package com.fmc.starterApp.services;
 
-import com.fmc.starterApp.models.PostgresExampleObject;
+import com.fmc.starterApp.models.entity.PostgresExampleObject;
 import com.fmc.starterApp.repositories.PostgresRepository;
 import org.junit.jupiter.api.Test;
 
