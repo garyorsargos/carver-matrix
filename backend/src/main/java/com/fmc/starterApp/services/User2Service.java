@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fmc.starterApp.models.User2;
-import com.fmc.starterApp.models.User2DTO;
+import com.fmc.starterApp.models.dto.User2DTO;
+import com.fmc.starterApp.models.entity.User2;
 import com.fmc.starterApp.repositories.User2Repository;
 
 public class User2Service {

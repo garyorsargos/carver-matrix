@@ -1,9 +1,9 @@
 package com.fmc.starterApp.services;
 
 
-import com.fmc.starterApp.models.AdminDTO;
-import com.fmc.starterApp.models.AppUser;
-import com.fmc.starterApp.models.UserLogs;
+import com.fmc.starterApp.models.dto.AdminDTO;
+import com.fmc.starterApp.models.entity.AppUser;
+import com.fmc.starterApp.models.entity.UserLogs;
 import com.fmc.starterApp.repositories.UserLogsRepository;
 import com.fmc.starterApp.repositories.UsersRepository;
 import org.springframework.transaction.annotation.Transactional;

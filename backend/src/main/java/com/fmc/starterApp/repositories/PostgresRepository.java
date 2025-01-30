@@ -1,7 +1,8 @@
 package com.fmc.starterApp.repositories;
 
-import com.fmc.starterApp.models.PostgresExampleObject;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.fmc.starterApp.models.entity.PostgresExampleObject;
 
 import java.util.List;
 

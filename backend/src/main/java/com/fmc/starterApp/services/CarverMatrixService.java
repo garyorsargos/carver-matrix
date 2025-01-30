@@ -1,8 +1,8 @@
 package com.fmc.starterApp.services;
 
-import com.fmc.starterApp.models.CarverItem;
-import com.fmc.starterApp.models.CarverMatrix;
-import com.fmc.starterApp.models.User2;
+import com.fmc.starterApp.models.entity.CarverItem;
+import com.fmc.starterApp.models.entity.CarverMatrix;
+import com.fmc.starterApp.models.entity.User2;
 import com.fmc.starterApp.repositories.CarverMatrixRepository;
 import com.fmc.starterApp.repositories.User2Repository;
 import lombok.AllArgsConstructor;

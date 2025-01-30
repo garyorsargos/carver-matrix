@@ -1,6 +1,6 @@
 package com.fmc.starterApp.controllers;
 
-import com.fmc.starterApp.models.PostgresExampleObject;
+import com.fmc.starterApp.models.entity.PostgresExampleObject;
 import com.fmc.starterApp.services.PostGresExampleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
