@@ -1,5 +1,6 @@
 package com.fmc.starterApp.services;
 
+import com.fmc.starterApp.models.CarverItem;
 import com.fmc.starterApp.models.CarverMatrix;
 import com.fmc.starterApp.models.User2;
 import com.fmc.starterApp.repositories.CarverMatrixRepository;
@@ -31,13 +32,21 @@ public class CarverMatrixService {
 
     //Method to create a Carver Matrix
     public CarverMatrix createCarverMatrix(CarverMatrix matrix, Long userId) {
-        //Find the user
-        User2 user = user2Repository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        // Find the user
+        User2 user = user2Repository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
-        //Assign the user to the matrix
+        // Assign the user to the matrix
         matrix.setUser(user);
 
-        //Save the matrix
+        // Associate each item with the matrix
+        if (matrix.getItems() != null) {
+            for (CarverItem item : matrix.getItems()) {
+                item.setCarverMatrix(matrix); // Ensure that each item has a reference to the matrix
+            }
+        }
+
+        // Save the matrix and its associated items
         return carverMatrixRepository.save(matrix);
     }
 
