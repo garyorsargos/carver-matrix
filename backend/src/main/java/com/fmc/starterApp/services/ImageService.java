@@ -41,7 +41,7 @@ public class ImageService {
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
         //Upload to S3
-        s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileName).build(),RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileName).contentType(file.getContentType()).build(),RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
         String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName);
 
