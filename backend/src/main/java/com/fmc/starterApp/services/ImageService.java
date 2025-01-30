@@ -38,10 +38,16 @@ public class ImageService {
     }
     
     public String uploadImage(MultipartFile file, Long matrixId) throws IOException {
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String originalFileName = file.getOriginalFilename();
+        if (originalFileName == null || originalFileName.isEmpty()) {
+            throw new IllegalArgumentException("Invalid file name.");
+        }
+        String removedInvalidCharacters = originalFileName.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+
+        String fileName = System.currentTimeMillis() + "_" + removedInvalidCharacters;
 
         //Upload to S3
-        s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileName).build(),RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileName).contentType(file.getContentType()).build(),RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
         String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName);
 
