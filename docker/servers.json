@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "postgres_dev",
+      "Group": "Servers",
+      "Host": "postgres_dev",
+      "Port": 5432,
+      "Username": "admin",
+      "Password": "root",
+      "SSLMode": "prefer",
+      "MaintenanceDB": "starter_app"
+    }
+  }
+}
