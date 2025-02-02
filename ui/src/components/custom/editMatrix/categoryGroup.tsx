@@ -6,7 +6,6 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
-  Typography,
 } from "@mui/material";
 import { useMultiMatrix } from "../multiMatrixProvider";
 
@@ -42,10 +41,8 @@ const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }
   };
 
   return (
-    <Box>
-      <Typography>{category}</Typography>
-      <Typography>{targetTitle}</Typography>
-      <FormControl fullWidth sx={{ mt: 2 }}>
+    <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: "100%" }}>
+      <FormControl fullWidth sx={{ mt: 1, minWidth: 50 }}>
         <InputLabel id="score-select-label">Score</InputLabel>
         <Select
           id="score-select"
@@ -55,6 +52,8 @@ const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }
           sx={{
             ".MuiSelect-select": {
               color: "black",
+              fontSize: { xs: "0.75rem", md: "1rem" },
+              minWidth: 50,
             },
           }}
         >
