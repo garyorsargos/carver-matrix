@@ -1,4 +1,8 @@
-import { Box, Button, FormControl, FormControlLabel, FormLabel, Grid, MenuItem, Paper, Select, SelectChangeEvent, Switch, Typography } from "@mui/material";
+import { Box, Button, FormControl, FormControlLabel, FormLabel, MenuItem, Paper, Select, SelectChangeEvent, Switch, Typography, Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody, } from "@mui/material";
 import { useState } from "react";
 export const CreateMatrix: React.FC = () => {
   
@@ -17,6 +21,15 @@ export const CreateMatrix: React.FC = () => {
   };
 
   const [multipliers, setMultipliers] = useState(initialMultipliers);
+
+  const carverOrder = [
+    { key: "Criticality", header: "C" },
+    { key: "Accessibility", header: "A" },
+    { key: "Recoverability", header: "R" },
+    { key: "Vulnerability", header: "V" },
+    { key: "Effect", header: "E" },
+    { key: "Recognizability", header: "R" },
+  ];
 
   // Options for the dropdown for Global Category Multipliers
   const options = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0];
@@ -87,6 +100,9 @@ export const CreateMatrix: React.FC = () => {
       >
         <Typography variant="h2">Example Matrix Title</Typography>
         <Typography variant="body1">Example Matrix Description...</Typography>
+        <Button variant="contained" sx={{ borderRadius: "20px", width: "50px" }}>
+            Save
+          </Button>
       
         {/* This Box is for the Matrix Parameters */}
         <Box
@@ -137,7 +153,7 @@ export const CreateMatrix: React.FC = () => {
               opacity: 1,
             },}} />}
             label={RoleBasedChecked ? "Enabled" : "Disabled"}
-            sx={{marginBottom: "20px"}}
+            sx={{marginBottom: "10px"}}
           />
           
           {/* Data Entry Assignment Method Label Box */}
@@ -182,7 +198,7 @@ export const CreateMatrix: React.FC = () => {
         id='GlobalCategoryMultipliersBox'
         sx={{
           backgroundColor: 'white',
-          width: '50%',
+          width: '80%',
           height: '85%',
           position: 'center',
           display: 'flex',
@@ -191,39 +207,45 @@ export const CreateMatrix: React.FC = () => {
         }}
         >
         <Typography variant="h4">Global Category Multipliers</Typography>
-        <Grid container spacing={2}>
-        {/* Each row */}
-        {Object.entries(initialMultipliers).map(([label], index) => (
-          <Grid item xs={6} key={index}>
-            <Box display="flex" alignItems="center" gap={2}>
-              <Typography>{label}</Typography>
-              <Select
-                value={multipliers[label as keyof typeof initialMultipliers]}
-                onChange={multipliersHandleChange(label)}
-                size="small"
-                sx = {{ 
-                  "& .MuiInputBase-input": {
-                    color: "black", // Text color inside the Select box
-                  }, 
-                  "& .MuiSelect-icon": {
-                    color: "black",
-                  },
-                  border: "1px solid lightgray",
-                  borderRadius: "20px",
-                }}
-              >
-                {options.map((option) => (
-                  <MenuItem
-                    value={option}>
-                    {option.toFixed(1)}x
-                  </MenuItem>
-                ))}
-              </Select>
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
-        </Box>
+      <Table>
+        <TableHead>
+          <TableRow>
+            {carverOrder.map((item) => (
+              <TableCell key={item.key} align="center" sx={{ color: "black", fontWeight: "bold" }}>
+                {item.header}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            {carverOrder.map((item) => (
+              <TableCell key={item.key} align="center">
+                <Select
+                  value={
+                    multipliers[item.key as keyof typeof initialMultipliers]
+                  }
+                  onChange={multipliersHandleChange(item.key)}
+                  size="small"
+                  sx={{
+                    "& .MuiInputBase-input": { color: "black" },
+                    "& .MuiSelect-icon": { color: "black" },
+                    border: "1px solid lightgray",
+                    borderRadius: "20px",
+                  }}
+                >
+                  {options.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option.toFixed(1)}x
+                    </MenuItem>
+                  ))}
+                </Select>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableBody>
+      </Table>
+    </Box>
       </Box>
 
       {/* Space between the Boxes */}
