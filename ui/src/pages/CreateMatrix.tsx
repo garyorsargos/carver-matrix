@@ -160,118 +160,117 @@ export const CreateMatrix: React.FC = () => {
           marginTop: "20px"
         }}
         >
-          <Typography variant="h4">Matrix Parameters</Typography>
-
-          {/* Flex container to hold two columns side by side */}
-  <Box
-    sx={{
-      display: "flex",
-      flexDirection: "row",
-      alignItems: "flex-start",
-      gap: 10,
-      mt: 2,
-    }}
-  >
-    {/* Left Column: Score Range & Role Based Matrix */}
-    <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      {/* Score Range Label */}
-      <FormControl sx={{ width: "100%" }}>
-        <FormLabel id="score-range-label">Score Range</FormLabel>
-        <Select
-          labelId="score-range-label"
-          id="score-range-select"
-          value={value}
-          onChange={scoreRangeHandleChange}
-          label="Score Range"
+        <Typography variant="h4">Matrix Parameters</Typography>
+        {/* Flex container to hold two columns side by side */}
+        <Box
           sx={{
-            "& .MuiInputBase-input": {
-              color: "black", // Text color inside the Select box
-            },
-            "& .MuiSelect-icon": {
-              color: "black",
-            },
-            border: "1px solid lightgray",
-            borderRadius: "20px",
-            marginBottom: "10px",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "flex-start",
+            gap: 10,
+            mt: 2,
           }}
         >
-          <MenuItem value={5}>5-Point Scoring</MenuItem>
-          <MenuItem value={10}>10-Point Scoring</MenuItem>
-        </Select>
-      </FormControl>
+          {/* Left Column: Score Range & Role Based Matrix */}
+          <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            {/* Score Range Label */}
+            <FormControl sx={{ width: "100%" }}>
+              <FormLabel id="score-range-label">Score Range</FormLabel>
+              <Select
+                labelId="score-range-label"
+                id="score-range-select"
+                value={value}
+                onChange={scoreRangeHandleChange}
+                label="Score Range"
+                sx={{
+                  "& .MuiInputBase-input": {
+                    color: "black", // Text color inside the Select box
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "black",
+                  },
+                  border: "1px solid lightgray",
+                  borderRadius: "20px",
+                  marginBottom: "10px",
+                }}
+              >
+                <MenuItem value={5}>5-Point Scoring</MenuItem>
+                <MenuItem value={10}>10-Point Scoring</MenuItem>
+              </Select>
+            </FormControl>
 
-      {/* Role-Based Matrix */}
-      <Typography>Role-Based Matrix</Typography>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={RoleBasedChecked}
-            onChange={roleBasedHandleToggle}
-            sx={{
-              "& .MuiSwitch-track": {
-                borderRadius: "20px",
-                backgroundColor: RoleBasedChecked ? "blue" : "red",
-                opacity: 1,
-              },
-            }}
-          />
-        }
-        label={RoleBasedChecked ? "Enabled" : "Disabled"}
-        sx={{ marginBottom: "10px" }}
-      />
-    </Box>
+            {/* Role-Based Matrix */}
+            <Typography>Role-Based Matrix</Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={RoleBasedChecked}
+                  onChange={roleBasedHandleToggle}
+                  sx={{
+                    "& .MuiSwitch-track": {
+                      borderRadius: "20px",
+                      backgroundColor: RoleBasedChecked ? "blue" : "red",
+                      opacity: 1,
+                    },
+                  }}
+                />
+              }
+              label={RoleBasedChecked ? "Enabled" : "Disabled"}
+              sx={{ marginBottom: "10px" }}
+            />
+          </Box>
 
-    {/* Right Column: Data Entry Assignment Method & Anonymous Entry */}
-    <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      {/* Data Entry Assignment Method Label */}
-      <FormControl sx={{ width: "120%" }}>
-        <FormLabel id="data-entry-label">
-          Data Entry Assignment Method
-        </FormLabel>
-        <Select
-          labelId="data-entry-label"
-          id="data-entry-select"
-          value={randomAssigned}
-          onChange={dataEntryHandleChange}
-          label="Data Entry"
-          sx={{
-            "& .MuiInputBase-input": {
-              color: "black", // Text color inside the Select box
-            },
-            "& .MuiSelect-icon": {
-              color: "black",
-            },
-            border: "1px solid lightgray",
-            borderRadius: "20px",
-            marginBottom: "10px",
-          }}
-        >
-          <MenuItem value={"random"}>Random</MenuItem>
-          <MenuItem value={"assigned"}>Assigned</MenuItem>
-        </Select>
-      </FormControl>
+          {/* Right Column: Data Entry Assignment Method & Anonymous Entry */}
+          <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            {/* Data Entry Assignment Method Label */}
+            <FormControl sx={{ width: "120%" }}>
+              <FormLabel id="data-entry-label">
+                Data Entry Assignment Method
+              </FormLabel>
+              <Select
+                labelId="data-entry-label"
+                id="data-entry-select"
+                value={randomAssigned}
+                onChange={dataEntryHandleChange}
+                label="Data Entry"
+                sx={{
+                  "& .MuiInputBase-input": {
+                    color: "black", // Text color inside the Select box
+                  },
+                  "& .MuiSelect-icon": {
+                    color: "black",
+                  },
+                  border: "1px solid lightgray",
+                  borderRadius: "20px",
+                  marginBottom: "10px",
+                }}
+              >
+                <MenuItem value={"random"}>Random</MenuItem>
+                <MenuItem value={"assigned"}>Assigned</MenuItem>
+              </Select>
+            </FormControl>
 
-      {/* Anonymous Entry */}
-      <Typography>Anonymous Entry</Typography>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={AnonymousEntryChecked}
-            onChange={anonymousEntryHandleToggle}
-            sx={{
-              "& .MuiSwitch-track": {
-                borderRadius: "20px",
-                backgroundColor: AnonymousEntryChecked ? "blue" : "red",
-                opacity: 1,
-              },
-            }}
-          />
-        }
-        label={AnonymousEntryChecked ? "Enabled" : "Disabled"}
-      />
-    </Box>
-  </Box>
-</Box>
+            {/* Anonymous Entry */}
+            <Typography>Anonymous Entry</Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={AnonymousEntryChecked}
+                  onChange={anonymousEntryHandleToggle}
+                  sx={{
+                    "& .MuiSwitch-track": {
+                      borderRadius: "20px",
+                      backgroundColor: AnonymousEntryChecked ? "blue" : "red",
+                      opacity: 1,
+                    },
+                  }}
+                />
+              }
+              label={AnonymousEntryChecked ? "Enabled" : "Disabled"}
+            />
+          </Box>
+        </Box>
+      </Box>
 
         {/* This Box is for the Global Category Multipliers */}
         <Box
