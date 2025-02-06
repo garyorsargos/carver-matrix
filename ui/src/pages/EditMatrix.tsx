@@ -1,4 +1,4 @@
-import { Box, Typography, Grid, Button } from "@mui/material";
+import { Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import MatrixExplorer from "../components/custom/search/matrixExplorer";
 import CategoryGroup from "../components/custom/editMatrix/categoryGroup";
 import { MultiMatrixProvider } from "../components/custom/multiMatrixProvider";
@@ -17,18 +17,14 @@ export const EditMatrix: React.FC = () => {
 
   return (
     <MultiMatrixProvider>
-      <Box
-        display="flex"
-        flexDirection="row"
-        sx={{ height: "85vh", mt: 2, gap: 2 }}
-      >
+      <Box display="flex" flexDirection="row" sx={{ height: "85vh", mt: 2, gap: 2 }}>
         <Box
           id="matrixExplorerBox"
           sx={{
             width: "20%",
             minWidth: "200px",
             borderRadius: 1,
-            backgroundColor: "white",
+            backgroundColor: "#f5f5f5",
             overflowY: "auto",
             p: 1,
             flexShrink: 0,
@@ -41,69 +37,53 @@ export const EditMatrix: React.FC = () => {
           sx={{
             flexGrow: 1,
             borderRadius: 1,
-            backgroundColor: "white",
+            backgroundColor: "#ffffff",
             overflowY: "auto",
             p: 1,
             display: "flex",
             flexDirection: "column",
             minWidth: 0,
-            position: "relative"  // This allows absolute positioning of the button inside the box
+            position: "relative"
           }}
         >
-          <Box id="editMatrixBox" sx={{ px: 0.5, py: 0.5 }}>
-            <Typography variant="h4" align="center" sx={{ fontSize: { xs: "1.5rem", md: "2rem" }, mb: 2 }}>
-              Matrix Name
-            </Typography>
-            <Grid container spacing={0.5} sx={{ width: "100%", overflowX: "auto" }}>
-              <Grid item xs={12}>
-                <Grid container spacing={0.5} sx={{ width: "100%" }}>
-                  <Grid item xs={1.7} sx={{ padding: 0.5, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <Typography variant="h6" sx={{ fontSize: { xs: "0.75rem", md: "1rem" }, fontWeight: 'bold' }}>
-                      Targets
-                    </Typography>
-                  </Grid>
+          <Typography variant="h4" align="center" sx={{ fontSize: { xs: "1.5rem", md: "2rem" }, mb: 2, color: "black" }}>
+            Matrix Name
+          </Typography>
+          
+          <TableContainer component={Paper} sx={{ maxHeight: "65vh", overflowY: "auto", backgroundColor: "#f9f9f9" }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#e0e0e0" }}>
+                  <TableCell align="center" sx={{ fontWeight: "bold", backgroundColor: "#e0e0e0", color: "black" }}>Targets</TableCell>
                   {categories.map((category) => (
-                    <Grid item xs={1.7} sx={{ border: "1px solid black", padding: 0.5 }} key={category}>
-                      <Typography variant="h6" align="center" sx={{ fontSize: { xs: "0.75rem", md: "1rem" }, fontWeight: 'bold' }}>
-                        {category}
-                      </Typography>
-                    </Grid>
+                    <TableCell key={category} align="center" sx={{ fontWeight: "bold", backgroundColor: "#e0e0e0", color: "black" }}>
+                      {category}
+                    </TableCell>
                   ))}
-                </Grid>
-              </Grid>
-              {targets.map((target) => (
-                <Grid item xs={12} key={target}>
-                  <Grid container spacing={0.5} alignItems="center" sx={{ width: "100%" }}>
-                    <Grid item xs={1.7} sx={{ padding: 0.5, height: "100%" }}>
-                      <Typography variant="h6" align="center" sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}>
-                        {target}
-                      </Typography>
-                    </Grid>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {targets.map((target, index) => (
+                  <TableRow key={target} sx={{ backgroundColor: index % 2 === 0 ? "#ffffff" : "#f5f5f5" }}>
+                    <TableCell align="center" sx={{ color: "black" }}>{target}</TableCell>
                     {categories.map((category) => (
-                      <Grid item xs={1.7} key={`${target}-${category}`} display="flex" justifyContent="center" sx={{ border: "1px solid black", padding: 0.5 }}>
+                      <TableCell key={`${target}-${category}`} align="center" sx={{ color: "black" }}>
                         <CategoryGroup category={category} targetTitle={target} />
-                      </Grid>
+                      </TableCell>
                     ))}
-                  </Grid>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
           
           <Button
             variant="contained"
             color="success"
-            sx={{
-              position: "absolute",
-              bottom: 16,
-              right: 16,
-              zIndex: 10
-            }}
+            sx={{ position: "absolute", bottom: 16, right: 16, zIndex: 10 }}
           >
             Submit
           </Button>
-          
-          <Box id="userListBox"></Box>
         </Box>
       </Box>
     </MultiMatrixProvider>
