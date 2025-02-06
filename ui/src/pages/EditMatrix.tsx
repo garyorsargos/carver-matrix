@@ -1,4 +1,15 @@
-import { Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 import MatrixExplorer from "../components/custom/search/matrixExplorer";
 import CategoryGroup from "../components/custom/editMatrix/categoryGroup";
 import { MultiMatrixProvider } from "../components/custom/multiMatrixProvider";
@@ -10,14 +21,18 @@ export const EditMatrix: React.FC = () => {
     "Recuperability",
     "Vulnerability",
     "Effect",
-    "Recognizability"
+    "Recognizability",
   ];
 
   const targets = ["Example Target 1", "Example Target 2", "Example Target 3"];
 
   return (
     <MultiMatrixProvider>
-      <Box display="flex" flexDirection="row" sx={{ height: "85vh", mt: 2, gap: 2 }}>
+      <Box
+        display="flex"
+        flexDirection="row"
+        sx={{ height: "85vh", mt: 2, gap: 2 }}
+      >
         <Box
           id="matrixExplorerBox"
           sx={{
@@ -43,20 +58,52 @@ export const EditMatrix: React.FC = () => {
             display: "flex",
             flexDirection: "column",
             minWidth: 0,
-            position: "relative"
+            position: "relative",
           }}
         >
-          <Typography variant="h4" align="center" sx={{ fontSize: { xs: "1.5rem", md: "2rem" }, mb: 2, color: "black" }}>
+          <Typography
+            variant="h4"
+            align="center"
+            sx={{
+              fontSize: { xs: "1.5rem", md: "2rem" },
+              mb: 2,
+              color: "black",
+            }}
+          >
             Matrix Name
           </Typography>
-          
-          <TableContainer component={Paper} sx={{ maxHeight: "65vh", overflowY: "auto", backgroundColor: "#f9f9f9" }}>
+
+          <TableContainer
+            component={Paper}
+            sx={{
+              maxHeight: "65vh",
+              overflowY: "auto",
+              backgroundColor: "#f9f9f9",
+            }}
+          >
             <Table stickyHeader>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#e0e0e0" }}>
-                  <TableCell align="center" sx={{ fontWeight: "bold", backgroundColor: "#e0e0e0", color: "black" }}>Targets</TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{
+                      fontWeight: "bold",
+                      backgroundColor: "#e0e0e0",
+                      color: "black",
+                    }}
+                  >
+                    Targets
+                  </TableCell>
                   {categories.map((category) => (
-                    <TableCell key={category} align="center" sx={{ fontWeight: "bold", backgroundColor: "#e0e0e0", color: "black" }}>
+                    <TableCell
+                      key={category}
+                      align="center"
+                      sx={{
+                        fontWeight: "bold",
+                        backgroundColor: "#e0e0e0",
+                        color: "black",
+                      }}
+                    >
                       {category}
                     </TableCell>
                   ))}
@@ -64,11 +111,25 @@ export const EditMatrix: React.FC = () => {
               </TableHead>
               <TableBody>
                 {targets.map((target, index) => (
-                  <TableRow key={target} sx={{ backgroundColor: index % 2 === 0 ? "#ffffff" : "#f5f5f5" }}>
-                    <TableCell align="center" sx={{ color: "black" }}>{target}</TableCell>
+                  <TableRow
+                    key={target}
+                    sx={{
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f5f5f5",
+                    }}
+                  >
+                    <TableCell align="center" sx={{ color: "black" }}>
+                      {target}
+                    </TableCell>
                     {categories.map((category) => (
-                      <TableCell key={`${target}-${category}`} align="center" sx={{ color: "black" }}>
-                        <CategoryGroup category={category} targetTitle={target} />
+                      <TableCell
+                        key={`${target}-${category}`}
+                        align="center"
+                        sx={{ color: "black" }}
+                      >
+                        <CategoryGroup
+                          category={category}
+                          targetTitle={target}
+                        />
                       </TableCell>
                     ))}
                   </TableRow>
@@ -76,7 +137,7 @@ export const EditMatrix: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
-          
+
           <Button
             variant="contained"
             color="success"
@@ -91,4 +152,3 @@ export const EditMatrix: React.FC = () => {
 };
 
 export default EditMatrix;
-
