@@ -27,13 +27,13 @@
   "oauth2DevicePollingInterval" : 5,
   "enabled" : true,
   "sslRequired" : "external",
-  "registrationAllowed" : false,
+  "registrationAllowed" : true,
   "registrationEmailAsUsername" : false,
-  "rememberMe" : false,
-  "verifyEmail" : false,
+  "rememberMe" : true,
+  "verifyEmail" : true,
   "loginWithEmailAllowed" : true,
   "duplicateEmailsAllowed" : false,
-  "resetPasswordAllowed" : false,
+  "resetPasswordAllowed" : true,
   "editUsernameAllowed" : false,
   "bruteForceProtected" : false,
   "permanentLockout" : false,
@@ -131,7 +131,7 @@
         "composite" : true,
         "composites" : {
           "client" : {
-            "realm-management" : [ "view-realm", "manage-events", "query-users", "create-client", "manage-users", "query-realms", "view-clients", "view-authorization", "view-events", "impersonation", "manage-authorization", "query-groups", "view-identity-providers", "query-clients", "manage-clients", "manage-realm", "view-users", "manage-identity-providers" ]
+            "realm-management" : [ "manage-events", "query-users", "view-realm", "create-client", "manage-users", "query-realms", "view-clients", "view-authorization", "impersonation", "view-events", "manage-authorization", "query-groups", "view-identity-providers", "query-clients", "manage-clients", "manage-realm", "manage-identity-providers", "view-users" ]
           }
         },
         "clientRole" : true,
@@ -244,7 +244,31 @@
         "containerId" : "c74527d8-07ac-4405-b96d-a38b4f321956",
         "attributes" : { }
       } ],
-      "starter-app" : [ ],
+      "starter-app" : [ {
+        "id" : "3bf5cd1d-4b9a-4a8b-9f8f-0e28b71f8fab",
+        "name" : "STARTER_ADMIN",
+        "description" : "Admin user in terms of starter-app resource access. The admin role allows users visit admin restricted pages in the starter-app application, as well as utilize admin restricted api endpoints.",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "a8652871-b808-4272-8c2d-6f0bfabbd775",
+        "attributes" : { }
+      }, {
+        "id" : "99379f9b-0c56-495d-8ab9-1fd6a2d4e874",
+        "name" : "STARTER_READ",
+        "description" : "This role allows a user read access to starter-app resources, to include api's which are restricted to read only.",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "a8652871-b808-4272-8c2d-6f0bfabbd775",
+        "attributes" : { }
+      }, {
+        "id" : "31e1d0c1-c497-46b2-8f33-7f192673bd23",
+        "name" : "STARTER_WRITE",
+        "description" : "This role allows users the ability to create, update, and delete new data or old data from the application, generally in the sense of the database. It also allows users access to resources which require a WRITE role as well as api's that require WRITE.",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "a8652871-b808-4272-8c2d-6f0bfabbd775",
+        "attributes" : { }
+      } ],
       "security-admin-console" : [ ],
       "admin-cli" : [ ],
       "account-console" : [ ],
@@ -375,28 +399,6 @@
   "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister" : false,
   "webAuthnPolicyPasswordlessAcceptableAaguids" : [ ],
   "webAuthnPolicyPasswordlessExtraOrigins" : [ ],
-  "users" : [ {
-    "id" : "9fbadd82-d060-43db-a67c-502eb0cc032a",
-    "createdTimestamp" : 1721422360504,
-    "username" : "user",
-    "enabled" : true,
-    "totp" : false,
-    "emailVerified" : true,
-    "email" : "user@sage.socom.dev",
-    "credentials" : [ {
-      "id" : "dfba722a-7942-4b9b-8874-8adc71f2bee6",
-      "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1721422373037,
-      "secretData" : "{\"value\":\"peWhb4oI4s4IQTFCHcWMbooOfHr2CJLgoicrlKgC1X8=\",\"salt\":\"u5b94sKKOLO4U4nWuPlscQ==\",\"additionalParameters\":{}}",
-      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
-    } ],
-    "disableableCredentialTypes" : [ ],
-    "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-zeus-apps" ],
-    "notBefore" : 0,
-    "groups" : [ ]
-  } ],
   "scopeMappings" : [ {
     "clientScope" : "offline_access",
     "roles" : [ "offline_access" ]
@@ -637,8 +639,8 @@
       "client.secret.creation.time" : "1725459445",
       "backchannel.logout.session.required" : "true",
       "post.logout.redirect.uris" : "*",
-      "oauth2.device.authorization.grant.enabled" : "false",
       "display.on.consent.screen" : "false",
+      "oauth2.device.authorization.grant.enabled" : "false",
       "backchannel.logout.revoke.offline.tokens" : "false"
     },
     "authenticationFlowBindingOverrides" : { },
@@ -652,10 +654,11 @@
       "consentRequired" : false,
       "config" : {
         "included.client.audience" : "starter-app",
-        "id.token.claim" : "true",
-        "access.token.claim" : "true",
         "introspection.token.claim" : "true",
-        "included.custom.audience" : "starter-app"
+        "included.custom.audience" : "starter-app",
+        "userinfo.token.claim" : "true",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true"
       }
     } ],
     "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "email" ],
@@ -961,7 +964,9 @@
       "config" : {
         "introspection.token.claim" : "true",
         "multivalued" : "true",
+        "userinfo.token.claim" : "true",
         "user.attribute" : "foo",
+        "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "realm_access.roles",
         "jsonType.label" : "String"
@@ -985,7 +990,9 @@
       "config" : {
         "introspection.token.claim" : "true",
         "multivalued" : "true",
+        "userinfo.token.claim" : "true",
         "user.attribute" : "foo",
+        "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "resource_access.${client_id}.roles",
         "jsonType.label" : "String"
@@ -1224,7 +1231,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-full-name-mapper" ]
       }
     }, {
       "id" : "8dc380c8-4044-4b11-afea-af42a1e36d31",
@@ -1242,7 +1249,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "saml-role-list-mapper" ]
       }
     } ],
     "org.keycloak.keys.KeyProvider" : [ {
