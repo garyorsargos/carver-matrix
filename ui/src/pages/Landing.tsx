@@ -45,7 +45,7 @@ const Landing: React.FC<LandingProps> = ({ userName }) => {
           color="primary"
           onClick={() => navigate(ROUTES.createMatrix)}
         >
-          Create
+          Create Matrix
         </Button>
         <Button
           variant="outlined"
