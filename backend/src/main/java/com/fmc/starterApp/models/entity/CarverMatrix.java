@@ -50,6 +50,24 @@ public class CarverMatrix {
     @OneToMany(mappedBy = "carverMatrix", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CarverItem> items;
 
+    @Column(nullable = false)
+    private double cMulti = 1.0;
+
+    @Column(nullable = false)
+    private double aMulti = 1.0;
+
+    @Column(nullable = false)
+    private double rMulti = 1.0;
+
+    @Column(nullable = false)
+    private double vMulti = 1.0;
+
+    @Column(nullable = false)
+    private double eMulti = 1.0;
+
+    @Column(nullable = false)
+    private double r2Multi = 1.0;
+
     public void addItem(CarverItem item) {
         items.add(item);
         item.setCarverMatrix(this);
