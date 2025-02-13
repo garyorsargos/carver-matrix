@@ -68,6 +68,12 @@ public class CarverMatrix {
     @Column(nullable = false)
     private double r2Multi = 1.0;
 
+    private boolean randomAssignment;
+
+    private boolean roleBased;
+
+    private boolean fivePointScoring;
+
     public void addItem(CarverItem item) {
         items.add(item);
         item.setCarverMatrix(this);
