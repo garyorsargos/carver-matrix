@@ -41,10 +41,20 @@ public class CarverMatrixService {
     }
 
     public CarverMatrix createCarverMatrix(CarverMatrix matrix, Long userId) {
-        User2 user = user2Repository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        User2 user = user2Repository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
         matrix.setUser(user);
+
+        matrix.setCMulti(matrix.getCMulti());
+        matrix.setAMulti(matrix.getAMulti());
+        matrix.setRMulti(matrix.getRMulti());
+        matrix.setVMulti(matrix.getVMulti());
+        matrix.setEMulti(matrix.getEMulti());
+        matrix.setR2Multi(matrix.getR2Multi());
+
+        matrix.setRandomAssignment(matrix.getRandomAssignment());
+        matrix.setRoleBased(matrix.getRoleBased());
+        matrix.setFivePointScoring(matrix.getFivePointScoring());
 
         if (matrix.getItems() != null) {
             for (CarverItem item : matrix.getItems()) {
@@ -71,6 +81,35 @@ public class CarverMatrixService {
         }
         if (updatedMatrix.getParticipants() != null) {
             existingMatrix.setParticipants(updatedMatrix.getParticipants());
+        }
+
+        if (updatedMatrix.getCMulti() != null) {
+            existingMatrix.setCMulti(updatedMatrix.getCMulti());
+        }
+        if (updatedMatrix.getAMulti() != null) {
+            existingMatrix.setAMulti(updatedMatrix.getAMulti());
+        }
+        if (updatedMatrix.getRMulti() != null) {
+            existingMatrix.setRMulti(updatedMatrix.getRMulti());
+        }
+        if (updatedMatrix.getVMulti() != null) {
+            existingMatrix.setVMulti(updatedMatrix.getVMulti());
+        }
+        if (updatedMatrix.getEMulti() != null) {
+            existingMatrix.setEMulti(updatedMatrix.getEMulti());
+        }
+        if (updatedMatrix.getR2Multi() != null) {
+            existingMatrix.setR2Multi(updatedMatrix.getR2Multi());
+        }
+
+        if (updatedMatrix.getRandomAssignment() != null) {
+            existingMatrix.setRandomAssignment(updatedMatrix.getRandomAssignment());
+        }
+        if (updatedMatrix.getRoleBased() != null) {
+            existingMatrix.setRoleBased(updatedMatrix.getRoleBased());
+        }
+        if (updatedMatrix.getFivePointScoring() != null) {
+            existingMatrix.setFivePointScoring(updatedMatrix.getFivePointScoring());
         }
 
         Hibernate.initialize(existingMatrix.getItems());
