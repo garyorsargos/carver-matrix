@@ -53,6 +53,7 @@
         "composites": {
           "realm": ["offline_access", "uma_authorization"],
           "client": {
+            "starter-app": ["STARTER_READ", "STARTER_WRITE"],
             "account": ["view-profile", "manage-account"]
           }
         },
@@ -469,7 +470,7 @@
       "enabled": true,
       "totp": false,
       "emailVerified": true,
-      "email": "admin@starter-app.zeus.socom.dev",
+      "email": "jareddev.carver@gmail.com",
       "credentials": [
         {
           "id": "722c5271-6546-48f0-b1bd-88495a6e5d12",
@@ -1445,7 +1446,20 @@
     "xXSSProtection": "1; mode=block",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
-  "smtpServer": {},
+  "smtpServer": {
+    "replyToDisplayName": "",
+    "starttls": "true",
+    "auth": "true",
+    "envelopeFrom": "",
+    "ssl": "false",
+    "password": "xyxo bujs gjjo wlif",
+    "port": "587",
+    "host": "smtp.gmail.com",
+    "replyTo": "jareddev.carver@gmail.com",
+    "from": "jareddev.carver@gmail.com",
+    "fromDisplayName": "Carver Matrix Team",
+    "user": "jareddev.carver@gmail.com"
+  },
   "eventsEnabled": false,
   "eventsListeners": ["jboss-logging"],
   "enabledEventTypes": [],
@@ -1511,13 +1525,13 @@
         "config": {
           "allowed-protocol-mapper-types": [
             "oidc-usermodel-property-mapper",
-            "oidc-address-mapper",
-            "oidc-usermodel-attribute-mapper",
             "saml-user-property-mapper",
+            "oidc-full-name-mapper",
+            "saml-role-list-mapper",
             "saml-user-attribute-mapper",
             "oidc-sha256-pairwise-sub-mapper",
-            "saml-role-list-mapper",
-            "oidc-full-name-mapper"
+            "oidc-address-mapper",
+            "oidc-usermodel-attribute-mapper"
           ]
         }
       },
@@ -1540,13 +1554,13 @@
         "config": {
           "allowed-protocol-mapper-types": [
             "oidc-address-mapper",
-            "oidc-usermodel-property-mapper",
             "oidc-sha256-pairwise-sub-mapper",
-            "saml-user-attribute-mapper",
+            "saml-role-list-mapper",
+            "oidc-usermodel-property-mapper",
             "oidc-usermodel-attribute-mapper",
+            "saml-user-attribute-mapper",
             "saml-user-property-mapper",
-            "oidc-full-name-mapper",
-            "saml-role-list-mapper"
+            "oidc-full-name-mapper"
           ]
         }
       }
