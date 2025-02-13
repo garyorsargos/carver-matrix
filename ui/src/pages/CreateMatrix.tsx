@@ -1,12 +1,27 @@
-import { Box, Button, FormControl, FormControlLabel, FormLabel, MenuItem, Paper, Select, SelectChangeEvent, Switch, Typography, Table,
+import {
+  Box,
+  Button,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  MenuItem,
+  Paper,
+  Select,
+  SelectChangeEvent,
+  Switch,
+  Typography,
+  Table,
   TableHead,
   TableRow,
   TableCell,
-  TableBody, 
-  TextField } from "@mui/material";
+  TableBody,
+  TextField,
+} from "@mui/material";
 import { useState } from "react";
+import { IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 export const CreateMatrix: React.FC = () => {
-  
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
   const [AnonymousEntryChecked, setAnonymousEntryChecked] = useState(false);
   const [value, setValue] = useState<number>(5);
@@ -33,7 +48,25 @@ export const CreateMatrix: React.FC = () => {
   ];
 
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("")
+  const [description, setDescription] = useState("");
+  const [targets, setTargets] = useState<string[]>([]);
+
+  const handleAddTarget = () => {
+    setTargets([...targets, ""]);
+  };
+
+  const handleTargetChange = (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const newTargets = [...targets];
+    newTargets[index] = event.target.value;
+    setTargets(newTargets);
+  };
+
+  const handleDeleteTarget = (index: number) => {
+    setTargets(targets.filter((_, i) => i !== index));
+  };
 
   const handleSave = () => {
     console.log("Matrix saved:", title);
@@ -41,30 +74,47 @@ export const CreateMatrix: React.FC = () => {
   };
 
   // Options for the dropdown for Global Category Multipliers
-  const options = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0];
+  const options = [
+    0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
+    2.0,
+  ];
 
-  const [roles, setRoles] = useState(["Role Type", "Role Type", "Role Type", "Role Type", "Role Type"]);
+  const [roles, setRoles] = useState([
+    "Role Type",
+    "Role Type",
+    "Role Type",
+    "Role Type",
+    "Role Type",
+  ]);
 
   // Function to handle dropdown changes
-  const handleUserRoleChange = (index: number, event: SelectChangeEvent<string>) => {
+  const handleUserRoleChange = (
+    index: number,
+    event: SelectChangeEvent<string>,
+  ) => {
     const newRoles = [...roles];
     newRoles[index] = event.target.value;
     setRoles(newRoles);
   };
 
-  const multipliersHandleChange = (label: string) => (event: SelectChangeEvent<unknown>) => {
-    const val = event.target.value as number;
-    setMultipliers((prev) => ({
-      ...prev,
-      [label]: val,
-    }));
-  };
-  
-  const roleBasedHandleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const multipliersHandleChange =
+    (label: string) => (event: SelectChangeEvent<unknown>) => {
+      const val = event.target.value as number;
+      setMultipliers((prev) => ({
+        ...prev,
+        [label]: val,
+      }));
+    };
+
+  const roleBasedHandleToggle = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setRoleBasedChecked(event.target.checked);
   };
 
-  const anonymousEntryHandleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const anonymousEntryHandleToggle = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setAnonymousEntryChecked(event.target.checked);
   };
 
@@ -80,55 +130,55 @@ export const CreateMatrix: React.FC = () => {
     // This Box is for the whole screen (background); where every other box will be built on.
     <Box
       sx={{
-        backgroundColor: 'lightgray',
-        height: '100vh',
-        width: '100vw',
-        display: 'flex',
-        justifyContent: 'left',
-        alignItems: 'flex-start',
-        p: 2
+        backgroundColor: "lightgray",
+        height: "100vh",
+        width: "100vw",
+        display: "flex",
+        justifyContent: "left",
+        alignItems: "flex-start",
+        p: 2,
       }}
     >
       {/* This Box is the Left-Half of the screen and it deals with filling the Matrix Parameters and Global Category Multipliers*/}
       <Box
-        id='matrixCreatorBox'
+        id="matrixCreatorBox"
         sx={{
-          backgroundColor: 'white',
+          backgroundColor: "white",
           p: 2,
           borderRadius: 2,
-          width: '50%',
-          height: '85%',
+          width: "48%",
+          height: "85%",
           boxShadow: 3,
-          position: 'center',
-          top: '10px',
-          display: 'flex',
-          alignItems: 'flex-start',
-          flexDirection: 'column',
-          overflow: 'auto'
+          position: "center",
+          top: "10px",
+          display: "flex",
+          alignItems: "flex-start",
+          flexDirection: "column",
+          overflow: "auto",
         }}
       >
         {/* This Box is for the Title and Save Button */}
         <Box display="flex" alignItems="center">
-        <TextField
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          variant="standard"
-          placeholder="Enter your matrix Title..."
-          InputProps={{
-            disableUnderline: false,
-            style: { fontSize: "3rem", color: 'black'},
-          }}
-          sx={{ flexGrow: 1 }}
-        />
-        {/* The Save button with extra spacing */}
-        <Button
-          variant="contained"
-          onClick={handleSave}
-          sx={{ ml: 10, borderRadius: "20px", width: "100px" }}
-        >
-          Save
-        </Button>
-      </Box>
+          <TextField
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            variant="standard"
+            placeholder="Enter your matrix Title..."
+            InputProps={{
+              disableUnderline: false,
+              style: { fontSize: "3rem", color: "black" },
+            }}
+            sx={{ flexGrow: 1 }}
+          />
+          {/* The Save button with extra spacing */}
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            sx={{ ml: 10, borderRadius: "20px", width: "100px" }}
+          >
+            Save
+          </Button>
+        </Box>
 
         <TextField
           value={description}
@@ -140,195 +190,271 @@ export const CreateMatrix: React.FC = () => {
           placeholder="Enter your matrix description..."
           InputProps={{
             disableUnderline: true,
-            style: { fontSize: "1rem", color: 'black'},
+            style: { fontSize: "1rem", color: "black" },
           }}
           sx={{ flexGrow: 1 }}
         />
-      
+
         {/* This Box is for the Matrix Parameters component */}
         <Box
-        id='matrixParametersBox'
-        sx={{
-          backgroundColor: 'white',
-          width: '100%',
-          height: '100%',
-          position: 'center',
-          display: 'flex',
-          alignItems: 'flex-start',
-          flexDirection: 'column',
-          marginBottom: "10px",
-          marginTop: "20px"
-        }}
-        >
-        <Typography variant="h4">Matrix Parameters</Typography>
-        {/* Flex container to hold two columns side by side */}
-        <Box
+          id="matrixParametersBox"
           sx={{
+            backgroundColor: "white",
+            width: "100%",
+            height: "100%",
+            position: "center",
             display: "flex",
-            flexDirection: "row",
             alignItems: "flex-start",
-            gap: 10,
-            mt: 2,
+            flexDirection: "column",
+            marginBottom: "10px",
+            marginTop: "20px",
           }}
         >
-          {/* Left Column: Score Range & Role Based Matrix */}
-          <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            {/* Score Range Label */}
-            <FormControl sx={{ width: "100%" }}>
-              <FormLabel id="score-range-label">Score Range</FormLabel>
-              <Select
-                labelId="score-range-label"
-                id="score-range-select"
-                value={value}
-                onChange={scoreRangeHandleChange}
-                label="Score Range"
-                sx={{
-                  "& .MuiInputBase-input": {
-                    color: "black", // Text color inside the Select box
-                  },
-                  "& .MuiSelect-icon": {
-                    color: "black",
-                  },
-                  border: "1px solid lightgray",
-                  borderRadius: "20px",
-                  marginBottom: "10px",
-                }}
-              >
-                <MenuItem value={5}>5-Point Scoring</MenuItem>
-                <MenuItem value={10}>10-Point Scoring</MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* Role-Based Matrix */}
-            <Typography>Role-Based Matrix</Typography>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={RoleBasedChecked}
-                  onChange={roleBasedHandleToggle}
+          <Typography variant="h4">Matrix Parameters</Typography>
+          {/* Flex container to hold two columns side by side */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "flex-start",
+              gap: 10,
+              mt: 2,
+            }}
+          >
+            {/* Left Column: Score Range & Role Based Matrix */}
+            <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              {/* Score Range Label */}
+              <FormControl sx={{ width: "100%" }}>
+                <FormLabel id="score-range-label">Score Range</FormLabel>
+                <Select
+                  labelId="score-range-label"
+                  id="score-range-select"
+                  value={value}
+                  onChange={scoreRangeHandleChange}
+                  label="Score Range"
                   sx={{
-                    "& .MuiSwitch-track": {
-                      borderRadius: "20px",
-                      backgroundColor: RoleBasedChecked ? "blue" : "red",
-                      opacity: 1,
+                    "& .MuiInputBase-input": {
+                      color: "black", // Text color inside the Select box
                     },
+                    "& .MuiSelect-icon": {
+                      color: "black",
+                    },
+                    border: "1px solid lightgray",
+                    borderRadius: "20px",
+                    marginBottom: "10px",
                   }}
-                />
-              }
-              label={RoleBasedChecked ? "Enabled" : "Disabled"}
-              sx={{ marginBottom: "10px" }}
-            />
-          </Box>
+                >
+                  <MenuItem value={5}>5-Point Scoring</MenuItem>
+                  <MenuItem value={10}>10-Point Scoring</MenuItem>
+                </Select>
+              </FormControl>
 
-          {/* Right Column: Data Entry Assignment Method & Anonymous Entry */}
-          <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            {/* Data Entry Assignment Method Label */}
-            <FormControl sx={{ width: "120%" }}>
-              <FormLabel id="data-entry-label">
-                Data Entry Assignment Method
-              </FormLabel>
-              <Select
-                labelId="data-entry-label"
-                id="data-entry-select"
-                value={randomAssigned}
-                onChange={dataEntryHandleChange}
-                label="Data Entry"
-                sx={{
-                  "& .MuiInputBase-input": {
-                    color: "black", // Text color inside the Select box
-                  },
-                  "& .MuiSelect-icon": {
-                    color: "black",
-                  },
-                  border: "1px solid lightgray",
-                  borderRadius: "20px",
-                  marginBottom: "10px",
-                }}
-              >
-                <MenuItem value={"random"}>Random</MenuItem>
-                <MenuItem value={"assigned"}>Assigned</MenuItem>
-              </Select>
-            </FormControl>
+              {/* Role-Based Matrix */}
+              <Typography>Role-Based Matrix</Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={RoleBasedChecked}
+                    onChange={roleBasedHandleToggle}
+                    sx={{
+                      "& .MuiSwitch-track": {
+                        borderRadius: "20px",
+                        backgroundColor: RoleBasedChecked ? "blue" : "red",
+                        opacity: 1,
+                      },
+                    }}
+                  />
+                }
+                label={RoleBasedChecked ? "Enabled" : "Disabled"}
+                sx={{ marginBottom: "10px" }}
+              />
+            </Box>
 
-            {/* Anonymous Entry */}
-            <Typography>Anonymous Entry</Typography>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={AnonymousEntryChecked}
-                  onChange={anonymousEntryHandleToggle}
+            {/* Right Column: Data Entry Assignment Method & Anonymous Entry */}
+            <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              {/* Data Entry Assignment Method Label */}
+              <FormControl sx={{ width: "120%" }}>
+                <FormLabel id="data-entry-label">
+                  Data Entry Assignment Method
+                </FormLabel>
+                <Select
+                  labelId="data-entry-label"
+                  id="data-entry-select"
+                  value={randomAssigned}
+                  onChange={dataEntryHandleChange}
+                  label="Data Entry"
                   sx={{
-                    "& .MuiSwitch-track": {
-                      borderRadius: "20px",
-                      backgroundColor: AnonymousEntryChecked ? "blue" : "red",
-                      opacity: 1,
+                    "& .MuiInputBase-input": {
+                      color: "black", // Text color inside the Select box
                     },
+                    "& .MuiSelect-icon": {
+                      color: "black",
+                    },
+                    border: "1px solid lightgray",
+                    borderRadius: "20px",
+                    marginBottom: "10px",
                   }}
-                />
-              }
-              label={AnonymousEntryChecked ? "Enabled" : "Disabled"}
-            />
+                >
+                  <MenuItem value={"random"}>Random</MenuItem>
+                  <MenuItem value={"assigned"}>Assigned</MenuItem>
+                </Select>
+              </FormControl>
+
+              {/* Anonymous Entry */}
+              <Typography>Anonymous Entry</Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={AnonymousEntryChecked}
+                    onChange={anonymousEntryHandleToggle}
+                    sx={{
+                      "& .MuiSwitch-track": {
+                        borderRadius: "20px",
+                        backgroundColor: AnonymousEntryChecked ? "blue" : "red",
+                        opacity: 1,
+                      },
+                    }}
+                  />
+                }
+                label={AnonymousEntryChecked ? "Enabled" : "Disabled"}
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
 
         {/* This Box is for the Global Category Multipliers */}
         <Box
-        id='GlobalCategoryMultipliersBox'
-        sx={{
-          backgroundColor: 'white',
-          width: '80%',
-          height: '85%',
-          position: 'center',
-          display: 'flex',
-          alignItems: 'flex-start',
-          flexDirection: 'column'
-        }}
+          id="GlobalCategoryMultipliersBox"
+          sx={{
+            backgroundColor: "white",
+            width: "80%",
+            height: "85%",
+            position: "center",
+            display: "flex",
+            alignItems: "flex-start",
+            flexDirection: "column",
+          }}
         >
-        <Typography variant="h4">Global Category Multipliers</Typography>
-      <Table>
-        <TableHead>
-          <TableRow>
-            {carverOrder.map((item) => (
-              <TableCell key={item.key} align="center" sx={{ color: "black", fontWeight: "bold" }}>
-                {item.header}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <TableRow>
-            {carverOrder.map((item) => (
-              <TableCell key={item.key} align="center">
-                <Select
-                  value={
-                    multipliers[item.key as keyof typeof initialMultipliers]
-                  }
-                  onChange={multipliersHandleChange(item.key)}
-                  size="small"
-                  sx={{
-                    "& .MuiInputBase-input": { color: "black" },
-                    "& .MuiSelect-icon": { color: "black" },
-                    border: "1px solid lightgray",
-                    borderRadius: "20px",
-                  }}
-                >
-                  {options.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option.toFixed(1)}x
-                    </MenuItem>
-                  ))}
-                </Select>
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableBody>
-      </Table>
-    </Box>
+          <Typography variant="h4">Global Category Multipliers</Typography>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {carverOrder.map((item) => (
+                  <TableCell
+                    key={item.key}
+                    align="center"
+                    sx={{ color: "black", fontWeight: "bold" }}
+                  >
+                    {item.header}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                {carverOrder.map((item) => (
+                  <TableCell key={item.key} align="center">
+                    <Select
+                      value={
+                        multipliers[item.key as keyof typeof initialMultipliers]
+                      }
+                      onChange={multipliersHandleChange(item.key)}
+                      size="small"
+                      sx={{
+                        "& .MuiInputBase-input": { color: "black" },
+                        "& .MuiSelect-icon": { color: "black" },
+                        border: "1px solid lightgray",
+                        borderRadius: "20px",
+                      }}
+                    >
+                      {options.map((option) => (
+                        <MenuItem key={option} value={option}>
+                          {option.toFixed(1)}x
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableBody>
+          </Table>
+        </Box>
       </Box>
 
       {/* Space between the Boxes */}
-      <Box sx={{ width: '20px' }} /> 
+      <Box sx={{ width: "10px" }} />
+
+      <Box
+        id="targetsBox"
+        sx={{
+          backgroundColor: "white",
+          p: 2,
+          borderRadius: 2,
+          width: "21%",
+          height: "85%",
+          boxShadow: 3,
+          position: "center",
+          top: "10px",
+          display: "flex",
+          alignItems: "flex-start",
+          flexDirection: "column",
+          overflow: "auto",
+        }}
+      >
+        {" "}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+            width: "100%",
+            marginBottom: "40px",
+          }}
+        >
+          <Typography variant="h4">Targets</Typography>
+          <Button
+            variant="contained"
+            sx={{ borderRadius: "20px", width: "100px" }}
+            onClick={handleAddTarget}
+          >
+            Add
+          </Button>
+        </Box>
+        {targets.map((target, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+              gap: 1,
+            }}
+          >
+            <TextField
+              value={target}
+              onChange={(e) => handleTargetChange(index, e)}
+              variant="outlined"
+              fullWidth
+              placeholder="Enter target..."
+              sx={{
+                mb: 1,
+                border: "1px solid #ccc",
+                borderRadius: "20px",
+                input: { color: "black" },
+              }}
+            />
+            <IconButton
+              onClick={() => handleDeleteTarget(index)}
+              sx={{ mb: 1 }}
+            >
+              <DeleteIcon color="error" />
+            </IconButton>
+          </Box>
+        ))}
+      </Box>
+
+      <Box sx={{ width: "10px" }} />
 
       {/* This Box is the Right-Half of the screen and it deals with managing participants */}
       <Box
@@ -337,7 +463,7 @@ export const CreateMatrix: React.FC = () => {
           backgroundColor: "white",
           p: 2,
           borderRadius: 2,
-          width: "50%",
+          width: "21%",
           height: "85%",
           boxShadow: 3,
           position: "center",
@@ -345,7 +471,7 @@ export const CreateMatrix: React.FC = () => {
           display: "flex",
           alignItems: "flex-start",
           flexDirection: "column",
-          overflow: 'auto'
+          overflow: "auto",
         }}
       >
         {/* Container for Typography and Button */}
@@ -354,12 +480,15 @@ export const CreateMatrix: React.FC = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between", // Spreads items to opposite sides
-            width: "50%",
+            width: "100%",
             marginBottom: "40px",
           }}
         >
-          <Typography variant="h4">Manage Participants</Typography>
-          <Button variant="contained" sx={{ borderRadius: "20px", width: "100px" }}>
+          <Typography variant="h4">Participants</Typography>
+          <Button
+            variant="contained"
+            sx={{ borderRadius: "20px", width: "100px" }}
+          >
             Invite
           </Button>
         </Box>
@@ -379,7 +508,7 @@ export const CreateMatrix: React.FC = () => {
               border: "1px solid #ccc",
               borderRadius: "20px",
               backgroundColor: "white",
-              mb: 1
+              mb: 1,
             }}
           >
             <Typography variant="body1">Example User</Typography>
