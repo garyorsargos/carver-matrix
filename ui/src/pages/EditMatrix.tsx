@@ -1,60 +1,153 @@
-import { Box, Typography, Grid } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 import MatrixExplorer from "../components/custom/search/matrixExplorer";
-import TargetGroup from "../components/custom/editMatrix/targetGroup";
+import CategoryGroup from "../components/custom/editMatrix/categoryGroup";
 import { MultiMatrixProvider } from "../components/custom/multiMatrixProvider";
 
 export const EditMatrix: React.FC = () => {
+  const categories = [
+    "Criticality",
+    "Accessibility",
+    "Recuperability",
+    "Vulnerability",
+    "Effect",
+    "Recognizability",
+  ];
+
+  const targets = ["Example Target 1", "Example Target 2", "Example Target 3"];
+
   return (
-    <>
-      <MultiMatrixProvider>
+    <MultiMatrixProvider>
+      <Box
+        display="flex"
+        flexDirection="row"
+        sx={{ height: "85vh", mt: 2, gap: 2 }}
+      >
         <Box
-          display="flex"
-          flexDirection="row"
-          justifyContent="space-around"
-          sx={{ height: "85vh", mt: 2 }}
-          alignItems="stretch"
+          id="matrixExplorerBox"
+          sx={{
+            width: "20%",
+            minWidth: "200px",
+            borderRadius: 1,
+            backgroundColor: "#f5f5f5",
+            overflowY: "auto",
+            p: 1,
+            flexShrink: 0,
+          }}
         >
-          <Box
-            id="matrixExplorerBox"
-            sx={{
-              width: "22%",
-              borderRadius: 1,
-              backgroundColor: "white",
-              overflowY: "auto",
-              p: 1,
-            }}
-          >
-            <MatrixExplorer />
-          </Box>
-          <Box
-            id="matrixEditorBox"
-            sx={{
-              width: "74%",
-              borderRadius: 1,
-              backgroundColor: "white",
-              overflowY: "auto",
-              p: 1,
-            }}
-          >
-            <Box id="editMatrixBox">
-              <Typography variant="h2">Matrix Name</Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <TargetGroup targetName="Example Target 1" />
-                </Grid>
-                <Grid item xs={6}>
-                  <TargetGroup targetName="Example Target 2" />
-                </Grid>
-                <Grid item xs={6}>
-                  <TargetGroup targetName="Example Target 3" />
-                </Grid>
-              </Grid>
-            </Box>
-            <Box id="userListBox"></Box>
-          </Box>
+          <MatrixExplorer />
         </Box>
-      </MultiMatrixProvider>
-    </>
+        <Box
+          id="matrixEditorBox"
+          sx={{
+            flexGrow: 1,
+            borderRadius: 1,
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            p: 1,
+            display: "flex",
+            flexDirection: "column",
+            minWidth: 0,
+            position: "relative",
+          }}
+        >
+          <Typography
+            variant="h4"
+            align="center"
+            sx={{
+              fontSize: { xs: "1.5rem", md: "2rem" },
+              mb: 2,
+              color: "black",
+            }}
+          >
+            Matrix Name
+          </Typography>
+
+          <TableContainer
+            component={Paper}
+            sx={{
+              maxHeight: "65vh",
+              overflowY: "auto",
+              backgroundColor: "#f9f9f9",
+            }}
+          >
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#e0e0e0" }}>
+                  <TableCell
+                    align="center"
+                    sx={{
+                      fontWeight: "bold",
+                      backgroundColor: "#e0e0e0",
+                      color: "black",
+                    }}
+                  >
+                    Targets
+                  </TableCell>
+                  {categories.map((category) => (
+                    <TableCell
+                      key={category}
+                      align="center"
+                      sx={{
+                        fontWeight: "bold",
+                        backgroundColor: "#e0e0e0",
+                        color: "black",
+                      }}
+                    >
+                      {category}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {targets.map((target, index) => (
+                  <TableRow
+                    key={target}
+                    sx={{
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f5f5f5",
+                    }}
+                  >
+                    <TableCell align="center" sx={{ color: "black" }}>
+                      {target}
+                    </TableCell>
+                    {categories.map((category) => (
+                      <TableCell
+                        key={`${target}-${category}`}
+                        align="center"
+                        sx={{ color: "black" }}
+                      >
+                        <CategoryGroup
+                          category={category}
+                          targetTitle={target}
+                        />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <Button
+            variant="contained"
+            color="success"
+            sx={{ position: "absolute", bottom: 16, right: 16, zIndex: 10 }}
+          >
+            Submit
+          </Button>
+        </Box>
+      </Box>
+    </MultiMatrixProvider>
   );
 };
 
