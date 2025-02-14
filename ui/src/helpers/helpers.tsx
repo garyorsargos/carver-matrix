@@ -5,6 +5,7 @@ import Admin from "../pages/Admin";
 import CreateMatrix from "../pages/CreateMatrix";
 import EditMatrix from "../pages/EditMatrix";
 import Register from "../pages/Register";
+import ViewMatrix from "../pages/ViewMatrix";
 
 // User Roles
 export const USER_ROLES = {
@@ -152,6 +153,7 @@ export const ROUTES: { [key: string]: string } = {
   createMatrix: "/ModifyMatrix",
   editMatrix: "/EditMatrix",
   register: "/Register",
+  viewMatrix: "/ViewMatrix",
 };
 
 export const ADMIN_ROUTES: string[] = [ROUTES.admin];
@@ -192,6 +194,10 @@ export const routesConfig = [
       {
         path: ROUTES.register,
         element: <Register />,
+      },
+      {
+        path: ROUTES.viewMatrix,
+        element: <ViewMatrix />,
       },
     ],
   },

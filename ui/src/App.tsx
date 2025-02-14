@@ -58,6 +58,14 @@ export const App = () => {
           >
             Register
           </Button>
+          <Button
+            data-testid="start-view-matrix"
+            variant="contained"
+            sx={{ borderRadius: "18px" }}
+            onClick={() => navigate(ROUTES.viewMatrix)}
+          >
+            View Matrix
+          </Button>
         </Box>
         <Card
           sx={{
