@@ -19,17 +19,17 @@ const Landing: React.FC<LandingProps> = ({ userName }) => {
         alignItems: "center",
         justifyContent: "center",
         gap: 2,
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "white",
         padding: 2,
       }}
     >
-      <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+      <Typography variant="h3" sx={{ fontWeight: "bold", marginBottom: 3 }}>
         Hello, {userName}
       </Typography>
 
       <Box
         component="img"
-        src="https://via.placeholder.com/300"
+        src="/caib-logo.png"
         alt="Landing Page Image"
         sx={{
           width: "300px",
