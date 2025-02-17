@@ -58,6 +58,13 @@ export const App = () => {
           >
             Register
           </Button>
+          <Button
+            variant="contained"
+            sx={{ borderRadius: "18px" }}
+            onClick={() => navigate(ROUTES.landing)}
+          >
+            Landing Page
+          </Button>
         </Box>
         <Card
           sx={{
