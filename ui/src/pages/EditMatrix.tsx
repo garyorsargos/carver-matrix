@@ -12,9 +12,14 @@ import {
 } from "@mui/material";
 import MatrixExplorer from "../components/custom/search/matrixExplorer";
 import CategoryGroup from "../components/custom/editMatrix/categoryGroup";
-import { MultiMatrixProvider } from "../components/custom/multiMatrixProvider";
+import { MultiMatrixProvider, useMultiMatrix } from "../components/custom/multiMatrixProvider";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+
+const { config } = useMultiMatrix();
+
+//Development Console Stuff
+console.log("Current Config:", config);
 
 export const EditMatrix: React.FC = () => {
   const categories = [

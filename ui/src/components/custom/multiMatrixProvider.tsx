@@ -1,20 +1,30 @@
 import { createContext, useContext, useState } from "react";
 
-// Define the MultiMatrix type
 type MultiMatrix = Map<string, Map<string, number>>;
 
-// Define the context type
+type Config = {
+  r2Multi: number;
+  randomAssignment: boolean;
+  roleBased: boolean;
+  fivePointScoring: boolean;
+  cmulti: number;
+  amulti: number;
+  rmulti: number;
+  vmulti: number;
+  emulti: number;
+};
+
 type MultiMatrixContextType = {
   multiMatrix: MultiMatrix;
   setMultiMatrix: React.Dispatch<React.SetStateAction<MultiMatrix>>;
+  config: Config;
+  setConfig: React.Dispatch<React.SetStateAction<Config>>;
 };
 
-// Create the context
 const MultiMatrixContext = createContext<MultiMatrixContextType | undefined>(
   undefined,
 );
 
-// Hook to use the MultiMatrix context
 export const useMultiMatrix = (): MultiMatrixContextType => {
   const context = useContext(MultiMatrixContext);
   if (!context) {
@@ -23,7 +33,6 @@ export const useMultiMatrix = (): MultiMatrixContextType => {
   return context;
 };
 
-// Provider Component
 export const MultiMatrixProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -65,9 +74,22 @@ export const MultiMatrixProvider: React.FC<{ children: React.ReactNode }> = ({
     ]),
   );
 
+  const [config, setConfig] = useState<Config>({
+    r2Multi: 1.0,
+    randomAssignment: true,
+    roleBased: false,
+    fivePointScoring: true,
+    cmulti: 1.0,
+    amulti: 1.0,
+    rmulti: 1.0,
+    vmulti: 1.0,
+    emulti: 1.0,
+  });
+
   return (
-    <MultiMatrixContext.Provider value={{ multiMatrix, setMultiMatrix }}>
+    <MultiMatrixContext.Provider value={{ multiMatrix, setMultiMatrix, config, setConfig }}>
       {children}
     </MultiMatrixContext.Provider>
   );
 };
+
