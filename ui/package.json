@@ -16,6 +16,8 @@
     "@mui/icons-material": "^6.1.0",
     "@mui/material": "^6.1.0",
     "axios": "^1.7.7",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2"
@@ -38,5 +40,9 @@
     "typescript-eslint": "^8.0.1",
     "vite": "5.4.6",
     "vitest": "^2.0.5"
-  }
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "author": "",
+  "license": "ISC"
 }

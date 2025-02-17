@@ -6,6 +6,7 @@ import CreateMatrix from "../pages/CreateMatrix";
 import EditMatrix from "../pages/EditMatrix";
 import Register from "../pages/Register";
 import ViewMatrix from "../pages/ViewMatrix";
+import Landing from "../pages/Landing";
 
 // User Roles
 export const USER_ROLES = {
@@ -150,6 +151,7 @@ export const blueTheme: object = {
 export const ROUTES: { [key: string]: string } = {
   home: "/Home",
   admin: "/Admin",
+  landing: "/Landing",
   createMatrix: "/ModifyMatrix",
   editMatrix: "/EditMatrix",
   register: "/Register",
@@ -178,6 +180,10 @@ export const routesConfig = [
       {
         path: ROUTES.home,
         element: <App />,
+      },
+      {
+        path: ROUTES.landing,
+        element: <Landing userName="User" />,
       },
       {
         path: ROUTES.admin,

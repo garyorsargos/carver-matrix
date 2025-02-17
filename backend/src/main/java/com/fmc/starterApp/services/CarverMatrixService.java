@@ -10,8 +10,12 @@ import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 @AllArgsConstructor
@@ -24,14 +28,14 @@ public class CarverMatrixService {
 
     @Transactional
     public List<CarverMatrix> getMatricesByHost(Long userId) {
-        List<CarverMatrix> matrices = carverMatrixRepository.findByHost(userId);
+        List<CarverMatrix> matrices = carverMatrixRepository.findByHost(String.valueOf(userId));
         matrices.forEach(matrix -> Hibernate.initialize(matrix.getItems()));
         return matrices;
     }
 
     @Transactional
     public List<CarverMatrix> getMatricesByParticipant(Long userId) {
-        List<CarverMatrix> matrices = carverMatrixRepository.findByParticipant(userId);
+        List<CarverMatrix> matrices = carverMatrixRepository.findByParticipant(String.valueOf(userId));
         matrices.forEach(matrix -> Hibernate.initialize(matrix.getItems()));
         return matrices;
     }
@@ -72,5 +76,40 @@ public class CarverMatrixService {
         Hibernate.initialize(existingMatrix.getItems());
 
         return carverMatrixRepository.save(existingMatrix);
+    }
+
+    public List<CarverMatrix> searchCarverMatrices(Map<String, String> searchParams) {
+        Specification<CarverMatrix> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            searchParams.forEach((key, value) -> {
+                if (value != null && !value.isEmpty()) {
+                    if ("name".equalsIgnoreCase(key) || "description".equalsIgnoreCase(key)) {
+                        predicates.add(criteriaBuilder.like(root.get(key), "%" + value + "%"));
+                    } else if (!"hosts".equalsIgnoreCase(key) && !"participants".equalsIgnoreCase(key)) {
+                        predicates.add(criteriaBuilder.equal(root.get(key), value));
+                    }
+                }
+            });
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        //Fetch initial results based on general search parameters
+        List<CarverMatrix> results = carverMatrixRepository.findAll(spec);
+
+        //Apply filtering for hosts only if provided
+        if (searchParams.containsKey("hosts") && !searchParams.get("hosts").isEmpty()) {
+            List<CarverMatrix> hostResults = carverMatrixRepository.findByHost(searchParams.get("hosts"));
+            results.retainAll(hostResults); // Only keep items that match the host query
+        }
+
+        //Apply filtering for participants only if provided
+        if (searchParams.containsKey("participants") && !searchParams.get("participants").isEmpty()) {
+            List<CarverMatrix> participantResults = carverMatrixRepository.findByParticipant(searchParams.get("participants"));
+            results.retainAll(participantResults);
+        }
+
+        return results;
     }
 }
