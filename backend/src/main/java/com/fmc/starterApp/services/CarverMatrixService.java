@@ -1,21 +1,23 @@
 package com.fmc.starterApp.services;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.hibernate.Hibernate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fmc.starterApp.models.entity.CarverItem;
 import com.fmc.starterApp.models.entity.CarverMatrix;
 import com.fmc.starterApp.models.entity.User2;
 import com.fmc.starterApp.repositories.CarverMatrixRepository;
 import com.fmc.starterApp.repositories.User2Repository;
-import lombok.AllArgsConstructor;
-import org.hibernate.Hibernate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.jpa.domain.Specification;
 
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
 import jakarta.persistence.criteria.Predicate;
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
@@ -39,6 +41,16 @@ public class CarverMatrixService {
         matrices.forEach(matrix -> Hibernate.initialize(matrix.getItems()));
         return matrices;
     }
+
+    @Transactional
+    public CarverMatrix getMatrixById(Long matrixId) {
+        CarverMatrix matrix = carverMatrixRepository.findFirstByMatrixId(matrixId);
+        if (matrix != null) {
+            Hibernate.initialize(matrix.getItems());
+        }
+        return matrix;
+    }
+
 
     public CarverMatrix createCarverMatrix(CarverMatrix matrix, Long userId) {
         User2 user = user2Repository.findById(userId)

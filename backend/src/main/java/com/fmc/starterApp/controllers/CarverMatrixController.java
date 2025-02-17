@@ -1,15 +1,25 @@
 package com.fmc.starterApp.controllers;
 
-import com.fmc.starterApp.models.entity.CarverMatrix;
-import com.fmc.starterApp.services.CarverMatrixService;
-import lombok.AllArgsConstructor;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
+import com.fmc.starterApp.models.entity.CarverMatrix;
+import com.fmc.starterApp.services.CarverMatrixService;
+
+import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
@@ -17,7 +27,18 @@ import java.util.Map;
 public class CarverMatrixController {
 
     @Autowired
-    private CarverMatrixService carverMatrixService;
+    CarverMatrixService carverMatrixService;
+
+    @GetMapping("/{matrixId}")
+    public ResponseEntity<?> getCarverMatrixByCarverId(@PathVariable Long matrixId) {
+        try {
+            CarverMatrix matrix = carverMatrixService.getMatrixById(matrixId);
+            return ResponseEntity.ok(matrix);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
     @GetMapping("/host")
     public ResponseEntity<?> getMatricesByHost(@RequestParam Long userId) {
