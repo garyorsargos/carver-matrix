@@ -96,8 +96,8 @@ public class User2Service {
         List<String> accountRole = new ArrayList<>();
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
         if (resourceAccess != null) {
-            // Extract roles for "starter-app"
-            Map<String, Object> starterApp = (Map<String, Object>) resourceAccess.get("starter-app");
+            // Extract roles for "carvermatrix"
+            Map<String, Object> starterApp = (Map<String, Object>) resourceAccess.get("carvermatrix");
             if (starterApp != null && starterApp.get("roles") instanceof List) {
                 starterAppRole = (List<String>) starterApp.get("roles");
             }

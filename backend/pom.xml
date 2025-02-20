@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>fmc</groupId>
-    <artifactId>starter-app</artifactId>
+    <artifactId>carvermatrix</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>starter-app</name>
+    <name>carvermatrix</name>
     <description>Backend for starter application</description>
     <properties>
         <java.version>17</java.version>

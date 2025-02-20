@@ -27,7 +27,7 @@ Ongoing work and documentation
 -
 - Material UI Theme Creation interface: https://bareynol.github.io/mui-theme-creator/
 -
-- Branding Options: https://www.figma.com/file/wH4HE08xR0sBiujUJUb1DB/AIDivision-Starter-App?type=design&node-id=0%3A1&mode=design&t=6oEADa1zZYZuLmJL-1
+- Branding Options: https://www.figma.com/file/wH4HE08xR0sBiujUJUb1DB/AIDivision-carvermatrix?type=design&node-id=0%3A1&mode=design&t=6oEADa1zZYZuLmJL-1
 
 # Local Development Setup
 
@@ -133,7 +133,7 @@ This should also be where you place your Local Repository to help project consis
 
 ## Use the Makefile sripts to start your local development environment
 
-- Navigate to the root project directory: `starter-app/`
+- Navigate to the root project directory: `carvermatrix/`
 - Setup your local development environment by running:
 
   ```
@@ -144,12 +144,12 @@ This should also be where you place your Local Repository to help project consis
 
     1. Add the following entries to you `/etc/hosts` file:
        ```
-       0.0.0.0   keycloak.zeus.socom.dev
-       0.0.0.0   starter-app.zeus.socom.dev
+       0.0.0.0   keycloak.org
+       0.0.0.0   carvermatrix.org
        ```
     2. Use the [mkcert](https://github.com/FiloSottile/mkcert) package to create and install a local CA in the system root store, and generate locally-trusted certificates
     3. Build all of you docker containers based on the `docker-compose.yaml` file configurations
-    4. Watch the `ui/` directory for any code changes and automatically rebuild the `ui` container. Docker compose watch (which is the command being used) is a unique way we can harness the power of the hot-reloading development server that is provided by Vite. It watches for changes in your host machine `starter-app/ui/src` directory and syncs those changes to the `ui` container, which allows Vite to hot-reload your lastest additions.
+    4. Watch the `ui/` directory for any code changes and automatically rebuild the `ui` container. Docker compose watch (which is the command being used) is a unique way we can harness the power of the hot-reloading development server that is provided by Vite. It watches for changes in your host machine `carvermatrix/ui/src` directory and syncs those changes to the `ui` container, which allows Vite to hot-reload your lastest additions.
 
   - The `make start-dev` command may take several minutes to build all of your containers and start them depending on the speed of your internet connection
   - Once the `make start-dev` command has completed you should see:
@@ -167,7 +167,7 @@ This should also be where you place your Local Repository to help project consis
 
 ### Certificate Approval for Windows Machines
 
-After Starting up the local host, Window Users may see that starter-app.zeus.socom.dev & keycloak.zeus.socom.dev cannot be accessed.
+After Starting up the local host, Window Users may see that carvermatrix.org & keycloak.org cannot be accessed.
 This is due to the differences between certificate approvals by Windows compared to MacOS and Linux OS.
 
 - If not already, start local host to generate certificates: `make start-dev`
@@ -177,8 +177,8 @@ This is due to the differences between certificate approvals by Windows compared
 - Open hosts and append & save
 
   ```
-  127.0.0.1   keycloak.zeus.socom.dev
-  127.0.0.1   starter-app.zeus.socom.dev
+  127.0.0.1   keycloak.org
+  127.0.0.1   carvermatrix.org
   ```
 
   12.7.0.0.1 is typically Localhost for Windows <br>
@@ -203,7 +203,7 @@ If you attempted to visit the starter app before this, there may be incorrect ca
   - For Chrome: chrome://net-internals/#dns & Click on Clear host cache.
   - Also, verify that HSTS is cleared by visiting:
     - chrome://net-internals/#hsts
-  - Delete the domain security policy for starter-app.zeus.socom.dev.
+  - Delete the domain security policy for carvermatrix.org.
 
 #### Fixing Certificates
 
@@ -214,8 +214,8 @@ If the Certificate ever changes, you will have to repeat these steps again
 ## App Login
 
 - At this point the application is up and running
-- Login to the starter-app user interface
-  - Navigate to: [https://starter-app.zeus.socom.dev](https://starter-app.zeus.socom.dev)
+- Login to the carvermatrix user interface
+  - Navigate to: [https://carvermatrix.org](https://carvermatrix.org)
   - You will be redirected to a keycloak login page that says `"ZEUS-APPS"`
   - Login with:
     - Username: `user`
@@ -225,7 +225,7 @@ If the Certificate ever changes, you will have to repeat these steps again
 ## Keycloak Login
 
 - There is also access to the keyloak_dev instance by:
-  - Navigating to the address: [https://keycloak.zeus.socom.dev](https://keycloak.zeus.socom.dev)
+  - Navigating to the address: [https://keycloak.org](https://keycloak.org)
   - Click on `Administration Console`
   - Login with:
     - Username: `admin`
@@ -249,7 +249,7 @@ If the Certificate ever changes, you will have to repeat these steps again
   ✔ Container keycloak_dev               Removed     0.2s
   ✔ Container pgadmin                    Removed     0.1s
   ✔ Container postgres_dev               Removed     0.1s
-  ✔ Network starter-app_starter-network  Removed     0.1s
+  ✔ Network carvermatrix_starter-network  Removed     0.1s
   ```
 
 # Exporting Keycloak JSON
@@ -286,5 +286,5 @@ If the Certificate ever changes, you will have to repeat these steps again
 | **Redis**                               | Provides a caching mechanism to Oauth2Proxy                                                                                                                                                    |
 | **Postgres**                            | Relational database used for storing application data                                                                                                                                          |
 | **pgAdmin 4**                           | Provides a graphical user interface for managing and interacting with the Postgres database, allowing users to execute queries, visualize data, and perform database administration tasks data |
-| **User Interface (UI)**                 | Containerized version of the starter-app application's front-end running as a Single Page Application (SPA) served from an NGINX container (static file server)                                |
-| **Application Program Interface (API)** | Containerized version of the starter-app application's back-end                                                                                                                                |
+| **User Interface (UI)**                 | Containerized version of the carvermatrix application's front-end running as a Single Page Application (SPA) served from an NGINX container (static file server)                                |
+| **Application Program Interface (API)** | Containerized version of the carvermatrix application's back-end                                                                                                                                |

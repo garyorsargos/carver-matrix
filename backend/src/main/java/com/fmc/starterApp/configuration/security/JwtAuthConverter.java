@@ -1,7 +1,12 @@
 package com.fmc.starterApp.configuration.security;
 
 
-import com.fmc.starterApp.models.properties.JwtAuthConverterProperties;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,11 +17,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.fmc.starterApp.models.properties.JwtAuthConverterProperties;
 
 @Component
 public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -51,7 +52,7 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
 
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
         Map<String, Object> resource;
-        Map<String, Object> client = (Map<String, Object>)resourceAccess.get("starter-app");
+        Map<String, Object> client = (Map<String, Object>)resourceAccess.get("carvermatrix");
         Collection<String> resourceRoles = (Collection<String>) client.get("roles");
 
         if (resourceAccess == null || resourceRoles  == null) {

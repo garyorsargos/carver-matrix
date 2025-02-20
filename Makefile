@@ -1,6 +1,6 @@
 TLS_FOLDER=dev/tls
-APP_NAME=starter-app
-APP_DOMAIN=zeus.socom.dev
+APP_NAME=carvermatrix
+APP_DOMAIN=org
 
 
 .PHONY: create-override delete-override docker-start docker-stop-volumes \
@@ -79,7 +79,7 @@ ssl:
 	fi
 
 	@mkcert -install
-	@mkcert --key-file ${TLS_FOLDER}/server.key --cert-file ${TLS_FOLDER}/server.crt "*.zeus.socom.dev"
+	@mkcert --key-file ${TLS_FOLDER}/server.key --cert-file ${TLS_FOLDER}/server.crt "*.org"
 	@cp "${shell mkcert -CAROOT}/rootCA.pem" ${TLS_FOLDER}
 
 write-etc-hosts:

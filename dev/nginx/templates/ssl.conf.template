@@ -1,6 +1,6 @@
 server {
   listen                    443 ssl;
-  server_name               keycloak.zeus.socom.dev;
+  server_name               keycloak.*;
   client_max_body_size      100G;
   client_body_buffer_size   128k;
   proxy_buffer_size         128k;
@@ -15,7 +15,7 @@ server {
   ssl_certificate_key       /etc/nginx/certs/server.key;
 
   location / {
-    proxy_pass              http://keycloak.zeus.socom.dev:8080;
+    proxy_pass              http://keycloak.org:8080;
 
     # Forward the original host from client
     proxy_set_header Host $host;
@@ -32,7 +32,7 @@ server {
 
 server {
   listen                    443 ssl;
-  server_name               *.zeus.socom.dev;
+  server_name               *.org;
   client_max_body_size      100G;
   client_body_buffer_size   128k;
   proxy_buffer_size         128k;

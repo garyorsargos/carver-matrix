@@ -53,7 +53,7 @@
         "composites": {
           "realm": ["offline_access", "uma_authorization"],
           "client": {
-            "starter-app": ["STARTER_READ", "STARTER_WRITE"],
+            "carvermatrix": ["STARTER_READ", "STARTER_WRITE"],
             "account": ["view-profile", "manage-account"]
           }
         },
@@ -288,11 +288,11 @@
           "attributes": {}
         }
       ],
-      "starter-app": [
+      "carvermatrix": [
         {
           "id": "3bf5cd1d-4b9a-4a8b-9f8f-0e28b71f8fab",
           "name": "STARTER_ADMIN",
-          "description": "Admin user in terms of starter-app resource access. The admin role allows users visit admin restricted pages in the starter-app application, as well as utilize admin restricted api endpoints.",
+          "description": "Admin user in terms of carvermatrix resource access. The admin role allows users visit admin restricted pages in the carvermatrix application, as well as utilize admin restricted api endpoints.",
           "composite": false,
           "clientRole": true,
           "containerId": "a8652871-b808-4272-8c2d-6f0bfabbd775",
@@ -301,7 +301,7 @@
         {
           "id": "99379f9b-0c56-495d-8ab9-1fd6a2d4e874",
           "name": "STARTER_READ",
-          "description": "This role allows a user read access to starter-app resources, to include api's which are restricted to read only.",
+          "description": "This role allows a user read access to carvermatrix resources, to include api's which are restricted to read only.",
           "composite": false,
           "clientRole": true,
           "containerId": "a8652871-b808-4272-8c2d-6f0bfabbd775",
@@ -485,7 +485,7 @@
       "requiredActions": [],
       "realmRoles": ["default-roles-zeus-apps"],
       "clientRoles": {
-        "starter-app": ["STARTER_ADMIN", "STARTER_READ", "STARTER_WRITE"]
+        "carvermatrix": ["STARTER_ADMIN", "STARTER_READ", "STARTER_WRITE"]
       },
       "notBefore": 0,
       "groups": []
@@ -497,7 +497,7 @@
       "enabled": true,
       "totp": false,
       "emailVerified": true,
-      "email": "user@starter-app.zeus.socom.dev",
+      "email": "user@carvermatrix.org",
       "credentials": [
         {
           "id": "dfba722a-7942-4b9b-8874-8adc71f2bee6",
@@ -512,7 +512,7 @@
       "requiredActions": [],
       "realmRoles": ["default-roles-zeus-apps"],
       "clientRoles": {
-        "starter-app": ["STARTER_READ", "STARTER_WRITE"]
+        "carvermatrix": ["STARTER_READ", "STARTER_WRITE"]
       },
       "notBefore": 0,
       "groups": []
@@ -811,8 +811,8 @@
     },
     {
       "id": "a8652871-b808-4272-8c2d-6f0bfabbd775",
-      "clientId": "starter-app",
-      "name": "starter-app",
+      "clientId": "carvermatrix",
+      "name": "carvermatrix",
       "description": "",
       "rootUrl": "",
       "adminUrl": "",
@@ -854,9 +854,9 @@
           "protocolMapper": "oidc-audience-mapper",
           "consentRequired": false,
           "config": {
-            "included.client.audience": "starter-app",
+            "included.client.audience": "carvermatrix",
             "introspection.token.claim": "true",
-            "included.custom.audience": "starter-app",
+            "included.custom.audience": "carvermatrix",
             "userinfo.token.claim": "true",
             "id.token.claim": "true",
             "access.token.claim": "true"

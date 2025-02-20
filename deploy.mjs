@@ -23,13 +23,13 @@ const frontendImage = ecrImages.find((image) => image.includes("frontend"));
 
 const request = DeployApplicationRequest.create({
   vpc: VpcAlias.DEV,
-  appName: "starter-app",
+  appName: "carvermatrix",
   secretKey: process.env["DEPLOYMENT_KEY"],
   components: [
     Component.create({
       name: "front-end",
       service: Service.create({
-        externalPath: "/starter-app",
+        externalPath: "/carvermatrix",
         ports: [
           {
             name: "front-end",

@@ -44,4 +44,4 @@ USER user
 HEALTHCHECK --interval=20s --timeout=5s --start-period=30s --retries=3 \
   CMD [ "wget", "-T5", "-qO-", "http://127.0.0.1:9002/api/health" ]
 
-ENTRYPOINT ["/javaruntime/bin/java", "-jar", "/starter-app-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["/javaruntime/bin/java", "-jar", "/carvermatrix-0.0.1-SNAPSHOT.jar"]
