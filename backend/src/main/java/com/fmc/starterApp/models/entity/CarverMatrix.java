@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Getter
 @Setter
@@ -50,29 +51,29 @@ public class CarverMatrix {
     @OneToMany(mappedBy = "carverMatrix", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CarverItem> items;
 
-    @Column(nullable = false)
-    private double cMulti = 1.0;
+    @JsonProperty("cMulti")
+    private Double cMulti;
 
-    @Column(nullable = false)
-    private double aMulti = 1.0;
+    @JsonProperty("aMulti")
+    private Double aMulti;
 
-    @Column(nullable = false)
-    private double rMulti = 1.0;
+    @JsonProperty("rMulti")
+    private Double rMulti;
 
-    @Column(nullable = false)
-    private double vMulti = 1.0;
+    @JsonProperty("vMulti")
+    private Double vMulti;
 
-    @Column(nullable = false)
-    private double eMulti = 1.0;
+    @JsonProperty("eMulti")
+    private Double eMulti;
 
-    @Column(nullable = false)
-    private double r2Multi = 1.0;
+    @JsonProperty("r2Multi")
+    private Double r2Multi;
 
-    private boolean randomAssignment;
+    private Boolean randomAssignment;
 
-    private boolean roleBased;
+    private Boolean roleBased;
 
-    private boolean fivePointScoring;
+    private Boolean fivePointScoring;
 
     public void addItem(CarverItem item) {
         items.add(item);
