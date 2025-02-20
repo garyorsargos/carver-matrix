@@ -268,7 +268,7 @@ const EditMatrixContent: React.FC = () => {
           sx={{ position: "absolute", bottom: 16, right: 100, zIndex: 10 }}
           onClick={openPdfInNewTab}
         >
-          Open PDF
+          Export PDF
         </Button>
       </Box>
     </Box>
