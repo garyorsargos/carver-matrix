@@ -125,7 +125,6 @@ const EditMatrixContent: React.FC = () => {
 
     // List the config properties
     const configProperties = [
-      { label: "r2Multi", value: config.r2Multi },
       { label: "Random Participant Assignment", value: config.randomAssignment ? "Yes" : "No" },
       { label: "Role Based", value: config.roleBased ? "Yes" : "No" },
       { label: "Five Point Scoring", value: config.fivePointScoring ? "Yes" : "No" },
@@ -134,6 +133,8 @@ const EditMatrixContent: React.FC = () => {
       { label: "Recuperability Multiplier", value: config.rmulti },
       { label: "Vulnerability Multiplier", value: config.vmulti },
       { label: "Effect Multiplier", value: config.emulti },
+      { label: "Recognizability Multiplier", value: config.r2Multi },
+
     ];
 
     let configYOffset = 30;
