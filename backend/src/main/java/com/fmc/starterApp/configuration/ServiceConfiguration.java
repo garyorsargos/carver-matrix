@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.fmc.starterApp.repositories.CarverItemRepository;
 import com.fmc.starterApp.repositories.CarverMatrixRepository;
 import com.fmc.starterApp.repositories.PostgresRepository;
 import com.fmc.starterApp.repositories.User2Repository;
@@ -25,8 +26,8 @@ public class ServiceConfiguration {
         return new User2Service(user2Repository); }
 
     @Bean
-    CarverMatrixService carverMatrixService(final CarverMatrixRepository carverMatrixRepository, final User2Repository user2Repository) {
-        return new CarverMatrixService(carverMatrixRepository, user2Repository); }
+    CarverMatrixService carverMatrixService(final CarverMatrixRepository carverMatrixRepository, final User2Repository user2Repository, final CarverItemRepository carverItemRepository) {
+        return new CarverMatrixService(carverMatrixRepository, user2Repository, carverItemRepository); }
 
     @Bean
     AdminService adminService(final UsersRepository usersRepository, final UserLogsRepository userLogsRepository) {
