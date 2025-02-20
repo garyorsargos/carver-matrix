@@ -1,13 +1,14 @@
 package com.fmc.starterApp.repositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import com.fmc.starterApp.models.entity.CarverMatrix;
 
-import java.util.List;
+import com.fmc.starterApp.models.entity.CarverMatrix;
 
 @Repository
 public interface CarverMatrixRepository extends JpaRepository<CarverMatrix, Long>, JpaSpecificationExecutor<CarverMatrix> {
@@ -17,4 +18,7 @@ public interface CarverMatrixRepository extends JpaRepository<CarverMatrix, Long
 
     @Query(value = "SELECT * FROM carver_matrices WHERE CAST(:userId AS text) = ANY(participants)", nativeQuery = true)
     List<CarverMatrix> findByParticipant(@Param("userId") String userId);
+
+    CarverMatrix findFirstByMatrixId(Long matrixId);
+
 }
