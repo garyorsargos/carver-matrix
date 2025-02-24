@@ -12,6 +12,9 @@ public class JWTInfoDTO {
     String sessionID;
     boolean emailVerified;
     String username;
+    String firstName;
+    String lastName;
+    String fullName;
     String email;
     List<String> starterAppRole;
     List<String> accountRole;

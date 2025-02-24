@@ -28,6 +28,15 @@ public class User2 {
     @Column(nullable = false, unique = true)
     private String keycloakId;
 
+    @Column(length = 50)
+    private String firstName;
+
+    @Column(length = 50)
+    private String lastName;
+
+    @Column(length = 50)
+    private String fullName;
+
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
