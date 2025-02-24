@@ -35,6 +35,9 @@ public class User2Service {
         String keycloakId = jwt.getClaim("sub");
         String username = jwt.getClaim("preferred_username");
         String email = jwt.getClaim("email");
+        String firstName = jwt.getClaim("given_name");
+        String lastName = jwt.getClaim("family_name");
+        String fullName = jwt.getClaim("name");
 
         Optional<User2> optionalUser = user2Repository.findByKeycloakId(keycloakId);
 
@@ -51,6 +54,18 @@ public class User2Service {
                 existingUser.setEmail(email);
                 updated = true;
             }
+            if (!existingUser.getFirstName().equals(firstName)) {
+                existingUser.setFirstName(firstName);
+                updated = true;
+            }
+            if (!existingUser.getLastName().equals(lastName)) {
+                existingUser.setLastName(lastName);
+                updated = true;
+            }
+            if (!existingUser.getFullName().equals(fullName)) {
+                existingUser.setFullName(fullName);
+                updated = true;
+            }
             if (updated) {
                 return user2Repository.save(existingUser);
             } else {
@@ -62,6 +77,9 @@ public class User2Service {
             newUser.setKeycloakId(keycloakId);
             newUser.setUsername(username);
             newUser.setEmail(email);
+            newUser.setFirstName(firstName);
+            newUser.setLastName(lastName);
+            newUser.setFullName(fullName);
             return user2Repository.save(newUser);
         }
     }
@@ -74,6 +92,7 @@ public class User2Service {
                 .build();
     }
 
+    // Deprecated
     public String getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JwtAuthenticationToken) {
@@ -83,12 +102,16 @@ public class User2Service {
         return null;  // or throw an exception if not authenticated
     }
 
-   public JWTInfoDTO extractJwtInfo(Jwt jwt) {
+    // Deprecated
+    public JWTInfoDTO extractJwtInfo(Jwt jwt) {
         // Extract basic claims
         String keycloakID = jwt.getClaim("sub");
         String sessionID = jwt.getClaim("sid"); // or "session_state" based on your JWT
         Boolean emailVerified = jwt.getClaim("email_verified");
         String username = jwt.getClaim("preferred_username");
+        String firstName = jwt.getClaim("given_name");
+        String lastName = jwt.getClaim("family_name");
+        String fullName = jwt.getClaim("name");
         String email = jwt.getClaim("email");
 
         // Extract roles from the "resource_access" claim
@@ -114,6 +137,9 @@ public class User2Service {
                 .sessionID(sessionID)
                 .emailVerified(emailVerified)
                 .username(username)
+                .firstName(firstName)
+                .lastName(lastName)
+                .fullName(fullName)
                 .email(email)
                 .starterAppRole(starterAppRole)
                 .accountRole(accountRole)
