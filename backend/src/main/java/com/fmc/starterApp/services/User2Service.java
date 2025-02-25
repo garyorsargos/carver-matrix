@@ -54,15 +54,15 @@ public class User2Service {
                 existingUser.setEmail(email);
                 updated = true;
             }
-            if (!existingUser.getFirstName().equals(firstName)) {
+            if (firstName != null && !existingUser.getFirstName().equals(firstName)) {
                 existingUser.setFirstName(firstName);
                 updated = true;
             }
-            if (!existingUser.getLastName().equals(lastName)) {
+            if (lastName != null && !existingUser.getLastName().equals(lastName)) {
                 existingUser.setLastName(lastName);
                 updated = true;
             }
-            if (!existingUser.getFullName().equals(fullName)) {
+            if (fullName != null && !existingUser.getFullName().equals(fullName)) {
                 existingUser.setFullName(fullName);
                 updated = true;
             }
