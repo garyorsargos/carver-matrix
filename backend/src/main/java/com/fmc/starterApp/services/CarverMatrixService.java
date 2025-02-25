@@ -15,6 +15,7 @@ import com.fmc.starterApp.models.entity.CarverMatrix;
 import com.fmc.starterApp.models.entity.User2;
 import com.fmc.starterApp.repositories.CarverMatrixRepository;
 import com.fmc.starterApp.repositories.User2Repository;
+import com.fmc.starterApp.repositories.CarverItemRepository;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,8 @@ public class CarverMatrixService {
     private CarverMatrixRepository carverMatrixRepository;
     @Autowired
     private User2Repository user2Repository;
+    @Autowired
+    private CarverItemRepository carverItemRepository;
 
     @Transactional
     public List<CarverMatrix> getMatricesByHost(Long userId) {
@@ -162,5 +165,39 @@ public class CarverMatrixService {
         }
 
         return results;
+    }
+
+    @Transactional
+    public List<CarverItem> updateCarverItems(CarverMatrix matrix, List<CarverItem> itemUpdates) {
+        List<CarverItem> updatedItems = new ArrayList<>();
+        for (CarverItem update : itemUpdates) {
+            if (update.getItemId() == null) {
+                throw new IllegalArgumentException("Each update must include an itemId.");
+            }
+            CarverItem existingItem = carverItemRepository.findById(update.getItemId()).orElseThrow(() -> new IllegalArgumentException("CarverItem not found with ID: " + update.getItemId()));
+            if (!existingItem.getCarverMatrix().getMatrixId().equals(matrix.getMatrixId())) {
+                throw new IllegalArgumentException("CarverItem with ID " + update.getItemId() +" does not belong to CarverMatrix " + matrix.getMatrixId());
+            }
+            if (update.getCriticality() != null) {
+                existingItem.setCriticality(update.getCriticality());
+            }
+            if (update.getAccessibility() != null) {
+                existingItem.setAccessibility(update.getAccessibility());
+            }
+            if (update.getRecoverability() != null) {
+                existingItem.setRecoverability(update.getRecoverability());
+            }
+            if (update.getVulnerability() != null) {
+                existingItem.setVulnerability(update.getVulnerability());
+            }
+            if (update.getEffect() != null) {
+                existingItem.setEffect(update.getEffect());
+            }
+            if (update.getRecognizability() != null) {
+                existingItem.setRecognizability(update.getRecognizability());
+            }
+            updatedItems.add(existingItem);
+        }
+        return carverItemRepository.saveAll(updatedItems);
     }
 }
