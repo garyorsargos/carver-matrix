@@ -12,6 +12,8 @@ export type ConfigType = {
   rmulti: number;
   vmulti: number;
   emulti: number;
+  description: string;
+  name: string;
 };
 
 export type MultiMatrixContextType = {
@@ -67,6 +69,8 @@ const initialConfig: ConfigType = {
   rmulti: 1.0,
   vmulti: 1.0,
   emulti: 1.0,
+  description: "",
+  name: "",
 };
 
 const MultiMatrixContext = createContext<MultiMatrixContextType | undefined>(undefined);

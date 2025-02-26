@@ -17,6 +17,7 @@ import {
   MultiMatrixProvider,
   useMultiMatrix,
 } from "../components/custom/multiMatrixProvider";
+import MatrixLoader from "../components/custom/matrixLoader";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { ConfigType } from "../components/custom/multiMatrixProvider";
@@ -53,10 +54,10 @@ const EditMatrixContent: React.FC = () => {
     pdf.setFontSize(14);
     pdf.setTextColor(0, 0, 0); // Black text
     pdf.setFont("helvetica", "bold");
-    pdf.text("Matrix Title: Example Matrix Title", 14, 30); // Replace with actual title
+    pdf.text(config.name, 14, 30); // Replace with actual title
     pdf.setFontSize(12);
     pdf.setFont("helvetica", "normal");
-    pdf.text("Matrix description placeholder. Lorem ipsum dolor sit amet, consectetur adipiscing elit.", 14, 40);
+    pdf.text(config.description, 14, 40);
 
     // Add the matrix image
     const element = document.getElementById("pdf-content");
@@ -155,6 +156,7 @@ const EditMatrixContent: React.FC = () => {
       flexDirection="row"
       sx={{ height: "85vh", mt: 2, gap: 2 }}
     >
+      <MatrixLoader />
       <Box
         id="matrixExplorerBox"
         sx={{
@@ -193,7 +195,7 @@ const EditMatrixContent: React.FC = () => {
               color: "black",
             }}
           >
-            Matrix Name
+            {config.name || "Matrix Name"}
           </Typography>
 
           <TableContainer
