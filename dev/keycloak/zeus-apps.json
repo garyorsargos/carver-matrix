@@ -470,6 +470,8 @@
       "enabled": true,
       "totp": false,
       "emailVerified": true,
+      "firstName": "Jared",
+      "lastName": "Dev",
       "email": "jareddev.carver@gmail.com",
       "credentials": [
         {
@@ -497,6 +499,8 @@
       "enabled": true,
       "totp": false,
       "emailVerified": true,
+      "firstName": "Generic",
+      "lastName": "User",
       "email": "user@starter-app.zeus.socom.dev",
       "credentials": [
         {
