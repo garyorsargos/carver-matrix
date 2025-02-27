@@ -16,19 +16,23 @@ import CategoryGroup from "../components/custom/editMatrix/categoryGroup";
 import {
   MultiMatrixProvider,
   useMultiMatrix,
+  ConfigType,
 } from "../components/custom/multiMatrixProvider";
+import MatrixLoader from "../components/custom/matrixLoader";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { ConfigType } from "../components/custom/multiMatrixProvider";
+import axios from "axios";
 
 // This component contains the content of the page and uses our custom hook.
 const EditMatrixContent: React.FC = () => {
-  const { multiMatrix, config } = useMultiMatrix();
+  const { multiMatrix, config, updates } = useMultiMatrix();
 
   console.log(config);
 
-  // Dynamically read targets from the multiMatrix keys.
-  const targets = Array.from(multiMatrix.keys());
+  // Dynamically read targets from the multiMatrix keys and sort them alphabetically.
+  const targets = Array.from(multiMatrix.keys()).sort((a, b) =>
+    a.localeCompare(b)
+  );
   const categories = [
     "Criticality",
     "Accessibility",
@@ -38,13 +42,13 @@ const EditMatrixContent: React.FC = () => {
     "Recognizability",
   ];
 
-  // This function generates the PDF
+  // This function generates the PDF.
   const openPdfInNewTab = async () => {
     const pdf = new jsPDF("p", "mm", "a4");
 
     // Add page header (CARVER Matrix App)
     pdf.setFillColor(0, 0, 0); // Black background
-    pdf.rect(0, 0, 210, 15, 'F'); // Full-width black rectangle
+    pdf.rect(0, 0, 210, 15, "F"); // Full-width black rectangle
     pdf.setFontSize(16);
     pdf.setTextColor(255, 255, 255); // White text
     pdf.text("CARVER Matrix App", 14, 10);
@@ -53,10 +57,10 @@ const EditMatrixContent: React.FC = () => {
     pdf.setFontSize(14);
     pdf.setTextColor(0, 0, 0); // Black text
     pdf.setFont("helvetica", "bold");
-    pdf.text("Matrix Title: Example Matrix Title", 14, 30); // Replace with actual title
+    pdf.text(config.name, 14, 30);
     pdf.setFontSize(12);
     pdf.setFont("helvetica", "normal");
-    pdf.text("Matrix description placeholder. Lorem ipsum dolor sit amet, consectetur adipiscing elit.", 14, 40);
+    pdf.text(config.description, 14, 40);
 
     // Add the matrix image
     const element = document.getElementById("pdf-content");
@@ -68,7 +72,6 @@ const EditMatrixContent: React.FC = () => {
       pdf.addImage(imgData, "PNG", 14, 50, pdfWidth - 28, pdfHeight);
     }
 
-
     // Add Rankings Section
     pdf.setFontSize(14);
     pdf.setFont("helvetica", "bold");
@@ -79,20 +82,20 @@ const EditMatrixContent: React.FC = () => {
     // Calculate rankings
     const targetRanks: { target: string; totalScore: number }[] = [];
     const categoryToMultiplierMap: { [key: string]: keyof ConfigType } = {
-      Criticality: 'cmulti',
-      Accessibility: 'amulti',
-      Recuperability: 'rmulti',
-      Vulnerability: 'vmulti',
-      Effect: 'emulti',
-      Recognizability: 'r2Multi',
+      Criticality: "cmulti",
+      Accessibility: "amulti",
+      Recuperability: "rmulti",
+      Vulnerability: "vmulti",
+      Effect: "emulti",
+      Recognizability: "r2Multi",
     };
 
     multiMatrix.forEach((categoriesMap, target) => {
       let totalScore = 0;
       categoriesMap.forEach((score, category) => {
-        const multiplierKey = categoryToMultiplierMap[category]; // Use the map to get the multiplier key
+        const multiplierKey = categoryToMultiplierMap[category];
         if (multiplierKey) {
-          const multiplier = config[multiplierKey]; // Now access the multiplier directly
+          const multiplier = config[multiplierKey];
           if (typeof multiplier === "number") {
             totalScore += score * multiplier;
           } else {
@@ -134,7 +137,6 @@ const EditMatrixContent: React.FC = () => {
       { label: "Vulnerability Multiplier", value: config.vmulti },
       { label: "Effect Multiplier", value: config.emulti },
       { label: "Recognizability Multiplier", value: config.r2Multi },
-
     ];
 
     let configYOffset = 30;
@@ -149,12 +151,28 @@ const EditMatrixContent: React.FC = () => {
     window.open(pdfUrl, "_blank");
   };
 
+  // Function to handle submitting updates via a PUT request.
+  const handleSubmitUpdates = () => {
+    const params = new URLSearchParams(window.location.search);
+    const matrixId = params.get("matrixId");
+    if (!matrixId) {
+      console.error("matrixId query parameter is missing.");
+      return;
+    }
+    console.log("Submitting updates:", updates);
+    axios
+      .put(`/api/carvermatrices/${matrixId}/carveritems/update`, updates)
+      .then((response) => {
+        console.log("Updates submitted successfully", response);
+      })
+      .catch((error) => {
+        console.error("Error submitting updates", error);
+      });
+  };
+
   return (
-    <Box
-      display="flex"
-      flexDirection="row"
-      sx={{ height: "85vh", mt: 2, gap: 2 }}
-    >
+    <Box display="flex" flexDirection="row" sx={{ height: "85vh", mt: 2, gap: 2 }}>
+      <MatrixLoader />
       <Box
         id="matrixExplorerBox"
         sx={{
@@ -193,7 +211,7 @@ const EditMatrixContent: React.FC = () => {
               color: "black",
             }}
           >
-            Matrix Name
+            {config.name || "Matrix Name"}
           </Typography>
 
           <TableContainer
@@ -207,10 +225,7 @@ const EditMatrixContent: React.FC = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#e0e0e0" }}>
-                  <TableCell
-                    align="center"
-                    sx={{ fontWeight: "bold", color: "white" }}
-                  >
+                  <TableCell align="center" sx={{ fontWeight: "bold", color: "white" }}>
                     Targets
                   </TableCell>
                   {categories.map((category) => (
@@ -241,10 +256,7 @@ const EditMatrixContent: React.FC = () => {
                         align="center"
                         sx={{ color: "black" }}
                       >
-                        <CategoryGroup
-                          category={category}
-                          targetTitle={target}
-                        />
+                        <CategoryGroup category={category} targetTitle={target} />
                       </TableCell>
                     ))}
                   </TableRow>
@@ -258,6 +270,7 @@ const EditMatrixContent: React.FC = () => {
           variant="contained"
           color="success"
           sx={{ position: "absolute", bottom: 16, right: 16, zIndex: 10 }}
+          onClick={handleSubmitUpdates}
         >
           Submit
         </Button>

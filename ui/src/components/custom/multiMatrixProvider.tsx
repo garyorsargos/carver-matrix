@@ -12,6 +12,8 @@ export type ConfigType = {
   rmulti: number;
   vmulti: number;
   emulti: number;
+  description: string;
+  name: string;
 };
 
 export type MultiMatrixContextType = {
@@ -19,6 +21,10 @@ export type MultiMatrixContextType = {
   setMultiMatrix: React.Dispatch<React.SetStateAction<MultiMatrix>>;
   config: ConfigType;
   setConfig: React.Dispatch<React.SetStateAction<ConfigType>>;
+  itemIdMap: Map<string, number>;
+  setItemIdMap: React.Dispatch<React.SetStateAction<Map<string, number>>>;
+  updates: any[];
+  setUpdates: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 const initialMultiMatrix: MultiMatrix = new Map([
@@ -67,6 +73,8 @@ const initialConfig: ConfigType = {
   rmulti: 1.0,
   vmulti: 1.0,
   emulti: 1.0,
+  description: "",
+  name: "",
 };
 
 const MultiMatrixContext = createContext<MultiMatrixContextType | undefined>(undefined);
@@ -82,12 +90,18 @@ export const useMultiMatrix = (): MultiMatrixContextType => {
 export const MultiMatrixProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [multiMatrix, setMultiMatrix] = useState<MultiMatrix>(initialMultiMatrix);
   const [config, setConfig] = useState<ConfigType>(initialConfig);
+  const [itemIdMap, setItemIdMap] = useState<Map<string, number>>(new Map());
+  const [updates, setUpdates] = useState<any[]>([]);
 
   const contextValue: MultiMatrixContextType = {
     multiMatrix,
     setMultiMatrix,
     config,
     setConfig,
+    itemIdMap,
+    setItemIdMap,
+    updates,
+    setUpdates,
   };
 
   return (

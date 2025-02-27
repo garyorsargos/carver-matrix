@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Box,
-  FormControl,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-} from "@mui/material";
+import { Box, FormControl, Select, MenuItem, SelectChangeEvent } from "@mui/material";
 import { useMultiMatrix } from "../multiMatrixProvider";
 
 interface CategoryDisplayProps {
@@ -14,31 +8,56 @@ interface CategoryDisplayProps {
 }
 
 const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }) => {
-  const { multiMatrix, setMultiMatrix } = useMultiMatrix();
+  const { multiMatrix, setMultiMatrix, itemIdMap, setUpdates } = useMultiMatrix();
 
-  // Get the initial score from the multiMatrix, defaulting to 1 if undefined.
   const initialScore = multiMatrix.get(targetTitle)?.get(category);
   const [score, setScore] = React.useState<number>(initialScore !== undefined ? initialScore : 1);
+
+  // Map the UI category names to API field names.
+  const categoryMap: { [key: string]: string } = {
+    "Criticality": "criticality",
+    "Accessibility": "accessibility",
+    "Recuperability": "recoverability",
+    "Vulnerability": "vulnerability",
+    "Effect": "effect",
+    "Recognizability": "recognizability",
+  };
+  const apiCategory = categoryMap[category] || category.toLowerCase();
 
   const handleInputChange = (event: SelectChangeEvent<string>) => {
     const newScore = Number(event.target.value);
     setScore(newScore);
 
+    // Update the local matrix state.
     setMultiMatrix((prevMatrix) => {
-      // Create a shallow copy of the outer map.
       const updatedMatrix = new Map(prevMatrix);
-      // Get a copy of the inner map or create a new one if it doesn't exist.
       const targetMap = updatedMatrix.get(targetTitle)
         ? new Map(updatedMatrix.get(targetTitle))
         : new Map<string, number>();
-      // Update the category score.
       targetMap.set(category, newScore);
-      // Set the updated inner map back.
       updatedMatrix.set(targetTitle, targetMap);
       return updatedMatrix;
     });
 
-    console.log("Updated MultiMatrix:", multiMatrix);
+    // Also update the "updates" state to record this change.
+    const itemId = itemIdMap.get(targetTitle);
+    if (!itemId) {
+      console.warn(`No itemId found for ${targetTitle}`);
+      return;
+    }
+    setUpdates((prevUpdates) => {
+      const existingIndex = prevUpdates.findIndex((u: any) => u.itemId === itemId);
+      if (existingIndex !== -1) {
+        // Merge the new change with the existing update.
+        const updatedItem = { ...prevUpdates[existingIndex], [apiCategory]: newScore };
+        const newUpdates = [...prevUpdates];
+        newUpdates[existingIndex] = updatedItem;
+        return newUpdates;
+      } else {
+        // Create a new update entry.
+        return [...prevUpdates, { itemId, [apiCategory]: newScore }];
+      }
+    });
   };
 
   return (
