@@ -1,13 +1,11 @@
-// MatrixLoader.tsx
 import React, { useEffect } from "react";
 import axios from "axios";
 import { useMultiMatrix } from "./multiMatrixProvider";
 
 const MatrixLoader: React.FC = () => {
-  const { setMultiMatrix, setConfig } = useMultiMatrix();
+  const { setMultiMatrix, setConfig, setItemIdMap } = useMultiMatrix();
 
   useEffect(() => {
-    // Parse the matrixId query parameter from the URL.
     const params = new URLSearchParams(window.location.search);
     const matrixId = params.get("matrixId");
 
@@ -16,15 +14,12 @@ const MatrixLoader: React.FC = () => {
       return;
     }
 
-    // Request the matrix data as text because the response might be concatenated JSON.
     axios
       .get(`/api/carvermatrices/${matrixId}`, { responseType: "text" })
       .then((response) => {
         const dataString = response.data;
         let matrixData;
-
         try {
-          // Check if there are two concatenated JSON objects.
           if (dataString.includes("}{")) {
             const parts = dataString.split("}{");
             matrixData = JSON.parse(parts[0] + "}");
@@ -35,16 +30,13 @@ const MatrixLoader: React.FC = () => {
           console.error("Failed to parse matrix data:", e);
           return;
         }
-
         console.log("Parsed matrix data:", matrixData);
 
-        // Ensure the matrixData contains an items array.
         if (!matrixData.items || !Array.isArray(matrixData.items)) {
           console.error("Matrix data does not contain a valid items array:", matrixData);
           return;
         }
 
-        // Update the config using the correct property names.
         setConfig({
           r2Multi: matrixData.r2Multi,
           randomAssignment: matrixData.randomAssignment,
@@ -59,8 +51,8 @@ const MatrixLoader: React.FC = () => {
           name: matrixData.name,
         });
 
-        // Build the MultiMatrix Map from the items array.
         const matrixMap = new Map<string, Map<string, number>>();
+        const idMap = new Map<string, number>();
         matrixData.items.forEach((item: any) => {
           matrixMap.set(
             item.itemName,
@@ -73,14 +65,15 @@ const MatrixLoader: React.FC = () => {
               ["Recognizability", item.recognizability],
             ])
           );
+          idMap.set(item.itemName, item.itemId);
         });
-
         setMultiMatrix(matrixMap);
+        setItemIdMap(idMap);
       })
       .catch((error) => {
         console.error("Error fetching matrix data:", error);
       });
-  }, [setMultiMatrix, setConfig]);
+  }, [setMultiMatrix, setConfig, setItemIdMap]);
 
   return null;
 };
