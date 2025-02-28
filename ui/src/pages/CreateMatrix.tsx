@@ -20,6 +20,7 @@ import {
 import { useState } from "react";
 import { IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { whoamiUpsert, createMatrix } from "./apiService";
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
@@ -66,11 +67,6 @@ export const CreateMatrix: React.FC = () => {
 
   const handleDeleteTarget = (index: number) => {
     setTargets(targets.filter((_, i) => i !== index));
-  };
-
-  const handleSave = () => {
-    console.log("Matrix saved:", title);
-    //  save logic here.
   };
 
   // Options for the dropdown for Global Category Multipliers
@@ -126,6 +122,50 @@ export const CreateMatrix: React.FC = () => {
     setRandomAssigned(event.target.value as string);
   };
 
+  const participants: string[] = [];
+
+  const handleCreateMatrix = async () => {
+    try
+    {
+      const whoamiUpsertResponse = await whoamiUpsert();
+      const rawData = whoamiUpsertResponse.data; // This is a string containing two JSON objects, the first we only care about.
+
+      // Find the end of the first JSON object by locating the first closing brace
+      const firstObjectEnd = rawData.indexOf('}') + 1;
+      
+      // Isolate the first JSON object using substring
+      const firstObjectStr = rawData.substring(0, firstObjectEnd);
+
+      // Parse said first object for necessary fields (i.e., userId)
+      const parsedFirstObject = JSON.parse(firstObjectStr);
+
+      const { userId, email } = parsedFirstObject;
+      participants.push(email);
+
+      const matrixData = {
+        name: title,
+        description: description,
+        hosts: [""],
+        participants: participants,
+        cMulti: multipliers["Criticality"],
+        aMulti: multipliers["Accessibility"],
+        rMulti: multipliers["Recoverability"],
+        vMulti: multipliers["Vulnerability"],
+        eMulti: multipliers["Effect"],
+        r2Multi: multipliers["Recognizability"],
+        randomAssignment: AnonymousEntryChecked, // AnonymousEntryChecked corresponds to the "Anonymous Entry" toggle not the "Data Entry Assignment Method" dropdown, which I believe we said we were going to erase.
+        roleBased: RoleBasedChecked,
+        fivePointScoring: value,
+      }
+      const response = await createMatrix(matrixData, userId);
+      console.log("Matrix Created:", response.data);
+    } 
+    catch (error) 
+    {
+      console.error('Error creating matrix or verifying user', error);
+    }
+  };
+
   return (
     // This Box is for the whole screen (background); where every other box will be built on.
     <Box
@@ -170,10 +210,10 @@ export const CreateMatrix: React.FC = () => {
             }}
             sx={{ flexGrow: 1 }}
           />
-          {/* The Save button with extra spacing */}
+          {/* The Save button which sends the create matrix request to backend */}
           <Button
             variant="contained"
-            onClick={handleSave}
+            onClick={handleCreateMatrix}
             sx={{ ml: 10, borderRadius: "20px", width: "100px" }}
           >
             Save
