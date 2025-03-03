@@ -24,7 +24,6 @@ import { whoamiUpsert, createMatrix } from "./apiService";
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
-  // const [AnonymousEntryChecked, setAnonymousEntryChecked] = useState(false);
   const [value, setValue] = useState<number>(5);
   const [randomAssigned, setRandomAssigned] = useState<string>('random');
 
@@ -51,6 +50,42 @@ export const CreateMatrix: React.FC = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [targets, setTargets] = useState<string[]>([]);
+  const [participantsData, setParticipantsData] = useState<
+  { email: string; role: string }[]
+  >([]);
+
+  // Add a new participant row
+const handleAddParticipant = () => {
+  setParticipantsData([
+    ...participantsData,
+    { email: "", role: "Participant" }, // default role is "Participant"
+  ]);
+};
+
+// Update email for a specific participant
+const handleParticipantEmailChange = (
+  index: number,
+  event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+) => {
+  const newParticipants = [...participantsData];
+  newParticipants[index].email = event.target.value;
+  setParticipantsData(newParticipants);
+};
+
+// Update role for a specific participant
+const handleParticipantRoleChange = (
+  index: number,
+  event: SelectChangeEvent<string>
+) => {
+  const newParticipants = [...participantsData];
+  newParticipants[index].role = event.target.value;
+  setParticipantsData(newParticipants);
+};
+
+// Delete a participant row
+const handleDeleteParticipant = (index: number) => {
+  setParticipantsData(participantsData.filter((_, i) => i !== index));
+};  
 
   const handleAddTarget = () => {
     setTargets([...targets, ""]);
@@ -74,24 +109,6 @@ export const CreateMatrix: React.FC = () => {
     0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
     2.0,
   ];
-
-  const [roles, setRoles] = useState([
-    "Role Type",
-    "Role Type",
-    "Role Type",
-    "Role Type",
-    "Role Type",
-  ]);
-
-  // Function to handle dropdown changes
-  const handleUserRoleChange = (
-    index: number,
-    event: SelectChangeEvent<string>,
-  ) => {
-    const newRoles = [...roles];
-    newRoles[index] = event.target.value;
-    setRoles(newRoles);
-  };
 
   const multipliersHandleChange =
     (label: string) => (event: SelectChangeEvent<unknown>) => {
@@ -146,11 +163,23 @@ export const CreateMatrix: React.FC = () => {
         recognizability: 0,
       }));
 
+      const hosts = participantsData
+      .map((p) =>
+        p.role === "Host" || p.role === "Host and Participant" ? p.email : null
+      )
+      .filter((email): email is string => email !== null);
+
+      const participantEmails = participantsData
+      .map((p) =>
+        p.role === "Participant" || p.role === "Host and Participant" ? p.email : null
+      )
+      .filter((email): email is string => email !== null);
+
       const matrixData = {
         name: title,
         description: description,
-        hosts: [""],
-        participants: participants,
+        hosts: hosts,
+        participants: participantEmails,
         cMulti: multipliers["Criticality"],
         aMulti: multipliers["Accessibility"],
         rMulti: multipliers["Recoverability"],
@@ -510,17 +539,18 @@ export const CreateMatrix: React.FC = () => {
             marginBottom: "40px",
           }}
         >
-          <Typography variant="h4">Participants</Typography>
+          <Typography variant="h4">Participants/Hosts</Typography>
           <Button
             variant="contained"
             sx={{ borderRadius: "20px", width: "100px" }}
+            onClick={handleAddParticipant}
           >
             Invite
           </Button>
         </Box>
 
         {/* Participant Rows */}
-        {roles.map((role, index) => (
+        {participantsData.map((participant, index) => (
           <Paper
             key={index}
             elevation={0} // Remove shadow
@@ -537,21 +567,33 @@ export const CreateMatrix: React.FC = () => {
               mb: 1,
             }}
           >
-            <Typography variant="body1">Example User</Typography>
+            <TextField
+              value={participant.email}
+              onChange={(e) => handleParticipantEmailChange(index, e)}
+              variant="standard"
+              placeholder="Enter user email..."
+              InputProps={{
+                disableUnderline: false,
+                style: { fontSize: "1rem", color: "black" },
+              }}
+              sx={{ flexGrow: 1 }}
+            />
             <Select
-              value={role}
-              onChange={(event) => handleUserRoleChange(index, event)}
+              value={participant.role}
+              onChange={(e) => handleParticipantRoleChange(index, e)}
               sx={{
                 color: "gray",
                 backgroundColor: "white",
                 height: "40px",
               }}
             >
-              <MenuItem value="Role Type">Role Type</MenuItem>
-              <MenuItem value="Admin">Admin</MenuItem>
-              <MenuItem value="Editor">Editor</MenuItem>
-              <MenuItem value="Viewer">Viewer</MenuItem>
+              <MenuItem value="Participant">Participant</MenuItem>
+              <MenuItem value="Host">Host</MenuItem>
+              <MenuItem value="Host and Participant">Host and Participant</MenuItem>
             </Select>
+            <IconButton onClick={() => handleDeleteParticipant(index)}>
+              <DeleteIcon color="error" />
+            </IconButton>
           </Paper>
         ))}
       </Box>
