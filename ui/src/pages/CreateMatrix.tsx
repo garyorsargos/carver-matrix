@@ -24,9 +24,9 @@ import { whoamiUpsert, createMatrix } from "./apiService";
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
-  const [AnonymousEntryChecked, setAnonymousEntryChecked] = useState(false);
+  // const [AnonymousEntryChecked, setAnonymousEntryChecked] = useState(false);
   const [value, setValue] = useState<number>(5);
-  const [randomAssigned, setRandomAssigned] = useState<string>("random");
+  const [randomAssigned, setRandomAssigned] = useState<string>('random');
 
   const initialMultipliers = {
     Criticality: 1.0,
@@ -108,12 +108,6 @@ export const CreateMatrix: React.FC = () => {
     setRoleBasedChecked(event.target.checked);
   };
 
-  const anonymousEntryHandleToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setAnonymousEntryChecked(event.target.checked);
-  };
-
   const scoreRangeHandleChange = (event: SelectChangeEvent<number>) => {
     setValue(event.target.value as number);
   };
@@ -142,6 +136,16 @@ export const CreateMatrix: React.FC = () => {
       const { userId, email } = parsedFirstObject;
       participants.push(email);
 
+      const items = targets.map((target) => ({
+        itemName: target,
+        criticality: 0,
+        accessibility: 0,
+        recoverability: 0,
+        vulnerability: 0,
+        effect: 0,
+        recognizability: 0,
+      }));
+
       const matrixData = {
         name: title,
         description: description,
@@ -153,9 +157,10 @@ export const CreateMatrix: React.FC = () => {
         vMulti: multipliers["Vulnerability"],
         eMulti: multipliers["Effect"],
         r2Multi: multipliers["Recognizability"],
-        randomAssignment: AnonymousEntryChecked, // AnonymousEntryChecked corresponds to the "Anonymous Entry" toggle not the "Data Entry Assignment Method" dropdown, which I believe we said we were going to erase.
+        randomAssignment: randomAssigned === 'random' ? true : false,
         roleBased: RoleBasedChecked,
         fivePointScoring: value,
+        items: items,
       }
       const response = await createMatrix(matrixData, userId);
       console.log("Matrix Created:", response.data);
@@ -214,9 +219,9 @@ export const CreateMatrix: React.FC = () => {
           <Button
             variant="contained"
             onClick={handleCreateMatrix}
-            sx={{ ml: 10, borderRadius: "20px", width: "100px" }}
+            sx={{ ml: 20, borderRadius: "20px", width: "150px" }}
           >
-            Save
+            Create Matrix
           </Button>
         </Box>
 
@@ -246,8 +251,8 @@ export const CreateMatrix: React.FC = () => {
             display: "flex",
             alignItems: "flex-start",
             flexDirection: "column",
-            marginBottom: "10px",
-            marginTop: "20px",
+            marginBottom: "0px",
+            marginTop: "30px",
           }}
         >
           <Typography variant="h4">Matrix Parameters</Typography>
@@ -339,25 +344,6 @@ export const CreateMatrix: React.FC = () => {
                   <MenuItem value={"assigned"}>Assigned</MenuItem>
                 </Select>
               </FormControl>
-
-              {/* Anonymous Entry */}
-              <Typography>Anonymous Entry</Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={AnonymousEntryChecked}
-                    onChange={anonymousEntryHandleToggle}
-                    sx={{
-                      "& .MuiSwitch-track": {
-                        borderRadius: "20px",
-                        backgroundColor: AnonymousEntryChecked ? "blue" : "red",
-                        opacity: 1,
-                      },
-                    }}
-                  />
-                }
-                label={AnonymousEntryChecked ? "Enabled" : "Disabled"}
-              />
             </Box>
           </Box>
         </Box>
@@ -368,7 +354,7 @@ export const CreateMatrix: React.FC = () => {
           sx={{
             backgroundColor: "white",
             width: "80%",
-            height: "85%",
+            height: "100%",
             position: "center",
             display: "flex",
             alignItems: "flex-start",
