@@ -21,11 +21,18 @@ import { useState } from "react";
 import { IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { whoamiUpsert, createMatrix } from "./apiService";
+import SendIcon from '@mui/icons-material/Send';
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
   const [value, setValue] = useState<number>(5);
   const [randomAssigned, setRandomAssigned] = useState<string>('random');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [targets, setTargets] = useState<string[]>([]);
+  const [participantsData, setParticipantsData] = useState<
+  { email: string; role: string }[]
+  >([]);
 
   const initialMultipliers = {
     Criticality: 1.0,
@@ -46,13 +53,6 @@ export const CreateMatrix: React.FC = () => {
     { key: "Effect", header: "E" },
     { key: "Recognizability", header: "R" },
   ];
-
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [targets, setTargets] = useState<string[]>([]);
-  const [participantsData, setParticipantsData] = useState<
-  { email: string; role: string }[]
-  >([]);
 
   // Add a new participant row
 const handleAddParticipant = () => {
@@ -237,7 +237,7 @@ const handleDeleteParticipant = (index: number) => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             variant="standard"
-            placeholder="Enter your matrix Title..."
+            placeholder="Enter matrix Title..."
             InputProps={{
               disableUnderline: false,
               style: { fontSize: "3rem", color: "black" },
@@ -248,7 +248,9 @@ const handleDeleteParticipant = (index: number) => {
           <Button
             variant="contained"
             onClick={handleCreateMatrix}
-            sx={{ ml: 20, borderRadius: "20px", width: "150px" }}
+            endIcon={<SendIcon />}
+            color="success"
+            sx={{ ml: 20, borderRadius: "20px", width: "170" }}
           >
             Create Matrix
           </Button>
@@ -261,7 +263,7 @@ const handleDeleteParticipant = (index: number) => {
           rows={1}
           variant="outlined"
           fullWidth
-          placeholder="Enter your matrix description..."
+          placeholder="Enter matrix description..."
           InputProps={{
             disableUnderline: true,
             style: { fontSize: "1rem", color: "black" },
@@ -383,7 +385,7 @@ const handleDeleteParticipant = (index: number) => {
           sx={{
             backgroundColor: "white",
             width: "80%",
-            height: "100%",
+            height: "90%",
             position: "center",
             display: "flex",
             alignItems: "flex-start",
@@ -534,12 +536,12 @@ const handleDeleteParticipant = (index: number) => {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between", // Spreads items to opposite sides
+            justifyContent: "space-between",
             width: "100%",
             marginBottom: "40px",
           }}
         >
-          <Typography variant="h4">Participants/Hosts</Typography>
+          <Typography variant="h4">Roles</Typography>
           <Button
             variant="contained"
             sx={{ borderRadius: "20px", width: "100px" }}
@@ -553,7 +555,7 @@ const handleDeleteParticipant = (index: number) => {
         {participantsData.map((participant, index) => (
           <Paper
             key={index}
-            elevation={0} // Remove shadow
+            elevation={0}
             sx={{
               color: "black",
               display: "flex",
@@ -571,7 +573,7 @@ const handleDeleteParticipant = (index: number) => {
               value={participant.email}
               onChange={(e) => handleParticipantEmailChange(index, e)}
               variant="standard"
-              placeholder="Enter user email..."
+              placeholder="Enter email..."
               InputProps={{
                 disableUnderline: false,
                 style: { fontSize: "1rem", color: "black" },
