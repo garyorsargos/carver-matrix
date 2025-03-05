@@ -16,12 +16,15 @@ import {
   TableCell,
   TableBody,
   TextField,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useState } from "react";
 import { IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { whoamiUpsert, createMatrix } from "./apiService";
 import SendIcon from '@mui/icons-material/Send';
+import { useNavigate } from "react-router-dom";
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
@@ -29,7 +32,9 @@ export const CreateMatrix: React.FC = () => {
   const [randomAssigned, setRandomAssigned] = useState<string>('random');
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const navigate = useNavigate();
   const [targets, setTargets] = useState<string[]>([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [participantsData, setParticipantsData] = useState<
   { email: string; role: string }[]
   >([]);
@@ -193,6 +198,10 @@ const handleDeleteParticipant = (index: number) => {
       }
       const response = await createMatrix(matrixData, userId);
       console.log("Matrix Created:", response.data);
+      setSnackbarOpen(true);
+      setTimeout(() => {
+        navigate("/ViewMatrix");
+      }, 3000);
     } 
     catch (error) 
     {
@@ -255,6 +264,18 @@ const handleDeleteParticipant = (index: number) => {
             Create Matrix
           </Button>
         </Box>
+
+        <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={() => setSnackbarOpen(false)}>
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity="success"
+            variant="filled"  
+            sx={{ width: '100%' }}
+          >
+            Matrix Created Succesfully! Redirecting to 'View Matrix' page
+          </Alert>
+        </Snackbar>
+      
 
         <TextField
           value={description}
