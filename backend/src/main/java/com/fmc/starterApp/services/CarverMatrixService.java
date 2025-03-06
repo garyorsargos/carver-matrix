@@ -86,26 +86,39 @@ public class CarverMatrixService {
             List<CarverItem> items = matrix.getItems();
             Random random = new Random();
             
-            // Step 1: Randomly pick an initial participant per item
+            
             Collections.shuffle(participants, random);
             List<String> initialAssignments = new ArrayList<>(participants.subList(0, Math.min(items.size(), participants.size())));
             
-            // Step 2: Assign at least one participant to each item
+            
             for (int i = 0; i < items.size(); i++) {
-                items.get(i).setTargetUsers(new ArrayList<>(Collections.singletonList(initialAssignments.get(i % initialAssignments.size()))));
+                items.get(i).setTargetUsers(new String[]{initialAssignments.get(i % initialAssignments.size())});
             }
 
-            // Step 3: Distribute remaining participants evenly
+            
             List<String> remainingParticipants = new ArrayList<>(participants);
             remainingParticipants.removeAll(initialAssignments);
+            Collections.shuffle(remainingParticipants, random);
+            
+            
+            List<Integer> itemIndices = new ArrayList<>();
+            for (int i = 0; i < items.size(); i++) {
+                itemIndices.add(i);
+            }
+            Collections.shuffle(itemIndices, random);
+            
             int index = 0;
             while (!remainingParticipants.isEmpty()) {
-                items.get(index % items.size()).getTargetUsers().add(remainingParticipants.remove(0));
+                int itemIndex = itemIndices.get(index % items.size());
+                CarverItem item = items.get(itemIndex);
+                List<String> currentUsers = new ArrayList<>(Arrays.asList(item.getTargetUsers()));
+                currentUsers.add(remainingParticipants.remove(0));
+                item.setTargetUsers(currentUsers.toArray(new String[0]));
                 index++;
             }
         } else {
             for (CarverItem item : matrix.getItems()) {
-                item.setTargetUsers(new ArrayList<>());
+                item.setTargetUsers(new String[0]);
             }
         }
 

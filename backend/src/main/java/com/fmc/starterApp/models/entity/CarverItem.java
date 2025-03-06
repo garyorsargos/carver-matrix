@@ -10,7 +10,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -20,6 +19,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -53,10 +54,10 @@ public class CarverItem {
 
     private Integer recognizability;
 
-    @ElementCollection
-    @Column(name = "target_users")
+    @Column(columnDefinition = "TEXT[]")
+    @JdbcTypeCode(SqlTypes.ARRAY)
     @JsonProperty("targetUsers")
-    private List<String> targetUsers;
+    private String[] targetUsers;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt = LocalDateTime.now();
