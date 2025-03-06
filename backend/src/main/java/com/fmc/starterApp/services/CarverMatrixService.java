@@ -83,48 +83,29 @@ public class CarverMatrixService {
 
         if (Boolean.TRUE.equals(matrix.getRandomAssignment()) && matrix.getParticipants() != null && matrix.getParticipants().length > 0) {
             List<String> participants = new ArrayList<>(Arrays.asList(matrix.getParticipants()));
+            List<CarverItem> items = matrix.getItems();
             Random random = new Random();
-            Map<String, Integer> assignmentCounts = new HashMap<>();
-            participants.forEach(p -> assignmentCounts.put(p, 0));
-            int totalRoles = matrix.getItems().size() * 6;
-            int baseAssignments = totalRoles / participants.size();
-            int extraAssignments = totalRoles % participants.size();
             
-            for (String participant : participants) {
-                assignmentCounts.put(participant, baseAssignments);
-            }
-            
+            // Step 1: Randomly pick an initial participant per item
             Collections.shuffle(participants, random);
-            for (int i = 0; i < extraAssignments; i++) {
-                String chosenParticipant = participants.get(i);
-                assignmentCounts.put(chosenParticipant, assignmentCounts.get(chosenParticipant) + 1);
-            }
+            List<String> initialAssignments = new ArrayList<>(participants.subList(0, Math.min(items.size(), participants.size())));
             
-            List<String> roleAssignments = new ArrayList<>();
-            for (Map.Entry<String, Integer> entry : assignmentCounts.entrySet()) {
-                for (int i = 0; i < entry.getValue(); i++) {
-                    roleAssignments.add(entry.getKey());
-                }
+            // Step 2: Assign at least one participant to each item
+            for (int i = 0; i < items.size(); i++) {
+                items.get(i).setTargetUsers(new ArrayList<>(Collections.singletonList(initialAssignments.get(i % initialAssignments.size()))));
             }
-            
-            Collections.shuffle(roleAssignments, random);
+
+            // Step 3: Distribute remaining participants evenly
+            List<String> remainingParticipants = new ArrayList<>(participants);
+            remainingParticipants.removeAll(initialAssignments);
             int index = 0;
-            for (CarverItem item : matrix.getItems()) {
-                item.setCUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setAUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setRUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setVUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setEUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setR2User(roleAssignments.get(index++ % roleAssignments.size()));
+            while (!remainingParticipants.isEmpty()) {
+                items.get(index % items.size()).getTargetUsers().add(remainingParticipants.remove(0));
+                index++;
             }
         } else {
             for (CarverItem item : matrix.getItems()) {
-                item.setCUser(null);
-                item.setAUser(null);
-                item.setRUser(null);
-                item.setVUser(null);
-                item.setEUser(null);
-                item.setR2User(null);
+                item.setTargetUsers(new ArrayList<>());
             }
         }
 
