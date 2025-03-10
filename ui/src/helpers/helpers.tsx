@@ -4,7 +4,6 @@ import { Redirect } from "../components/navigation/Redirect";
 import Admin from "../pages/Admin";
 import CreateMatrix from "../pages/CreateMatrix";
 import EditMatrix from "../pages/EditMatrix";
-import Register from "../pages/Register";
 import ViewMatrix from "../pages/ViewMatrix";
 import Landing from "../pages/Landing";
 
@@ -154,7 +153,6 @@ export const ROUTES: { [key: string]: string } = {
   landing: "/Landing",
   createMatrix: "/ModifyMatrix",
   editMatrix: "/EditMatrix",
-  register: "/Register",
   viewMatrix: "/ViewMatrix",
 };
 
@@ -196,10 +194,6 @@ export const routesConfig = [
       {
         path: ROUTES.editMatrix,
         element: <EditMatrix />,
-      },
-      {
-        path: ROUTES.register,
-        element: <Register />,
       },
       {
         path: ROUTES.viewMatrix,
