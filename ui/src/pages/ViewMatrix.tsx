@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -12,38 +12,51 @@ import {
 } from "@mui/material";
 import MatrixCard from "../components/containers/MatrixCard";
 import { useNavigate } from "react-router-dom";
+import { GlobalContext } from "../context/GlobalContext";
+import axios from "axios";
+
+interface CarverMatrix {
+  matrixId: number;
+  name: string;
+  description: string;
+}
 
 const ViewMatrix: React.FC = () => {
-  // Context and state
-  // const { makeRequest } = useContext(GlobalContext);
-  const [matrices, setMatrices] = useState<
-    { title: string; description: string }[]
-  >([]);
+  const [matrices, setMatrices] = useState<CarverMatrix[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const { userId } = useContext(GlobalContext);
 
   useEffect(() => {
     const fetchMatrices = async () => {
+      if (!userId) {
+        return;
+      }
+      // Assuming search endpoint can accept query parameters for hosts
+      // and participants set to the logged in user's ID
+      const url = "http://localhost:9002/api/carvermatrices/search";
       try {
-        // TODO: Replace with actual API call
-        const placeholderData = [
-          { title: "Matrix 1", description: "Placeholder matrix 1" },
-          { title: "Matrix 2", description: "Placeholder matrix 2" },
-          { title: "Matrix 3", description: "Placeholder matrix 3" },
-        ];
-        setMatrices(placeholderData);
+        const response = await axios.get(url, { withCredentials: true });
+        if (Array.isArray(response.data)) {
+          setMatrices(response.data);
+        } else {
+          console.error("Unexpected response format:", response.data);
+        }
       } catch (error) {
         console.error("Error fetching matrices:", error);
       }
     };
-
     fetchMatrices();
-  }, []);
+  }, [userId]);
 
-  // Filter matrices based on search input
-  const filteredMatrices = matrices.filter((matrix) =>
-    matrix.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Matrices can be filtered by name or description
+  const filteredMatrices = matrices.filter((matrix) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      matrix.name.toLowerCase().includes(term) ||
+      matrix.description.toLowerCase().includes(term)
+    );
+  });
 
   return (
     <Box display="flex">
@@ -101,13 +114,13 @@ const ViewMatrix: React.FC = () => {
         }}
       >
         {filteredMatrices.length > 0 ? (
-          filteredMatrices.map((matrix, index) => (
+          filteredMatrices.map((matrix) => (
             <MatrixCard
-              key={index}
-              title={matrix.title}
+              key={matrix.matrixId}
+              title={matrix.name}
               description={matrix.description}
-              onEdit={() => navigate(`/editMatrix/${matrix.title}`)}
-              onShare={() => console.log("Export", matrix.title)}
+              onEdit={() => navigate(`/editMatrix/${matrix.matrixId}`)}
+              onShare={() => console.log("Export", matrix.name)}
             />
           ))
         ) : (
