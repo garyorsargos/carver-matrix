@@ -1,9 +1,11 @@
 package com.fmc.starterApp.models.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,6 +19,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -50,29 +54,10 @@ public class CarverItem {
 
     private Integer recognizability;
 
-    @Column(name = "c_user")
-    @JsonProperty("cUser")
-    private String cUser;
-
-    @Column(name = "a_user")
-    @JsonProperty("aUser")
-    private String aUser;
-
-    @Column(name = "r_user")
-    @JsonProperty("rUser")
-    private String rUser;
-
-    @Column(name = "v_user")
-    @JsonProperty("vUser")
-    private String vUser;
-
-    @Column(name = "e_user")
-    @JsonProperty("eUser")
-    private String eUser;
-
-    @Column(name = "r2_user")
-    @JsonProperty("r2User")
-    private String r2User;
+    @Column(columnDefinition = "TEXT[]")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @JsonProperty("targetUsers")
+    private String[] targetUsers;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt = LocalDateTime.now();
