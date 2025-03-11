@@ -1,8 +1,12 @@
 package com.fmc.starterApp.services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,7 @@ import com.fmc.starterApp.models.entity.CarverMatrix;
 import com.fmc.starterApp.models.entity.User2;
 import com.fmc.starterApp.repositories.CarverMatrixRepository;
 import com.fmc.starterApp.repositories.User2Repository;
+import com.fmc.starterApp.repositories.CarverItemRepository;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.AllArgsConstructor;
@@ -27,6 +32,8 @@ public class CarverMatrixService {
     private CarverMatrixRepository carverMatrixRepository;
     @Autowired
     private User2Repository user2Repository;
+    @Autowired
+    private CarverItemRepository carverItemRepository;
 
     @Transactional
     public List<CarverMatrix> getMatricesByHost(Long userId) {
@@ -71,6 +78,53 @@ public class CarverMatrixService {
         if (matrix.getItems() != null) {
             for (CarverItem item : matrix.getItems()) {
                 item.setCarverMatrix(matrix);
+            }
+        }
+
+        if (Boolean.TRUE.equals(matrix.getRandomAssignment()) && matrix.getParticipants() != null && matrix.getParticipants().length > 0) {
+            List<String> participants = new ArrayList<>(Arrays.asList(matrix.getParticipants()));
+            Random random = new Random();
+            Map<String, Integer> assignmentCounts = new HashMap<>();
+            participants.forEach(p -> assignmentCounts.put(p, 0));
+            int totalRoles = matrix.getItems().size() * 6;
+            int baseAssignments = totalRoles / participants.size();
+            int extraAssignments = totalRoles % participants.size();
+            
+            for (String participant : participants) {
+                assignmentCounts.put(participant, baseAssignments);
+            }
+            
+            Collections.shuffle(participants, random);
+            for (int i = 0; i < extraAssignments; i++) {
+                String chosenParticipant = participants.get(i);
+                assignmentCounts.put(chosenParticipant, assignmentCounts.get(chosenParticipant) + 1);
+            }
+            
+            List<String> roleAssignments = new ArrayList<>();
+            for (Map.Entry<String, Integer> entry : assignmentCounts.entrySet()) {
+                for (int i = 0; i < entry.getValue(); i++) {
+                    roleAssignments.add(entry.getKey());
+                }
+            }
+            
+            Collections.shuffle(roleAssignments, random);
+            int index = 0;
+            for (CarverItem item : matrix.getItems()) {
+                item.setCUser(roleAssignments.get(index++ % roleAssignments.size()));
+                item.setAUser(roleAssignments.get(index++ % roleAssignments.size()));
+                item.setRUser(roleAssignments.get(index++ % roleAssignments.size()));
+                item.setVUser(roleAssignments.get(index++ % roleAssignments.size()));
+                item.setEUser(roleAssignments.get(index++ % roleAssignments.size()));
+                item.setR2User(roleAssignments.get(index++ % roleAssignments.size()));
+            }
+        } else {
+            for (CarverItem item : matrix.getItems()) {
+                item.setCUser(null);
+                item.setAUser(null);
+                item.setRUser(null);
+                item.setVUser(null);
+                item.setEUser(null);
+                item.setR2User(null);
             }
         }
 
@@ -162,5 +216,39 @@ public class CarverMatrixService {
         }
 
         return results;
+    }
+
+    @Transactional
+    public List<CarverItem> updateCarverItems(CarverMatrix matrix, List<CarverItem> itemUpdates) {
+        List<CarverItem> updatedItems = new ArrayList<>();
+        for (CarverItem update : itemUpdates) {
+            if (update.getItemId() == null) {
+                throw new IllegalArgumentException("Each update must include an itemId.");
+            }
+            CarverItem existingItem = carverItemRepository.findById(update.getItemId()).orElseThrow(() -> new IllegalArgumentException("CarverItem not found with ID: " + update.getItemId()));
+            if (!existingItem.getCarverMatrix().getMatrixId().equals(matrix.getMatrixId())) {
+                throw new IllegalArgumentException("CarverItem with ID " + update.getItemId() +" does not belong to CarverMatrix " + matrix.getMatrixId());
+            }
+            if (update.getCriticality() != null) {
+                existingItem.setCriticality(update.getCriticality());
+            }
+            if (update.getAccessibility() != null) {
+                existingItem.setAccessibility(update.getAccessibility());
+            }
+            if (update.getRecoverability() != null) {
+                existingItem.setRecoverability(update.getRecoverability());
+            }
+            if (update.getVulnerability() != null) {
+                existingItem.setVulnerability(update.getVulnerability());
+            }
+            if (update.getEffect() != null) {
+                existingItem.setEffect(update.getEffect());
+            }
+            if (update.getRecognizability() != null) {
+                existingItem.setRecognizability(update.getRecognizability());
+            }
+            updatedItems.add(existingItem);
+        }
+        return carverItemRepository.saveAll(updatedItems);
     }
 }

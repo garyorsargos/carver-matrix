@@ -1,20 +1,84 @@
-import { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
-// Define the MultiMatrix type
-type MultiMatrix = Map<string, Map<string, number>>;
+export type MultiMatrix = Map<string, Map<string, number>>;
 
-// Define the context type
-type MultiMatrixContextType = {
-  multiMatrix: MultiMatrix;
-  setMultiMatrix: React.Dispatch<React.SetStateAction<MultiMatrix>>;
+export type ConfigType = {
+  r2Multi: number;
+  randomAssignment: boolean;
+  roleBased: boolean;
+  fivePointScoring: boolean;
+  cmulti: number;
+  amulti: number;
+  rmulti: number;
+  vmulti: number;
+  emulti: number;
+  description: string;
+  name: string;
 };
 
-// Create the context
-const MultiMatrixContext = createContext<MultiMatrixContextType | undefined>(
-  undefined,
-);
+export type MultiMatrixContextType = {
+  multiMatrix: MultiMatrix;
+  setMultiMatrix: React.Dispatch<React.SetStateAction<MultiMatrix>>;
+  config: ConfigType;
+  setConfig: React.Dispatch<React.SetStateAction<ConfigType>>;
+  itemIdMap: Map<string, number>;
+  setItemIdMap: React.Dispatch<React.SetStateAction<Map<string, number>>>;
+  updates: any[];
+  setUpdates: React.Dispatch<React.SetStateAction<any[]>>;
+};
 
-// Hook to use the MultiMatrix context
+const initialMultiMatrix: MultiMatrix = new Map([
+  [
+    "Nuclear Reactor",
+    new Map([
+      ["Criticality", 1],
+      ["Accessibility", 1],
+      ["Recuperability", 1],
+      ["Vulnerability", 1],
+      ["Effect", 1],
+      ["Recognizability", 1],
+    ]),
+  ],
+  [
+    "Water Supply",
+    new Map([
+      ["Criticality", 1],
+      ["Accessibility", 1],
+      ["Recuperability", 1],
+      ["Vulnerability", 1],
+      ["Effect", 1],
+      ["Recognizability", 1],
+    ]),
+  ],
+  [
+    "Apartment Building",
+    new Map([
+      ["Criticality", 1],
+      ["Accessibility", 1],
+      ["Recuperability", 1],
+      ["Vulnerability", 1],
+      ["Effect", 1],
+      ["Recognizability", 1],
+    ]),
+  ],
+]);
+
+const initialConfig: ConfigType = {
+  r2Multi: 1.0,
+  randomAssignment: true,
+  roleBased: false,
+  fivePointScoring: true,
+  cmulti: 1.0,
+  amulti: 1.0,
+  rmulti: 1.0,
+  vmulti: 1.0,
+  emulti: 1.0,
+  description: "",
+  name: "",
+};
+
+const MultiMatrixContext = createContext<MultiMatrixContextType | undefined>(undefined);
+
 export const useMultiMatrix = (): MultiMatrixContextType => {
   const context = useContext(MultiMatrixContext);
   if (!context) {
@@ -23,51 +87,27 @@ export const useMultiMatrix = (): MultiMatrixContextType => {
   return context;
 };
 
-// Provider Component
-export const MultiMatrixProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [multiMatrix, setMultiMatrix] = useState<MultiMatrix>(
-    new Map([
-      [
-        "Example Target 1",
-        new Map([
-          ["Criticality", 1],
-          ["Accessibility", 1],
-          ["Recuperability", 1],
-          ["Vulnerability", 1],
-          ["Effect", 1],
-          ["Recognizability", 1],
-        ]),
-      ],
-      [
-        "Example Target 2",
-        new Map([
-          ["Criticality", 1],
-          ["Accessibility", 1],
-          ["Recuperability", 1],
-          ["Vulnerability", 1],
-          ["Effect", 1],
-          ["Recognizability", 1],
-        ]),
-      ],
-      [
-        "Example Target 3",
-        new Map([
-          ["Criticality", 1],
-          ["Accessibility", 1],
-          ["Recuperability", 1],
-          ["Vulnerability", 1],
-          ["Effect", 1],
-          ["Recognizability", 1],
-        ]),
-      ],
-    ]),
-  );
+export const MultiMatrixProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [multiMatrix, setMultiMatrix] = useState<MultiMatrix>(initialMultiMatrix);
+  const [config, setConfig] = useState<ConfigType>(initialConfig);
+  const [itemIdMap, setItemIdMap] = useState<Map<string, number>>(new Map());
+  const [updates, setUpdates] = useState<any[]>([]);
+
+  const contextValue: MultiMatrixContextType = {
+    multiMatrix,
+    setMultiMatrix,
+    config,
+    setConfig,
+    itemIdMap,
+    setItemIdMap,
+    updates,
+    setUpdates,
+  };
 
   return (
-    <MultiMatrixContext.Provider value={{ multiMatrix, setMultiMatrix }}>
+    <MultiMatrixContext.Provider value={contextValue}>
       {children}
     </MultiMatrixContext.Provider>
   );
 };
+

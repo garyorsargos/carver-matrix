@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 import com.fmc.starterApp.models.entity.CarverMatrix;
+import com.fmc.starterApp.models.entity.CarverItem;
 import com.fmc.starterApp.services.CarverMatrixService;
 
 import lombok.AllArgsConstructor;
@@ -89,6 +90,23 @@ public class CarverMatrixController {
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{matrixId}/carveritems/update")
+    public ResponseEntity<?> updateCarverItems(@PathVariable Long matrixId,@RequestBody List<CarverItem> itemUpdates) {
+        try {
+            CarverMatrix matrix = carverMatrixService.getMatrixById(matrixId);
+            if (matrix == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("CarverMatrix not found with ID: " + matrixId);
+            }
+            List<CarverItem> updatedItems = carverMatrixService.updateCarverItems(matrix, itemUpdates);
+            return ResponseEntity.ok(updatedItems);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }
