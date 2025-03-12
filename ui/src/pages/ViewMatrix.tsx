@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -12,11 +12,10 @@ import {
 } from "@mui/material";
 import MatrixCard from "../components/containers/MatrixCard";
 import { useNavigate } from "react-router-dom";
-import { GlobalContext } from "../context/GlobalContext";
 import axios from "axios";
 
 interface CarverMatrix {
-  matrixId: number;
+  matrix_id: number;
   name: string;
   description: string;
 }
@@ -25,20 +24,20 @@ const ViewMatrix: React.FC = () => {
   const [matrices, setMatrices] = useState<CarverMatrix[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-  const { userId } = useContext(GlobalContext);
 
   useEffect(() => {
     const fetchMatrices = async () => {
-      if (!userId) {
-        return;
-      }
       // Assuming search endpoint can accept query parameters for hosts
       // and participants set to the logged in user's ID
-      const url = "http://localhost:9002/api/carvermatrices/search";
+      const url = "/api/carvermatrices/search";
       try {
         const response = await axios.get(url, { withCredentials: true });
-        if (Array.isArray(response.data)) {
-          setMatrices(response.data);
+        let matrixData;
+        if (response.data.includes("[")) {
+          const parts = response.data.split("]{");
+          matrixData = JSON.parse(parts[0] + "]");
+          setMatrices(matrixData);
+          console.log(parts[0]);
         } else {
           console.error("Unexpected response format:", response.data);
         }
@@ -47,7 +46,7 @@ const ViewMatrix: React.FC = () => {
       }
     };
     fetchMatrices();
-  }, [userId]);
+  }, []);
 
   // Matrices can be filtered by name or description
   const filteredMatrices = matrices.filter((matrix) => {
@@ -116,10 +115,10 @@ const ViewMatrix: React.FC = () => {
         {filteredMatrices.length > 0 ? (
           filteredMatrices.map((matrix) => (
             <MatrixCard
-              key={matrix.matrixId}
+              key={matrix.matrix_id}
               title={matrix.name}
               description={matrix.description}
-              onEdit={() => navigate(`/editMatrix/${matrix.matrixId}`)}
+              onEdit={() => navigate(`/editMatrix/${matrix.matrix_id}`)}
               onShare={() => console.log("Export", matrix.name)}
             />
           ))
