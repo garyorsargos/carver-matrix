@@ -139,8 +139,6 @@ const handleDeleteParticipant = (index: number) => {
     setRandomAssigned(event.target.value as string);
   };
 
-  const participants: string[] = [];
-
   const handleCreateMatrix = async () => {
     try
     {
@@ -167,7 +165,6 @@ const handleDeleteParticipant = (index: number) => {
       const parsedFirstObject = JSON.parse(firstObjectStr);
 
       const { userId, email } = parsedFirstObject;
-      participants.push(email);
 
       const items = targets.map((target) => ({
         itemName: target,
@@ -179,11 +176,14 @@ const handleDeleteParticipant = (index: number) => {
         recognizability: 0,
       }));
 
-      const hosts = participantsData
-      .map((p) =>
-        p.role === "Host" || p.role === "Host and Participant" ? p.email : null
-      )
-      .filter((email): email is string => email !== null);
+      const hosts = [
+        email, 
+        ...participantsData
+        .map((p) =>
+          p.role === "Host" || p.role === "Host and Participant" ? p.email : null
+        )
+        .filter((email): email is string => email !== null)
+      ];
 
       const participantEmails = participantsData
       .map((p) =>
