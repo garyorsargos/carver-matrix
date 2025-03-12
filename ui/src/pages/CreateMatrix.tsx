@@ -35,6 +35,7 @@ export const CreateMatrix: React.FC = () => {
   const navigate = useNavigate();
   const [targets, setTargets] = useState<string[]>([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [titleError, setTitleError] = useState(false);
   const [participantsData, setParticipantsData] = useState<
   { email: string; role: string }[]
   >([]);
@@ -143,6 +144,16 @@ const handleDeleteParticipant = (index: number) => {
   const handleCreateMatrix = async () => {
     try
     {
+      if (!title.trim()) 
+      {
+        setTitleError(true);
+        return;
+      } 
+      else 
+      {
+        setTitleError(false);
+      }
+    
       const whoamiUpsertResponse = await whoamiUpsert();
       const rawData = whoamiUpsertResponse.data; // This is a string containing two JSON objects, the first we only care about.
 
@@ -252,6 +263,8 @@ const handleDeleteParticipant = (index: number) => {
               style: { fontSize: "3rem", color: "black" },
             }}
             sx={{ flexGrow: 1 }}
+            error={titleError}
+            helperText={titleError ? "Matrix title is required" : ""}
           />
           {/* The Save button which sends the create matrix request to backend */}
           <Button
