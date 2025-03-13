@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -10,6 +10,8 @@ import {
   TableHead,
   TableRow,
   Paper,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import MatrixExplorer from "../components/custom/search/matrixExplorer";
 import CategoryGroup from "../components/custom/editMatrix/categoryGroup";
@@ -23,16 +25,87 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import axios from "axios";
 
-// This component contains the content of the page and uses our custom hook.
 const EditMatrixContent: React.FC = () => {
-  const { multiMatrix, config, updates } = useMultiMatrix();
+  const { config, rawItems } = useMultiMatrix();
+  const currentEmail = config.currentUserEmail;
+  const [showAllTargets, setShowAllTargets] = useState(false);
 
-  console.log(config);
+  // Determine user roles if roleBased is enabled.
+  const isRoleBased = config.roleBased;
+  const isHost =
+    isRoleBased && currentEmail ? config.hosts?.includes(currentEmail) : false;
+  const isParticipant =
+    isRoleBased && currentEmail ? config.participants?.includes(currentEmail) : false;
 
-  // Dynamically read targets from the multiMatrix keys and sort them alphabetically.
-  const targets = Array.from(multiMatrix.keys()).sort((a, b) =>
-    a.localeCompare(b)
-  );
+  // Compute displayed items based on role and the checkbox state.
+  const displayedItems = useMemo(() => {
+    if (isRoleBased) {
+      if (isHost && !isParticipant) {
+        // Host only: show all.
+        return rawItems;
+      } else if (isParticipant && !isHost) {
+        // Participant only: show only items where currentEmail is in targetUsers.
+        return rawItems.filter(
+          (item: any) =>
+            Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
+        );
+      } else if (isHost && isParticipant) {
+        // Both: use the checkbox to toggle.
+        return showAllTargets
+          ? rawItems
+          : rawItems.filter(
+              (item: any) =>
+                Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
+            );
+      }
+    } else {
+      // Not roleBased: use randomAssignment logic.
+      return config.randomAssignment
+        ? rawItems.filter(
+            (item: any) =>
+              Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
+          )
+        : rawItems;
+    }
+    return rawItems;
+  }, [
+    isRoleBased,
+    isHost,
+    isParticipant,
+    rawItems,
+    currentEmail,
+    config.randomAssignment,
+    showAllTargets,
+  ]);
+
+  // Debugging: log when displayedItems changes.
+  useEffect(() => {
+    console.log("showAllTargets:", showAllTargets, "Displayed items count:", displayedItems.length);
+  }, [showAllTargets, displayedItems]);
+
+  // Build matrix map and sorted target names.
+  const matrixMap = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+    displayedItems.forEach((item: any) => {
+      map.set(
+        item.itemName,
+        new Map([
+          ["Criticality", item.criticality],
+          ["Accessibility", item.accessibility],
+          ["Recuperability", item.recoverability],
+          ["Vulnerability", item.vulnerability],
+          ["Effect", item.effect],
+          ["Recognizability", item.recognizability],
+        ])
+      );
+    });
+    return map;
+  }, [displayedItems]);
+
+  const targets = useMemo(() => {
+    return Array.from(matrixMap.keys()).sort((a, b) => a.localeCompare(b));
+  }, [matrixMap]);
+
   const categories = [
     "Criticality",
     "Accessibility",
@@ -42,27 +115,36 @@ const EditMatrixContent: React.FC = () => {
     "Recognizability",
   ];
 
-  // This function generates the PDF.
+  // Determine whether to show the Export PDF button.
+  // For roleBased mode:
+  //   • Host only: always show.
+  //   • Participant only: hide.
+  //   • Both: show only if admin mode (showAllTargets) is enabled.
+  // For non–roleBased: always show.
+  const showExportPdf = useMemo(() => {
+    if (!isRoleBased) return true;
+    if (isHost && !isParticipant) return true;
+    if (isHost && isParticipant) return showAllTargets;
+    return false;
+  }, [isRoleBased, isHost, isParticipant, showAllTargets]);
+
   const openPdfInNewTab = async () => {
     const pdf = new jsPDF("p", "mm", "a4");
 
-    // Add page header (CARVER Matrix App)
-    pdf.setFillColor(0, 0, 0); // Black background
-    pdf.rect(0, 0, 210, 15, "F"); // Full-width black rectangle
+    pdf.setFillColor(0, 0, 0);
+    pdf.rect(0, 0, 210, 15, "F");
     pdf.setFontSize(16);
-    pdf.setTextColor(255, 255, 255); // White text
+    pdf.setTextColor(255, 255, 255);
     pdf.text("CARVER Matrix App", 14, 10);
 
-    // Add Matrix Title and Description
     pdf.setFontSize(14);
-    pdf.setTextColor(0, 0, 0); // Black text
+    pdf.setTextColor(0, 0, 0);
     pdf.setFont("helvetica", "bold");
     pdf.text(config.name, 14, 30);
     pdf.setFontSize(12);
     pdf.setFont("helvetica", "normal");
     pdf.text(config.description, 14, 40);
 
-    // Add the matrix image
     const element = document.getElementById("pdf-content");
     if (element) {
       const canvas = await html2canvas(element, { scale: 2 });
@@ -72,14 +154,12 @@ const EditMatrixContent: React.FC = () => {
       pdf.addImage(imgData, "PNG", 14, 50, pdfWidth - 28, pdfHeight);
     }
 
-    // Add Rankings Section
     pdf.setFontSize(14);
     pdf.setFont("helvetica", "bold");
     pdf.text("Rankings", 14, 140);
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(12);
 
-    // Calculate rankings
     const targetRanks: { target: string; totalScore: number }[] = [];
     const categoryToMultiplierMap: { [key: string]: keyof ConfigType } = {
       Criticality: "cmulti",
@@ -90,7 +170,7 @@ const EditMatrixContent: React.FC = () => {
       Recognizability: "r2Multi",
     };
 
-    multiMatrix.forEach((categoriesMap, target) => {
+    matrixMap.forEach((categoriesMap, target) => {
       let totalScore = 0;
       categoriesMap.forEach((score, category) => {
         const multiplierKey = categoryToMultiplierMap[category];
@@ -106,27 +186,22 @@ const EditMatrixContent: React.FC = () => {
       targetRanks.push({ target, totalScore });
     });
 
-    // Sort by total score (descending)
     targetRanks.sort((a, b) => b.totalScore - a.totalScore);
 
-    // List the targets with their ranking
     let yOffset = 150;
     targetRanks.forEach((item, index) => {
       pdf.text(`${index + 1}. ${item.target}: ${item.totalScore}`, 14, yOffset);
       yOffset += 10;
     });
 
-    // Add another page break
     pdf.addPage();
 
-    // Add Matrix Config Section
     pdf.setFontSize(14);
     pdf.setFont("helvetica", "bold");
     pdf.text("Matrix Config", 14, 20);
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(12);
 
-    // List the config properties
     const configProperties = [
       { label: "Random Participant Assignment", value: config.randomAssignment ? "Yes" : "No" },
       { label: "Role Based", value: config.roleBased ? "Yes" : "No" },
@@ -145,13 +220,11 @@ const EditMatrixContent: React.FC = () => {
       configYOffset += 10;
     });
 
-    // Open the generated PDF in a new tab
     const pdfBlob = pdf.output("blob");
     const pdfUrl = URL.createObjectURL(pdfBlob);
     window.open(pdfUrl, "_blank");
   };
 
-  // Function to handle submitting updates via a PUT request.
   const handleSubmitUpdates = () => {
     const params = new URLSearchParams(window.location.search);
     const matrixId = params.get("matrixId");
@@ -159,9 +232,8 @@ const EditMatrixContent: React.FC = () => {
       console.error("matrixId query parameter is missing.");
       return;
     }
-    console.log("Submitting updates:", updates);
     axios
-      .put(`/api/carvermatrices/${matrixId}/carveritems/update`, updates)
+      .put(`/api/carvermatrices/${matrixId}/carveritems/update`, {})
       .then((response) => {
         console.log("Updates submitted successfully", response);
       })
@@ -214,6 +286,18 @@ const EditMatrixContent: React.FC = () => {
             {config.name || "Matrix Name"}
           </Typography>
 
+          {isRoleBased && isHost && isParticipant && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={showAllTargets}
+                  onChange={(e) => setShowAllTargets(e.target.checked)}
+                />
+              }
+              label="Admin View"
+            />
+          )}
+
           <TableContainer
             component={Paper}
             sx={{
@@ -229,11 +313,7 @@ const EditMatrixContent: React.FC = () => {
                     Targets
                   </TableCell>
                   {categories.map((category) => (
-                    <TableCell
-                      key={category}
-                      align="center"
-                      sx={{ fontWeight: "bold", color: "white" }}
-                    >
+                    <TableCell key={category} align="center" sx={{ fontWeight: "bold", color: "white" }}>
                       {category}
                     </TableCell>
                   ))}
@@ -243,19 +323,13 @@ const EditMatrixContent: React.FC = () => {
                 {targets.map((target, index) => (
                   <TableRow
                     key={target}
-                    sx={{
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f5f5f5",
-                    }}
+                    sx={{ backgroundColor: index % 2 === 0 ? "#ffffff" : "#f5f5f5" }}
                   >
                     <TableCell align="center" sx={{ color: "black" }}>
                       {target}
                     </TableCell>
                     {categories.map((category) => (
-                      <TableCell
-                        key={`${target}-${category}`}
-                        align="center"
-                        sx={{ color: "black" }}
-                      >
+                      <TableCell key={`${target}-${category}`} align="center" sx={{ color: "black" }}>
                         <CategoryGroup category={category} targetTitle={target} />
                       </TableCell>
                     ))}
@@ -266,29 +340,21 @@ const EditMatrixContent: React.FC = () => {
           </TableContainer>
         </div>
 
-        <Button
-          variant="contained"
-          color="success"
-          sx={{ position: "absolute", bottom: 16, right: 16, zIndex: 10 }}
-          onClick={handleSubmitUpdates}
-        >
-          Submit
-        </Button>
-
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ position: "absolute", bottom: 16, right: 100, zIndex: 10 }}
-          onClick={openPdfInNewTab}
-        >
-          Export PDF
-        </Button>
+        <Box sx={{ position: "absolute", bottom: 16, right: 16, zIndex: 10 }}>
+          {showExportPdf && (
+            <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={openPdfInNewTab}>
+              Export PDF
+            </Button>
+          )}
+          <Button variant="contained" color="success" onClick={handleSubmitUpdates}>
+            Submit
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
 };
 
-// The main page component wraps the content with the provider.
 export const EditMatrix: React.FC = () => {
   return (
     <MultiMatrixProvider>
