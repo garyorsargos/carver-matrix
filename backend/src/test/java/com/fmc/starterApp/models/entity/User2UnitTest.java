@@ -16,12 +16,34 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
+/**
+ * Unit tests for the {@link User2} entity.
+ * 
+ * <p>This test class verifies the behavior of the User2 model, including:
+ * <ul>
+ *   <li>Proper initialization and setting of fields using the no-args and all-args constructors.</li>
+ *   <li>Default initialization of the {@code createdAt} timestamp.</li>
+ *   <li>Enforcement of non-null constraints via Lombok's {@code @NonNull} annotation in setters and constructors.</li>
+ *   <li>Edge case handling for empty strings and string lengths.</li>
+ *   <li>Default equals and hashCode behavior (object identity, since custom implementations are not provided).</li>
+ *   <li>Email validation using Jakarta Bean Validation annotations.</li>
+ * </ul>
+ * 
+ * <p>Note: The no-arguments constructor does not enforce non-null constraints; fields marked with
+ * {@code @NonNull} will remain {@code null} until explicitly set via setters.</p>
+ *
+ * @author Ricky Chen
+ * @version 1.0
+ */
 public class User2UnitTest {
 
+    /**
+     * Tests that the no-args constructor and subsequent setter calls properly assign values to the fields.
+     */
     @Test
     void testNoArgsConstructorAndSetters() {
         User2 user = new User2();
-        // Using setters to initialize fields
+        // Using setters to initialize fields.
         user.setUserId(1L);
         user.setKeycloakId("kc-12345");
         user.setFirstName("John");
@@ -30,7 +52,7 @@ public class User2UnitTest {
         user.setUsername("johndoe");
         user.setEmail("johndoe@example.com");
 
-        // Verifying that getters return the correct values
+        // Verifying that getters return the correct values.
         assertEquals(1L, user.getUserId());
         assertEquals("kc-12345", user.getKeycloakId());
         assertEquals("John", user.getFirstName());
@@ -40,12 +62,15 @@ public class User2UnitTest {
         assertEquals("johndoe@example.com", user.getEmail());
     }
 
+    /**
+     * Tests that the all-args constructor initializes all fields as expected.
+     */
     @Test
     void testAllArgsConstructor() {
         LocalDateTime now = LocalDateTime.now();
         User2 user = new User2(1L, "kc-12345", "John", "Doe", "John Doe", "johndoe", "johndoe@example.com", now);
 
-        // Verifying that the all-args constructor initializes the fields properly
+        // Verifying that the all-args constructor initializes each field properly.
         assertEquals(1L, user.getUserId());
         assertEquals("kc-12345", user.getKeycloakId());
         assertEquals("John", user.getFirstName());
@@ -56,68 +81,83 @@ public class User2UnitTest {
         assertEquals(now, user.getCreatedAt());
     }
 
+    /**
+     * Tests that the {@code createdAt} field is automatically initialized to the current timestamp.
+     */
     @Test
     void testDefaultCreatedAt() {
         User2 user = new User2();
-        // The default value for createdAt should be automatically set via field initialization
+        // Check that createdAt is not null by default.
         assertNotNull(user.getCreatedAt());
 
-        // Ensure that createdAt is set to a value close to the current time
+        // Validate that the createdAt time is within one second of the current time.
         LocalDateTime oneSecondAgo = LocalDateTime.now().minusSeconds(1);
         LocalDateTime oneSecondLater = LocalDateTime.now().plusSeconds(1);
         assertTrue(user.getCreatedAt().isAfter(oneSecondAgo) && user.getCreatedAt().isBefore(oneSecondLater),
             "createdAt should be set to the current time");
     }
 
+    /**
+     * Tests Lombok's {@code @NonNull} enforcement in setters.
+     * Setting a non-null field to null should throw a NullPointerException.
+     */
     @Test
     void testSetterNonNullEnforcement() {
         User2 user = new User2();
 
-        // Using the setter for keycloakId with a null value should throw a NullPointerException.
+        // Expect a NullPointerException when setting keycloakId to null.
         NullPointerException ex1 = assertThrows(NullPointerException.class, () -> {
             user.setKeycloakId(null);
         });
         assertTrue(ex1.getMessage().contains("keycloakId"), "Exception message should mention keycloakId");
 
-        // Similarly for username.
+        // Expect a NullPointerException when setting username to null.
         NullPointerException ex2 = assertThrows(NullPointerException.class, () -> {
             user.setUsername(null);
         });
         assertTrue(ex2.getMessage().contains("username"), "Exception message should mention username");
 
-        // And for email.
+        // Expect a NullPointerException when setting email to null.
         NullPointerException ex3 = assertThrows(NullPointerException.class, () -> {
             user.setEmail(null);
         });
         assertTrue(ex3.getMessage().contains("email"), "Exception message should mention email");
     }
 
+    /**
+     * Tests Lombok's {@code @NonNull} enforcement in the all-arguments constructor.
+     * Passing null for any non-null field should trigger a NullPointerException.
+     */
     @Test
     void testAllArgsConstructorNonNullEnforcement() {
         LocalDateTime now = LocalDateTime.now();
 
-        // Passing a null for keycloakId in the all-args constructor should trigger a NullPointerException.
+        // Passing null for keycloakId in the all-args constructor.
         NullPointerException ex1 = assertThrows(NullPointerException.class, () -> {
             new User2(1L, null, "John", "Doe", "John Doe", "johndoe", "john@example.com", now);
         });
         assertTrue(ex1.getMessage().contains("keycloakId"));
 
-        // Passing a null for username should trigger a NullPointerException.
+        // Passing null for username in the all-args constructor.
         NullPointerException ex2 = assertThrows(NullPointerException.class, () -> {
             new User2(1L, "kc-1", "John", "Doe", "John Doe", null, "john@example.com", now);
         });
         assertTrue(ex2.getMessage().contains("username"));
 
-        // Passing a null for email should trigger a NullPointerException.
+        // Passing null for email in the all-args constructor.
         NullPointerException ex3 = assertThrows(NullPointerException.class, () -> {
             new User2(1L, "kc-1", "John", "Doe", "John Doe", "johndoe", null, now);
         });
         assertTrue(ex3.getMessage().contains("email"));
     }
 
+    /**
+     * Tests that setting fields to empty strings works as expected.
+     */
     @Test
     void testEmptyStringValues() {
         User2 user = new User2();
+        // Setting all string fields to empty strings.
         user.setKeycloakId("");
         user.setFirstName("");
         user.setLastName("");
@@ -125,6 +165,7 @@ public class User2UnitTest {
         user.setUsername("");
         user.setEmail("");
 
+        // Verify that the fields are indeed empty strings.
         assertEquals("", user.getKeycloakId(), "KeycloakId should be an empty string");
         assertEquals("", user.getFirstName(), "FirstName should be an empty string");
         assertEquals("", user.getLastName(), "LastName should be an empty string");
@@ -133,6 +174,9 @@ public class User2UnitTest {
         assertEquals("", user.getEmail(), "Email should be an empty string");
     }
 
+    /**
+     * Tests that fields constrained by maximum length behave as expected.
+     */
     @Test
     void testMaxLengthStringValues() {
         // Create a string of exactly 50 characters.
@@ -142,16 +186,20 @@ public class User2UnitTest {
         user.setLastName(fiftyChars);
         user.setFullName(fiftyChars);
         user.setUsername(fiftyChars);
-        // For email, although no length limit is enforced in the entity (other than uniqueness and not-null),
-        // we combine the 50-char string with a domain for demonstration.
+        // For email, combining the 50-char string with a domain.
         user.setEmail(fiftyChars + "@test.com");
 
+        // Verify that the string lengths meet expectations.
         assertEquals(50, user.getFirstName().length(), "FirstName should be 50 characters long");
         assertEquals(50, user.getLastName().length(), "LastName should be 50 characters long");
         assertEquals(50, user.getFullName().length(), "FullName should be 50 characters long");
         assertEquals(50, user.getUsername().length(), "Username should be 50 characters long");
     }
 
+    /**
+     * Tests that string values longer than the column definition are accepted in the entity,
+     * as the enforcement of length is handled by the database.
+     */
     @Test
     void testLongStringValuesExceedingColumnDefinition() {
         // Create a string longer than 50 characters.
@@ -163,48 +211,61 @@ public class User2UnitTest {
         user.setUsername(longString);
         user.setEmail(longString + "@example.com");
 
-        // The entity does not enforce the column length on the setter level,
-        // so it should hold the entire string.
+        // The entity's setters accept long strings; length checks occur at the database level.
         assertEquals(longString, user.getFirstName(), "FirstName should accept strings longer than 50 characters");
         assertEquals(longString, user.getLastName(), "LastName should accept strings longer than 50 characters");
         assertEquals(longString, user.getFullName(), "FullName should accept strings longer than 50 characters");
         assertEquals(longString, user.getUsername(), "Username should accept strings longer than 50 characters");
     }
 
+    /**
+     * Tests that a setter call can override an existing value.
+     */
     @Test
     void testSetterOverride() {
         User2 user = new User2();
         user.setFirstName("Initial");
+        // Verify initial value.
         assertEquals("Initial", user.getFirstName(), "Initial value should be set");
 
-        // Override the previous value.
+        // Override with a new value.
         user.setFirstName("Updated");
         assertEquals("Updated", user.getFirstName(), "Setter should override previous value");
     }
 
+    /**
+     * Tests the default equals and hashCode behavior.
+     * Since no custom implementations are provided, two instances with identical field values are not equal.
+     */
     @Test
     void testEqualsAndHashCodeBehavior() {
-        // Since no custom equals/hashCode are defined, two objects with the same field values
-        // should not be equal unless they are the same instance.
         LocalDateTime now = LocalDateTime.now();
         User2 user1 = new User2(1L, "kc-1", "John", "Doe", "John Doe", "johndoe", "john@example.com", now);
         User2 user2 = new User2(1L, "kc-1", "John", "Doe", "John Doe", "johndoe", "john@example.com", now);
 
+        // Different instances with the same field values should not be equal.
         assertNotEquals(user1, user2, "Different instances should not be equal without custom equals implementation");
+        // The same instance should be equal to itself.
         assertEquals(user1, user1, "The same instance should be equal to itself");
     }
 
+    /**
+     * Tests that the {@code createdAt} field can be explicitly set to {@code null}.
+     */
     @Test
     void testSetCreatedAtToNull() {
         User2 user = new User2();
-        // By default, createdAt is set via field initialization.
+        // Verify that createdAt is automatically initialized.
         assertNotNull(user.getCreatedAt(), "createdAt should be initialized by default");
 
-        // Explicitly setting createdAt to null.
+        // Setting createdAt to null should update the value.
         user.setCreatedAt(null);
         assertNull(user.getCreatedAt(), "createdAt should be null after being explicitly set to null");
     }
 
+    /**
+     * Tests that the userId field accepts negative values when set manually.
+     */
     @Test
     void testUserIdNegativeValue() {
         User2 user = new User2();
@@ -212,6 +273,9 @@ public class User2UnitTest {
         assertEquals(-1L, user.getUserId(), "UserId should accept negative values if set manually");
     }
 
+    /**
+     * Tests that a valid email passes the validation constraints.
+     */
     @Test
     void testValidEmail() {
         // Create a new validator instance for this test.
@@ -222,11 +286,14 @@ public class User2UnitTest {
         user.setUsername("validUsername");
         user.setEmail("valid@example.com");
 
+        // Validate the user and expect no constraint violations for a valid email.
         Set<ConstraintViolation<User2>> violations = validator.validate(user);
-        // Expect no constraint violations when email is valid.
         assertTrue(violations.isEmpty(), "Expected no constraint violations for a valid email");
     }
 
+    /**
+     * Tests that an invalid email format triggers validation constraint violations.
+     */
     @Test
     void testInvalidEmail() {
         // Create a new validator instance for this test.
@@ -235,13 +302,14 @@ public class User2UnitTest {
         User2 user = new User2();
         user.setKeycloakId("validKeycloakId");
         user.setUsername("validUsername");
-        user.setEmail("invalid-email"); // invalid format
+        // Set an invalid email format.
+        user.setEmail("invalid-email");
 
+        // Validate the user and expect constraint violations for the email field.
         Set<ConstraintViolation<User2>> violations = validator.validate(user);
-        // Expect violations for the invalid email.
         assertFalse(violations.isEmpty(), "Expected constraint violations for an invalid email");
 
-        // Verify that at least one violation is related to the email field.
+        // Confirm that one of the violations specifically targets the email field.
         boolean emailViolationFound = violations.stream()
                 .anyMatch(violation -> violation.getPropertyPath().toString().equals("email"));
         assertTrue(emailViolationFound, "Expected a violation on the email field");
