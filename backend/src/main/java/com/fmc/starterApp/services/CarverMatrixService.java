@@ -83,48 +83,42 @@ public class CarverMatrixService {
 
         if (Boolean.TRUE.equals(matrix.getRandomAssignment()) && matrix.getParticipants() != null && matrix.getParticipants().length > 0) {
             List<String> participants = new ArrayList<>(Arrays.asList(matrix.getParticipants()));
+            List<CarverItem> items = matrix.getItems();
             Random random = new Random();
-            Map<String, Integer> assignmentCounts = new HashMap<>();
-            participants.forEach(p -> assignmentCounts.put(p, 0));
-            int totalRoles = matrix.getItems().size() * 6;
-            int baseAssignments = totalRoles / participants.size();
-            int extraAssignments = totalRoles % participants.size();
             
-            for (String participant : participants) {
-                assignmentCounts.put(participant, baseAssignments);
-            }
             
             Collections.shuffle(participants, random);
-            for (int i = 0; i < extraAssignments; i++) {
-                String chosenParticipant = participants.get(i);
-                assignmentCounts.put(chosenParticipant, assignmentCounts.get(chosenParticipant) + 1);
-            }
+            List<String> initialAssignments = new ArrayList<>(participants.subList(0, Math.min(items.size(), participants.size())));
             
-            List<String> roleAssignments = new ArrayList<>();
-            for (Map.Entry<String, Integer> entry : assignmentCounts.entrySet()) {
-                for (int i = 0; i < entry.getValue(); i++) {
-                    roleAssignments.add(entry.getKey());
-                }
-            }
             
-            Collections.shuffle(roleAssignments, random);
+            for (int i = 0; i < items.size(); i++) {
+                items.get(i).setTargetUsers(new String[]{initialAssignments.get(i % initialAssignments.size())});
+            }
+
+            
+            List<String> remainingParticipants = new ArrayList<>(participants);
+            remainingParticipants.removeAll(initialAssignments);
+            Collections.shuffle(remainingParticipants, random);
+            
+            
+            List<Integer> itemIndices = new ArrayList<>();
+            for (int i = 0; i < items.size(); i++) {
+                itemIndices.add(i);
+            }
+            Collections.shuffle(itemIndices, random);
+            
             int index = 0;
-            for (CarverItem item : matrix.getItems()) {
-                item.setCUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setAUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setRUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setVUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setEUser(roleAssignments.get(index++ % roleAssignments.size()));
-                item.setR2User(roleAssignments.get(index++ % roleAssignments.size()));
+            while (!remainingParticipants.isEmpty()) {
+                int itemIndex = itemIndices.get(index % items.size());
+                CarverItem item = items.get(itemIndex);
+                List<String> currentUsers = new ArrayList<>(Arrays.asList(item.getTargetUsers()));
+                currentUsers.add(remainingParticipants.remove(0));
+                item.setTargetUsers(currentUsers.toArray(new String[0]));
+                index++;
             }
         } else {
             for (CarverItem item : matrix.getItems()) {
-                item.setCUser(null);
-                item.setAUser(null);
-                item.setRUser(null);
-                item.setVUser(null);
-                item.setEUser(null);
-                item.setR2User(null);
+                item.setTargetUsers(new String[0]);
             }
         }
 

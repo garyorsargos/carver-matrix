@@ -35,6 +35,7 @@ export const CreateMatrix: React.FC = () => {
   const navigate = useNavigate();
   const [targets, setTargets] = useState<string[]>([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [titleError, setTitleError] = useState(false);
   const [participantsData, setParticipantsData] = useState<
   { email: string; role: string }[]
   >([]);
@@ -138,11 +139,19 @@ const handleDeleteParticipant = (index: number) => {
     setRandomAssigned(event.target.value as string);
   };
 
-  const participants: string[] = [];
-
   const handleCreateMatrix = async () => {
     try
     {
+      if (!title.trim()) 
+      {
+        setTitleError(true);
+        return;
+      } 
+      else 
+      {
+        setTitleError(false);
+      }
+    
       const whoamiUpsertResponse = await whoamiUpsert();
       const rawData = whoamiUpsertResponse.data; // This is a string containing two JSON objects, the first we only care about.
 
@@ -156,7 +165,6 @@ const handleDeleteParticipant = (index: number) => {
       const parsedFirstObject = JSON.parse(firstObjectStr);
 
       const { userId, email } = parsedFirstObject;
-      participants.push(email);
 
       const items = targets.map((target) => ({
         itemName: target,
@@ -168,11 +176,14 @@ const handleDeleteParticipant = (index: number) => {
         recognizability: 0,
       }));
 
-      const hosts = participantsData
-      .map((p) =>
-        p.role === "Host" || p.role === "Host and Participant" ? p.email : null
-      )
-      .filter((email): email is string => email !== null);
+      const hosts = [
+        email, 
+        ...participantsData
+        .map((p) =>
+          p.role === "Host" || p.role === "Host and Participant" ? p.email : null
+        )
+        .filter((email): email is string => email !== null)
+      ];
 
       const participantEmails = participantsData
       .map((p) =>
@@ -252,6 +263,8 @@ const handleDeleteParticipant = (index: number) => {
               style: { fontSize: "3rem", color: "black" },
             }}
             sx={{ flexGrow: 1 }}
+            error={titleError}
+            helperText={titleError ? "Matrix title is required" : ""}
           />
           {/* The Save button which sends the create matrix request to backend */}
           <Button

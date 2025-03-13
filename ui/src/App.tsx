@@ -51,14 +51,6 @@ export const App = () => {
             Create
           </Button>
           <Button
-            data-testid="start-register"
-            variant="contained"
-            sx={{ borderRadius: "18px" }}
-            onClick={() => navigate(ROUTES.register)}
-          >
-            Register
-          </Button>
-          <Button
             variant="contained"
             sx={{ borderRadius: "18px" }}
             onClick={() => navigate(ROUTES.landing)}
