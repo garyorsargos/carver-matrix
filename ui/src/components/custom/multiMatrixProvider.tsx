@@ -14,6 +14,10 @@ export type ConfigType = {
   emulti: number;
   description: string;
   name: string;
+  // New fields for role-based matrices:
+  hosts?: string[];
+  participants?: string[];
+  currentUserEmail?: string;
 };
 
 export type MultiMatrixContextType = {
@@ -25,6 +29,9 @@ export type MultiMatrixContextType = {
   setItemIdMap: React.Dispatch<React.SetStateAction<Map<string, number>>>;
   updates: any[];
   setUpdates: React.Dispatch<React.SetStateAction<any[]>>;
+  // New rawItems state to store the full items list from the API:
+  rawItems: any[];
+  setRawItems: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 const initialMultiMatrix: MultiMatrix = new Map([
@@ -75,6 +82,9 @@ const initialConfig: ConfigType = {
   emulti: 1.0,
   description: "",
   name: "",
+  hosts: [],
+  participants: [],
+  currentUserEmail: "",
 };
 
 const MultiMatrixContext = createContext<MultiMatrixContextType | undefined>(undefined);
@@ -92,6 +102,7 @@ export const MultiMatrixProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [config, setConfig] = useState<ConfigType>(initialConfig);
   const [itemIdMap, setItemIdMap] = useState<Map<string, number>>(new Map());
   const [updates, setUpdates] = useState<any[]>([]);
+  const [rawItems, setRawItems] = useState<any[]>([]);
 
   const contextValue: MultiMatrixContextType = {
     multiMatrix,
@@ -102,6 +113,8 @@ export const MultiMatrixProvider: React.FC<{ children: ReactNode }> = ({ childre
     setItemIdMap,
     updates,
     setUpdates,
+    rawItems,
+    setRawItems,
   };
 
   return (
