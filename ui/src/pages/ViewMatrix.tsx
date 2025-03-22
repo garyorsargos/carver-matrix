@@ -12,38 +12,50 @@ import {
 } from "@mui/material";
 import MatrixCard from "../components/containers/MatrixCard";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+interface CarverMatrix {
+  matrixId: number;
+  name: string;
+  description: string;
+}
 
 const ViewMatrix: React.FC = () => {
-  // Context and state
-  // const { makeRequest } = useContext(GlobalContext);
-  const [matrices, setMatrices] = useState<
-    { title: string; description: string }[]
-  >([]);
+  const [matrices, setMatrices] = useState<CarverMatrix[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMatrices = async () => {
+      // Assuming search endpoint can accept query parameters for hosts
+      // and participants set to the logged in user's ID
+      const url = "/api/carvermatrices/search";
       try {
-        // TODO: Replace with actual API call
-        const placeholderData = [
-          { title: "Matrix 1", description: "Placeholder matrix 1" },
-          { title: "Matrix 2", description: "Placeholder matrix 2" },
-          { title: "Matrix 3", description: "Placeholder matrix 3" },
-        ];
-        setMatrices(placeholderData);
+        const response = await axios.get(url, { withCredentials: true });
+        let matrixData;
+        if (response.data.includes("[")) {
+          const parts = response.data.split("]{");
+          matrixData = JSON.parse(parts[0] + "]");
+          setMatrices(matrixData);
+          console.log(parts[0]);
+        } else {
+          console.error("Unexpected response format:", response.data);
+        }
       } catch (error) {
         console.error("Error fetching matrices:", error);
       }
     };
-
     fetchMatrices();
   }, []);
 
-  // Filter matrices based on search input
-  const filteredMatrices = matrices.filter((matrix) =>
-    matrix.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Matrices can be filtered by name or description
+  const filteredMatrices = matrices.filter((matrix) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      matrix.name.toLowerCase().includes(term) ||
+      matrix.description.toLowerCase().includes(term)
+    );
+  });
 
   return (
     <Box display="flex">
@@ -101,15 +113,22 @@ const ViewMatrix: React.FC = () => {
         }}
       >
         {filteredMatrices.length > 0 ? (
-          filteredMatrices.map((matrix, index) => (
-            <MatrixCard
-              key={index}
-              title={matrix.title}
-              description={matrix.description}
-              onEdit={() => navigate(`/editMatrix/${matrix.title}`)}
-              onShare={() => console.log("Export", matrix.title)}
-            />
-          ))
+          filteredMatrices.map((matrix) => {
+            console.log("Matrix:", matrix);
+            console.log("Matrix ID:", matrix.matrixId);
+            return (
+              <MatrixCard
+                key={matrix.matrixId}
+                title={matrix.name}
+                description={matrix.description}
+                onEditMatrix={() => {
+                  const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
+                  console.log("Navigating to:", url);
+                  navigate(url);
+                }}
+              />
+            );
+          })
         ) : (
           <Typography>No matrices found.</Typography>
         )}
