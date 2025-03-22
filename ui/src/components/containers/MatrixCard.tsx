@@ -5,14 +5,12 @@ interface MatrixCardProps {
   title: string;
   description: string;
   onEditMatrix: () => void;
-  onShare: () => void;
 }
 
 const MatrixCard: React.FC<MatrixCardProps> = ({
   title,
   description,
   onEditMatrix,
-  onShare,
 }) => {
   return (
     <Paper
@@ -35,9 +33,6 @@ const MatrixCard: React.FC<MatrixCardProps> = ({
       <Box display="flex" justifyContent="space-between">
         <Button variant="outlined" color="primary" onClick={onEditMatrix}>
           Edit Matrix
-        </Button>
-        <Button variant="contained" color="secondary" onClick={onShare}>
-          Export as PDF
         </Button>
       </Box>
     </Paper>

@@ -126,7 +126,6 @@ const ViewMatrix: React.FC = () => {
                   console.log("Navigating to:", url);
                   navigate(url);
                 }}
-                onShare={() => console.log("Export", matrix.name)}
               />
             );
           })
