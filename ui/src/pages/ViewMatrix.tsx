@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 interface CarverMatrix {
-  matrix_id: number;
+  matrixId: number;
   name: string;
   description: string;
 }
@@ -113,15 +113,23 @@ const ViewMatrix: React.FC = () => {
         }}
       >
         {filteredMatrices.length > 0 ? (
-          filteredMatrices.map((matrix) => (
-            <MatrixCard
-              key={matrix.matrix_id}
-              title={matrix.name}
-              description={matrix.description}
-              onEdit={() => navigate(`/editMatrix/${matrix.matrix_id}`)}
-              onShare={() => console.log("Export", matrix.name)}
-            />
-          ))
+          filteredMatrices.map((matrix) => {
+            console.log("Matrix:", matrix);
+            console.log("Matrix ID:", matrix.matrixId);
+            return (
+              <MatrixCard
+                key={matrix.matrixId}
+                title={matrix.name}
+                description={matrix.description}
+                onEditMatrix={() => {
+                  const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
+                  console.log("Navigating to:", url);
+                  navigate(url);
+                }}
+                onShare={() => console.log("Export", matrix.name)}
+              />
+            );
+          })
         ) : (
           <Typography>No matrices found.</Typography>
         )}

@@ -4,14 +4,14 @@ import { Box, Typography, Button, Paper } from "@mui/material";
 interface MatrixCardProps {
   title: string;
   description: string;
-  onEdit: () => void;
+  onEditMatrix: () => void;
   onShare: () => void;
 }
 
 const MatrixCard: React.FC<MatrixCardProps> = ({
   title,
   description,
-  onEdit,
+  onEditMatrix,
   onShare,
 }) => {
   return (
@@ -33,7 +33,7 @@ const MatrixCard: React.FC<MatrixCardProps> = ({
 
       {/* Buttons */}
       <Box display="flex" justifyContent="space-between">
-        <Button variant="outlined" color="primary" onClick={onEdit}>
+        <Button variant="outlined" color="primary" onClick={onEditMatrix}>
           Edit Matrix
         </Button>
         <Button variant="contained" color="secondary" onClick={onShare}>
