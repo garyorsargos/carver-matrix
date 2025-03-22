@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.List;
 import java.util.Map;
@@ -94,16 +96,19 @@ public class CarverMatrixController {
     }
 
     @PutMapping("/{matrixId}/carveritems/update")
-    public ResponseEntity<?> updateCarverItems(@PathVariable Long matrixId,@RequestBody List<CarverItem> itemUpdates) {
+    public ResponseEntity<?> updateCarverItems(@PathVariable Long matrixId, @RequestBody List<Map<String, Object>> updates, @AuthenticationPrincipal Jwt jwt) {
         try {
             CarverMatrix matrix = carverMatrixService.getMatrixById(matrixId);
             if (matrix == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("CarverMatrix not found with ID: " + matrixId);
             }
-            List<CarverItem> updatedItems = carverMatrixService.updateCarverItems(matrix, itemUpdates);
+
+            String userEmail = jwt.getClaimAsString("email");
+            List<CarverItem> updatedItems = carverMatrixService.updateCarverItemsFromMap(matrix, updates, userEmail);
             return ResponseEntity.ok(updatedItems);
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
