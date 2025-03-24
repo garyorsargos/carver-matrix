@@ -13,17 +13,28 @@ const Landing: React.FC<LandingProps> = ({ userName }) => {
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "100vh",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         gap: 2,
-        backgroundColor: "white",
+        backgroundColor: "#D3D3D3",
         padding: 2,
+        margin: 0,
+        boxSizing: "border-box",
+        overflowX: "hidden",
       }}
     >
-      <Typography variant="h3" sx={{ fontWeight: "bold", marginBottom: 3 }}>
+      <Typography 
+        variant="h3" 
+        sx={{ 
+          fontWeight: "bold", 
+          marginBottom: 3,
+          textAlign: "center"
+        }}
+      >
         Hello, {userName}
       </Typography>
 
@@ -36,10 +47,19 @@ const Landing: React.FC<LandingProps> = ({ userName }) => {
           height: "200px",
           objectFit: "cover",
           borderRadius: 2,
+          display: "block",
+          margin: "0 auto",
         }}
       />
 
-      <Box sx={{ display: "flex", gap: 2 }}>
+      <Box 
+        sx={{ 
+          display: "flex", 
+          gap: 2,
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
         <Button
           variant="contained"
           color="primary"
@@ -48,11 +68,11 @@ const Landing: React.FC<LandingProps> = ({ userName }) => {
           Create Matrix
         </Button>
         <Button
-          variant="outlined"
+          variant="contained"
           color="primary"
-          onClick={() => navigate(ROUTES.home)}
+          onClick={() => navigate(ROUTES.viewMatrix)}
         >
-          Back to Home
+          View Matrices
         </Button>
       </Box>
     </Box>

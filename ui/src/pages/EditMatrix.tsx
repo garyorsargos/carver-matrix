@@ -243,18 +243,18 @@ const EditMatrixContent: React.FC = () => {
   };
 
   return (
-    <Box display="flex" flexDirection="row" sx={{ height: "85vh", mt: 2, gap: 2 }}>
+    <Box display="flex" flexDirection="row" sx={{ height: "85vh", mt: 2, gap: 2, p: 2, borderRadius: 2 }}>
       <MatrixLoader />
       <Box
         id="matrixExplorerBox"
         sx={{
           width: "20%",
           minWidth: "200px",
-          borderRadius: 1,
-          backgroundColor: "#f5f5f5",
+          backgroundColor: "#ffffff",
           overflowY: "auto",
           p: 1,
           flexShrink: 0,
+          borderRadius: 1,
         }}
       >
         <MatrixExplorer />
@@ -263,7 +263,6 @@ const EditMatrixContent: React.FC = () => {
         id="matrixEditorBox"
         sx={{
           flexGrow: 1,
-          borderRadius: 1,
           backgroundColor: "#ffffff",
           overflowY: "auto",
           p: 1,
@@ -271,6 +270,7 @@ const EditMatrixContent: React.FC = () => {
           flexDirection: "column",
           minWidth: 0,
           position: "relative",
+          borderRadius: 1,
         }}
       >
         <div id="pdf-content">
@@ -283,7 +283,7 @@ const EditMatrixContent: React.FC = () => {
               color: "black",
             }}
           >
-            {config.name || "Matrix Name"}
+            {config.name || ""}
           </Typography>
 
           {isRoleBased && isHost && isParticipant && (

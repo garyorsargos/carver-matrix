@@ -1,6 +1,5 @@
 body {
   margin: 0;
   padding: 0;
-  background-image: url("/app-background.png");
-  background-size: cover;
+  background-color: #D3D3D3;
 }

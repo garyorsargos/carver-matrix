@@ -49,13 +49,13 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
    */
   useEffect(() => {
     if (!Object.values(ROUTES).includes(location.pathname)) {
-      navigate(ROUTES.home);
+      navigate(ROUTES.landing);
     }
     if (
       ADMIN_ROUTES.includes(location.pathname) &&
       !roles.includes(USER_ROLES.admin)
     ) {
-      navigate(ROUTES.home);
+      navigate(ROUTES.landing);
     }
   }, [roles, location.pathname]);
 
@@ -112,7 +112,7 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
                   alignItems: "center",
                 }}
               >
-                <IconButton onClick={() => navigate(ROUTES.home)}>
+                <IconButton onClick={() => navigate(ROUTES.viewMatrix)}>
                   <img src="/AIDIV-logo.svg" />
                 </IconButton>
                 <Typography variant="h5">CARVER Matrix App</Typography>
