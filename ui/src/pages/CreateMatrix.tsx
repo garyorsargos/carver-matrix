@@ -200,7 +200,7 @@ export const CreateMatrix: React.FC = () => {
         r2Multi: multipliers["Recognizability"],
         randomAssignment: randomAssigned === "random" ? true : false,
         roleBased: RoleBasedChecked,
-        fivePointScoring: value,
+        fivePointScoring: value === 5 ? true : false,
         items: items,
       };
 
