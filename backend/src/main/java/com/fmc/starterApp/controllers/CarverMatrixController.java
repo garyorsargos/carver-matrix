@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.List;
 import java.util.Map;
@@ -84,8 +86,17 @@ public class CarverMatrixController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchCarverMatrices(@RequestParam Map<String, String> searchParams) {
+    public ResponseEntity<?> searchCarverMatrices(@RequestParam Map<String, String> searchParams, @AuthenticationPrincipal Jwt jwt) {
         try {
+            // Get user's email from JWT token
+            String userEmail = jwt.getClaim("email");
+            if (userEmail == null || userEmail.isEmpty()) {
+                return ResponseEntity.badRequest().body("User email not found in token");
+            }
+            
+            // Add user's email to search params
+            searchParams.put("userEmail", userEmail);
+            
             List<CarverMatrix> results = carverMatrixService.searchCarverMatrices(searchParams);
             return ResponseEntity.ok(results);
         } catch (Exception e) {
