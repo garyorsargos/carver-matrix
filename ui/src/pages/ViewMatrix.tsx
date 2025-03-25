@@ -37,39 +37,76 @@ const ViewMatrix: React.FC = () => {
   useEffect(() => {
     const fetchUserEmail = async () => {
       try {
-        const response = await axios.get('/api/user2/whoami-upsert', { withCredentials: true });
-        if (response.data.includes('{')) {
-          const userData = JSON.parse(response.data.split('}{')[0] + '}');
+        const response = await axios.get("/api/user2/whoami-upsert", {
+          withCredentials: true,
+        });
+        if (typeof response.data === "string" && response.data.includes("{")) {
+          const userData = JSON.parse(response.data.split("}{")[0] + "}");
           setUserEmail(userData.email);
         }
       } catch (error) {
-        console.error('Error fetching user email:', error);
+        console.error("Error fetching user email:", error);
       }
     };
 
-    const fetchMatrices = async () => {
-      const url = "/api/carvermatrices/search";
+    fetchUserEmail();
+  }, []);
+
+  // Helper to parse matrix response if it comes back as a string
+  const parseMatrixResponse = (data: unknown): CarverMatrix[] => {
+    if (typeof data === "string" && data.includes("[")) {
+      const parts = data.split("]{");
+      return JSON.parse(parts[0] + "]");
+    } else if (Array.isArray(data)) {
+      return data as CarverMatrix[];
+    } else {
+      console.error("Unexpected response format:", data);
+      return [];
+    }
+  };
+
+  // fetch matrices where user is host & participant
+  useEffect(() => {
+    if (!userEmail) return;
+
+    const fetchAssociatedMatrices = async () => {
       try {
-        const response = await axios.get(url, { withCredentials: true });
-        let matrixData;
-        if (response.data.includes("[")) {
-          const parts = response.data.split("]{");
-          matrixData = JSON.parse(parts[0] + "]");
-          setMatrices(matrixData);
-        }
+        // Get matrices where the user is host
+        const hostUrl = `/api/carvermatrices/search?hosts=${encodeURIComponent(userEmail)}&participants=`;
+        // Get matrices where the user is participant
+        const participantUrl = `/api/carvermatrices/search?hosts=&participants=${encodeURIComponent(userEmail)}`;
+
+        // Make both calls in parallel
+        const [hostRes, participantRes] = await Promise.all([
+          axios.get(hostUrl, { withCredentials: true }),
+          axios.get(participantUrl, { withCredentials: true }),
+        ]);
+
+        const hostData = parseMatrixResponse(hostRes.data);
+        const participantData = parseMatrixResponse(participantRes.data);
+
+        // Combine the two arrays
+        const combined = [...hostData, ...participantData];
+
+        // Remove duplicates by matrixId
+        const unique = combined.filter(
+          (matrix, index, self) =>
+            index === self.findIndex((m) => m.matrixId === matrix.matrixId)
+        );
+
+        setMatrices(unique);
       } catch (error) {
         console.error("Error fetching matrices:", error);
       }
     };
 
-    fetchUserEmail();
-    fetchMatrices();
-  }, []);
+    fetchAssociatedMatrices();
+  }, [userEmail]);
 
   const handleRoleFilterChange = (role: keyof typeof roleFilters) => {
-    setRoleFilters(prev => ({
+    setRoleFilters((prev) => ({
       ...prev,
-      [role]: !prev[role]
+      [role]: !prev[role],
     }));
   };
 
@@ -77,40 +114,26 @@ const ViewMatrix: React.FC = () => {
   const filteredMatrices = matrices.filter((matrix) => {
     // Text search filter
     const term = searchTerm.toLowerCase();
-    const matchesSearch = matrix.name.toLowerCase().includes(term) ||
+    const matchesSearch =
+      matrix.name.toLowerCase().includes(term) ||
       matrix.description.toLowerCase().includes(term);
 
-    // If no role filters are selected, only apply text search
+    // If no role filters are selected, we just apply text search
     if (!roleFilters.host && !roleFilters.participant && !roleFilters.both) {
       return matchesSearch;
     }
 
     // Role-based filtering
-    if (!userEmail) {
-      console.log('No user email available');
-      return false;
-    }
+    if (!userEmail) return false;
 
     const isHost = matrix.hosts?.includes(userEmail) || false;
     const isParticipant = matrix.participants?.includes(userEmail) || false;
     const isBoth = isHost && isParticipant;
 
-    console.log('Matrix:', matrix.name);
-    console.log('Current user email:', userEmail);
-    console.log('Hosts:', matrix.hosts);
-    console.log('Is host:', isHost);
-    console.log('Is participant:', isParticipant);
-    console.log('Is both:', isBoth);
-    console.log('Role filters:', roleFilters);
-
-    const matchesRole = 
+    const matchesRole =
       (roleFilters.host && isHost) ||
       (roleFilters.participant && isParticipant) ||
       (roleFilters.both && isBoth);
-
-    console.log('Matches role:', matchesRole);
-    console.log('Matches search:', matchesSearch);
-    console.log('Final result:', matchesSearch && matchesRole);
 
     return matchesSearch && matchesRole;
   });
@@ -147,7 +170,7 @@ const ViewMatrix: React.FC = () => {
               control={
                 <Checkbox
                   checked={roleFilters.host}
-                  onChange={() => handleRoleFilterChange('host')}
+                  onChange={() => handleRoleFilterChange("host")}
                 />
               }
               label="Host"
@@ -156,7 +179,7 @@ const ViewMatrix: React.FC = () => {
               control={
                 <Checkbox
                   checked={roleFilters.participant}
-                  onChange={() => handleRoleFilterChange('participant')}
+                  onChange={() => handleRoleFilterChange("participant")}
                 />
               }
               label="Participant"
@@ -165,7 +188,7 @@ const ViewMatrix: React.FC = () => {
               control={
                 <Checkbox
                   checked={roleFilters.both}
-                  onChange={() => handleRoleFilterChange('both')}
+                  onChange={() => handleRoleFilterChange("both")}
                 />
               }
               label="Both"
