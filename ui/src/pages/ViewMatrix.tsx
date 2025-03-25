@@ -4,16 +4,22 @@ import {
   Typography,
   TextField,
   FormControl,
-  FormLabel,
   FormGroup,
   FormControlLabel,
   Checkbox,
   Button,
+  InputAdornment,
+  Paper,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import MatrixCard from "../components/containers/MatrixCard";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ROUTES } from "../helpers/helpers";
+import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 interface CarverMatrix {
   matrixId: number;
@@ -21,6 +27,20 @@ interface CarverMatrix {
   description: string;
   hosts: string[];
   participants: string[];
+  createdAt: string;
+  items: {
+    itemId: number;
+    itemName: string;
+    criticality: number;
+    accessibility: number;
+    recoverability: number;
+    vulnerability: number;
+    effect: number;
+    recognizability: number;
+  }[];
+  randomAssignment: boolean;
+  roleBased: boolean;
+  fivePointScoring: boolean;
 }
 
 const ViewMatrix: React.FC = () => {
@@ -116,106 +136,384 @@ const ViewMatrix: React.FC = () => {
   });
 
   return (
-    <Box display="flex">
-      {/* Sidebar Filters */}
+    <Box 
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        backgroundColor: "#1a1a1a",
+        color: "#ffffff",
+        position: "relative",
+      }}
+    >
+      {/* Background Pattern */}
       <Box
         sx={{
-          width: "20%",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/military-pattern.svg')",
+          backgroundSize: "100px 100px",
+          backgroundPosition: "center",
+          opacity: 0.1,
+          zIndex: 0,
+        }}
+      />
+
+      {/* Sidebar Filters */}
+      <Paper
+        sx={{
+          width: "300px",
           padding: 2,
-          backgroundColor: "white",
+          backgroundColor: "rgba(255, 255, 255, 0.05)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
           height: "100vh",
-          boxShadow: 3,
-          input: { color: "black" },
           display: "flex",
           flexDirection: "column",
           gap: 2,
+          position: "relative",
+          zIndex: 1,
         }}
       >
-        <TextField
-          fullWidth
-          focused
-          variant="outlined"
-          label="Search Matrix"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        {/* Role Filters */}
-        <FormControl component="fieldset">
-          <FormLabel component="legend">Role</FormLabel>
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={roleFilters.host}
-                  onChange={() => handleRoleFilterChange('host')}
-                />
-              }
-              label="Host"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={roleFilters.participant}
-                  onChange={() => handleRoleFilterChange('participant')}
-                />
-              }
-              label="Participant"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={roleFilters.both}
-                  onChange={() => handleRoleFilterChange('both')}
-                />
-              }
-              label="Both"
-            />
-          </FormGroup>
-        </FormControl>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "#ffffff",
+              fontWeight: "bold",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              fontFamily: "'Roboto Condensed', sans-serif",
+              mb: 1,
+            }}
+          >
+            Matrices
+          </Typography>
 
-        <Button
-          variant="contained"
-          color="success"
-          onClick={() => navigate(ROUTES.createMatrix)}
-          fullWidth
-          sx={{ mt: 1 }}
-        >
-          Create new matrix
-        </Button>
-      </Box>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Search matrices..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                color: '#ffffff',
+                '& fieldset': {
+                  borderColor: 'rgba(255, 255, 255, 0.23)',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#014093',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#014093',
+                },
+              },
+            }}
+          />
+
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <FilterListIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                }}
+              >
+                Filter by Role
+              </Typography>
+            </Box>
+            <FormControl component="fieldset" sx={{ width: '100%' }}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={roleFilters.host}
+                      onChange={() => handleRoleFilterChange('host')}
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        '&.Mui-checked': {
+                          color: '#014093',
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography sx={{ color: '#ffffff' }}>Host</Typography>
+                  }
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={roleFilters.participant}
+                      onChange={() => handleRoleFilterChange('participant')}
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        '&.Mui-checked': {
+                          color: '#014093',
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography sx={{ color: '#ffffff' }}>Participant</Typography>
+                  }
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={roleFilters.both}
+                      onChange={() => handleRoleFilterChange('both')}
+                      sx={{
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        '&.Mui-checked': {
+                          color: '#014093',
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography sx={{ color: '#ffffff' }}>Both</Typography>
+                  }
+                />
+              </FormGroup>
+            </FormControl>
+          </Box>
+        </Box>
+
+        <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <Button
+            variant="contained"
+            onClick={() => navigate(ROUTES.createMatrix)}
+            fullWidth
+            startIcon={<AddIcon />}
+            sx={{
+              backgroundColor: '#014093',
+              color: '#ffffff',
+              textTransform: 'uppercase',
+              fontWeight: 'bold',
+              letterSpacing: '1px',
+              padding: '8px 0',
+              '&:hover': {
+                backgroundColor: '#012B61',
+              },
+            }}
+          >
+            Create Matrix
+          </Button>
+        </Box>
+      </Paper>
 
       {/* Main Content */}
       <Box
-        id="viewMatricesBox"
         sx={{
-          padding: 2,
-          width: "80%",
-          height: "100vh",
-          boxShadow: 3,
-          display: "flex",
-          justifyContent: "flex-start",
-          alignItems: "stretch",
-          flexDirection: "column",
+          flex: 1,
+          padding: 3,
+          position: "relative",
+          zIndex: 1,
           overflow: "auto",
         }}
       >
-        {filteredMatrices.length > 0 ? (
-          filteredMatrices.map((matrix) => (
-            <MatrixCard
-              key={matrix.matrixId}
-              title={matrix.name}
-              description={matrix.description}
-              onEditMatrix={() => {
-                const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
-                navigate(url);
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+            gap: 2,
+            alignContent: "start",
+          }}
+        >
+          {filteredMatrices.length > 0 ? (
+            filteredMatrices.map((matrix) => (
+              <Paper
+                key={matrix.matrixId}
+                sx={{
+                  p: 2,
+                  backgroundColor: "rgba(255, 255, 255, 0.05)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  transition: "all 0.2s ease-in-out",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  minHeight: "200px",
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    backgroundColor: "rgba(255, 255, 255, 0.08)",
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                  },
+                }}
+                onClick={() => {
+                  const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
+                  navigate(url);
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: "#ffffff",
+                      fontWeight: "bold",
+                      fontFamily: "'Roboto Condensed', sans-serif",
+                    }}
+                  >
+                    {matrix.name}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "rgba(255, 255, 255, 0.5)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {new Date(matrix.createdAt).toLocaleDateString()}
+                  </Typography>
+                </Box>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "rgba(255, 255, 255, 0.7)",
+                    mb: 2,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                    flex: 1,
+                    minHeight: "4.5em",
+                  }}
+                >
+                  {matrix.description || "No description"}
+                </Typography>
+
+                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "rgba(255, 255, 255, 0.5)",
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      padding: "2px 8px",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    {matrix.items.length} {matrix.items.length === 1 ? 'Target' : 'Targets'}
+                  </Typography>
+                  {matrix.randomAssignment && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "rgba(255, 255, 255, 0.5)",
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "2px 8px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      Random
+                    </Typography>
+                  )}
+                  {matrix.roleBased && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "rgba(255, 255, 255, 0.5)",
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "2px 8px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      Role Based
+                    </Typography>
+                  )}
+                  {matrix.fivePointScoring && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "rgba(255, 255, 255, 0.5)",
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "2px 8px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      5-Point Scale
+                    </Typography>
+                  )}
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mt: "auto",
+                    pt: 1,
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: matrix.hosts.includes(userEmail || "") && matrix.participants.includes(userEmail || "")
+                        ? "#4D9FFF" // Bright blue for both
+                        : matrix.hosts.includes(userEmail || "")
+                        ? "#4D9FFF" // Bright blue for host
+                        : "#00E676", // Bright green for participant
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      fontWeight: "bold",
+                      textShadow: "0 0 10px rgba(255, 255, 255, 0.1)", // Subtle glow effect
+                    }}
+                  >
+                    {matrix.hosts.includes(userEmail || "") && matrix.participants.includes(userEmail || "")
+                      ? "Host & Participant"
+                      : matrix.hosts.includes(userEmail || "")
+                      ? "Host"
+                      : "Participant"}
+                  </Typography>
+                  <Tooltip title="Open Matrix">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
+                        navigate(url);
+                      }}
+                      sx={{
+                        color: '#4D9FFF',
+                        '&:hover': {
+                          backgroundColor: 'rgba(77, 159, 255, 0.1)',
+                        },
+                      }}
+                    >
+                      <OpenInNewIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Paper>
+            ))
+          ) : (
+            <Typography
+              sx={{
+                color: "rgba(255, 255, 255, 0.7)",
+                textAlign: "center",
+                gridColumn: "1 / -1",
               }}
-              titleColor="black"
-              buttonVariant="contained"
-            />
-          ))
-        ) : (
-          <Typography>No matrices found.</Typography>
-        )}
+            >
+              No matrices found.
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Box>
   );
