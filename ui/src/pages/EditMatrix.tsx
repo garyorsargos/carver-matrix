@@ -26,7 +26,7 @@ import html2canvas from "html2canvas";
 import axios from "axios";
 
 const EditMatrixContent: React.FC = () => {
-  const { config, rawItems } = useMultiMatrix();
+  const { config, rawItems, updates } = useMultiMatrix();
   const currentEmail = config.currentUserEmail;
   const [showAllTargets, setShowAllTargets] = useState(false);
 
@@ -233,7 +233,7 @@ const EditMatrixContent: React.FC = () => {
       return;
     }
     axios
-      .put(`/api/carvermatrices/${matrixId}/carveritems/update`, {})
+      .put(`/api/carvermatrices/${matrixId}/carveritems/update`, updates)
       .then((response) => {
         console.log("Updates submitted successfully", response);
       })
