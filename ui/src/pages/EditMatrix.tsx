@@ -40,6 +40,16 @@ const HostPane: React.FC<{
   items: any[];
   categories: string[];
 }> = ({ config, items, categories }) => {
+  // Add category mapping for correct property access
+  const categoryToPropertyMap: { [key: string]: string } = {
+    "Criticality": "criticality",
+    "Accessibility": "accessibility",
+    "Recuperability": "recoverability",
+    "Vulnerability": "vulnerability",
+    "Effect": "effect",
+    "Recognizability": "recognizability",
+  };
+
   // Calculate completion percentage for each category
   const categoryCompletions = useMemo(() => {
     const completions: { [key: string]: number } = {};
@@ -289,10 +299,10 @@ const HostPane: React.FC<{
                           key={category}
                           align="center"
                           sx={{
-                            color: item[category.toLowerCase()] > 0 ? '#fff' : 'rgba(255, 255, 255, 0.3)',
+                            color: item[categoryToPropertyMap[category]] > 0 ? '#fff' : 'rgba(255, 255, 255, 0.3)',
                           }}
                         >
-                          {item[category.toLowerCase()]}
+                          {item[categoryToPropertyMap[category]]}
                         </TableCell>
                       ))}
                     </TableRow>

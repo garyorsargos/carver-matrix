@@ -75,10 +75,17 @@ const MatrixExplorer: React.FC = () => {
     const isParticipant = matrix.participants?.includes(userEmail) || false;
     const isBoth = isHost && isParticipant;
 
-    const matchesRole = 
-      (roleFilter === 'host' && isHost) ||
-      (roleFilter === 'participant' && isParticipant) ||
-      (roleFilter === 'both' && isBoth);
+    // Modified role filtering to prevent duplicates
+    let matchesRole = false;
+    if (roleFilter === 'both') {
+      matchesRole = isBoth;
+    } else if (roleFilter === 'host') {
+      matchesRole = isHost; // Show all matrices where user is a host, including those where they are both
+    } else if (roleFilter === 'participant') {
+      matchesRole = isParticipant; // Show all matrices where user is a participant, including those where they are both
+    } else {
+      matchesRole = true; // 'all' filter
+    }
 
     return matchesSearch && matchesRole;
   });

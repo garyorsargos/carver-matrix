@@ -122,6 +122,22 @@ const ViewMatrix: React.FC = () => {
     const isParticipant = matrix.participants?.includes(userEmail) || false;
     const isBoth = isHost && isParticipant;
 
+    // Modified role filtering to prevent duplicates
+    let matchesRole = false;
+    if (roleFilters.both) {
+      matchesRole = isBoth;
+    } else {
+      if (roleFilters.host) {
+        matchesRole = isHost; // Show all matrices where user is a host, including those where they are both
+      }
+      if (roleFilters.participant) {
+        matchesRole = matchesRole || isParticipant; // Show all matrices where user is a participant, including those where they are both
+      }
+      if (!roleFilters.host && !roleFilters.participant) {
+        matchesRole = true; // No role filters selected
+      }
+    }
+
     console.log('Matrix:', matrix.name);
     console.log('Current user email:', userEmail);
     console.log('Hosts:', matrix.hosts);
@@ -129,12 +145,6 @@ const ViewMatrix: React.FC = () => {
     console.log('Is participant:', isParticipant);
     console.log('Is both:', isBoth);
     console.log('Role filters:', roleFilters);
-
-    const matchesRole = 
-      (roleFilters.host && isHost) ||
-      (roleFilters.participant && isParticipant) ||
-      (roleFilters.both && isBoth);
-
     console.log('Matches role:', matchesRole);
     console.log('Matches search:', matchesSearch);
     console.log('Final result:', matchesSearch && matchesRole);

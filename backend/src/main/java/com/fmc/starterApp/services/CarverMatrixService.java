@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
@@ -185,20 +187,23 @@ public class CarverMatrixService {
             return new ArrayList<>();
         }
 
-        // Get all matrices where user is host or participant
-        List<CarverMatrix> userMatrices = new ArrayList<>();
+        // Get all matrices where user is host or participant, using a Set to prevent duplicates
+        Set<CarverMatrix> userMatrices = new HashSet<>();
         List<CarverMatrix> hostMatrices = carverMatrixRepository.findByHost(userEmail);
         List<CarverMatrix> participantMatrices = carverMatrixRepository.findByParticipant(userEmail);
         userMatrices.addAll(hostMatrices);
         userMatrices.addAll(participantMatrices);
 
+        // Convert Set back to List
+        List<CarverMatrix> uniqueMatrices = new ArrayList<>(userMatrices);
+
         // If no other search parameters, return all user's matrices
         if (searchParams.isEmpty()) {
-            return userMatrices;
+            return uniqueMatrices;
         }
 
         // Apply additional filters
-        return userMatrices.stream()
+        return uniqueMatrices.stream()
             .filter(matrix -> {
                 // Check name filter
                 if (searchParams.containsKey("name") && !searchParams.get("name").isEmpty()) {
