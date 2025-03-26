@@ -322,14 +322,30 @@ const EditMatrixContent: React.FC = () => {
   const currentEmail = config.currentUserEmail;
   const [successToast, setSuccessToast] = useState(false);
   const [errorToast, setErrorToast] = useState(false);
-  const [activeView, setActiveView] = useState<'host' | 'participant'>('participant');
-
+  
   // Determine user roles if roleBased is enabled.
   const isRoleBased = config.roleBased;
   const isHost =
     isRoleBased && currentEmail ? config.hosts?.includes(currentEmail) : false;
   const isParticipant =
     isRoleBased && currentEmail ? config.participants?.includes(currentEmail) : false;
+
+  const [activeView, setActiveView] = useState<'host' | 'participant'>(() => {
+    // Set initial view based on user role
+    if (isRoleBased && currentEmail) {
+      if (isHost && !isParticipant) return 'host';
+      if (isParticipant && !isHost) return 'participant';
+      return 'participant'; // Default for users with both roles
+    }
+    return 'participant'; // Default for non-role-based matrices
+  });
+
+  // Force view to host if user is only a host
+  useEffect(() => {
+    if (isRoleBased && isHost && !isParticipant) {
+      setActiveView('host');
+    }
+  }, [isRoleBased, isHost, isParticipant]);
 
   // Compute displayed items based on role
   const displayedItems = useMemo(() => {
@@ -353,13 +369,8 @@ const EditMatrixContent: React.FC = () => {
           : rawItems;
       }
     } else {
-      // Not roleBased: use randomAssignment logic.
-      return config.randomAssignment
-        ? rawItems.filter(
-            (item: any) =>
-              Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
-          )
-        : rawItems;
+      // Not roleBased: show all items
+      return rawItems;
     }
     return rawItems;
   }, [
@@ -368,7 +379,6 @@ const EditMatrixContent: React.FC = () => {
     isParticipant,
     rawItems,
     currentEmail,
-    config.randomAssignment,
     activeView,
   ]);
 
@@ -624,20 +634,24 @@ const EditMatrixContent: React.FC = () => {
                       },
                     }}
                   >
-                    <Tab
-                      icon={<PersonIcon sx={{ fontSize: 20 }} />}
-                      iconPosition="start"
-                      label="Participant"
-                      value="participant"
-                      sx={{ fontSize: 14 }}
-                    />
-                    <Tab
-                      icon={<AdminPanelSettingsIcon sx={{ fontSize: 20 }} />}
-                      iconPosition="start"
-                      label="Host"
-                      value="host"
-                      sx={{ fontSize: 14 }}
-                    />
+                    {(!isRoleBased || isParticipant) && (
+                      <Tab
+                        icon={<PersonIcon sx={{ fontSize: 20 }} />}
+                        iconPosition="start"
+                        label="Participant"
+                        value="participant"
+                        sx={{ fontSize: 14 }}
+                      />
+                    )}
+                    {(!isRoleBased || isHost) && (
+                      <Tab
+                        icon={<AdminPanelSettingsIcon sx={{ fontSize: 20 }} />}
+                        iconPosition="start"
+                        label="Host"
+                        value="host"
+                        sx={{ fontSize: 14 }}
+                      />
+                    )}
                   </Tabs>
                 </Paper>
               )}
@@ -651,7 +665,7 @@ const EditMatrixContent: React.FC = () => {
             overflow: 'hidden',
             position: 'relative',
           }}>
-            {(!isRoleBased || (isHost && (!isParticipant || activeView === 'host'))) ? (
+            {(!isRoleBased || isHost) && activeView === 'host' ? (
               <Box sx={{ 
                 position: 'absolute',
                 top: 0,

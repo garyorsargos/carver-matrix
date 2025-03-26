@@ -8,10 +8,7 @@ interface CategoryDisplayProps {
 }
 
 const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }) => {
-  const { multiMatrix, setMultiMatrix, itemIdMap, setUpdates } = useMultiMatrix();
-
-  const initialScore = multiMatrix.get(targetTitle)?.get(category);
-  const [score, setScore] = React.useState<number>(initialScore !== undefined ? initialScore : 1);
+  const { setMultiMatrix, itemIdMap, setUpdates, rawItems } = useMultiMatrix();
 
   // Map the UI category names to API field names.
   const categoryMap: { [key: string]: string } = {
@@ -23,6 +20,11 @@ const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }
     "Recognizability": "recognizability",
   };
   const apiCategory = categoryMap[category] || category.toLowerCase();
+
+  // Find the raw item for this target
+  const rawItem = rawItems.find(item => item.itemName === targetTitle);
+  const initialScore = rawItem ? rawItem[apiCategory] : undefined;
+  const [score, setScore] = React.useState<number | undefined>(initialScore);
 
   const handleInputChange = (event: SelectChangeEvent<string>) => {
     const newScore = Number(event.target.value);
@@ -65,7 +67,7 @@ const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }
       <FormControl fullWidth sx={{ mt: 1, minWidth: 50 }}>
         <Select
           id="score-select"
-          value={score.toString()}
+          value={score?.toString() || ""}
           onChange={handleInputChange}
           sx={{
             ".MuiSelect-select": {
