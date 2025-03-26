@@ -409,6 +409,17 @@ const EditMatrixContent: React.FC = () => {
     "Recognizability",
   ];
 
+  type Category = "Criticality" | "Accessibility" | "Recuperability" | "Vulnerability" | "Effect" | "Recognizability";
+
+  const categoryTooltips: Record<Category, string> = {
+    Criticality: "The importance of the target to the organization's mission and the impact of its loss",
+    Accessibility: "How easily the target can be reached and accessed by potential threats",
+    Recuperability: "The ability of the organization to recover from an attack on this target",
+    Vulnerability: "The susceptibility of the target to various types of attacks or threats",
+    Effect: "The overall impact and consequences of a successful attack on this target",
+    Recognizability: "How easily the target can be identified and distinguished from other assets"
+  };
+
   const handleSubmitUpdates = () => {
     const params = new URLSearchParams(window.location.search);
     const matrixId = params.get("matrixId");
@@ -588,7 +599,7 @@ const EditMatrixContent: React.FC = () => {
                   <SaveIcon />
                 </IconButton>
               </Tooltip>
-              {isHost && isParticipant && (
+              {(!isRoleBased || (isHost && isParticipant)) && (
                 <Paper
                   sx={{
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -640,7 +651,7 @@ const EditMatrixContent: React.FC = () => {
             overflow: 'hidden',
             position: 'relative',
           }}>
-            {(isHost && (!isParticipant || activeView === 'host')) ? (
+            {(!isRoleBased || (isHost && (!isParticipant || activeView === 'host'))) ? (
               <Box sx={{ 
                 position: 'absolute',
                 top: 0,
@@ -740,7 +751,13 @@ const EditMatrixContent: React.FC = () => {
                             width: '12.5%', // Use percentage instead of fixed width ((100% - 25%) / 6)
                           }}
                         >
-                          {category}
+                          <Tooltip 
+                            title={categoryTooltips[category as Category]}
+                            arrow
+                            placement="top"
+                          >
+                            <span>{category}</span>
+                          </Tooltip>
                         </TableCell>
                       ))}
                     </TableRow>

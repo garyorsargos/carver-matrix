@@ -1,9 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
+import { 
+  Box, 
+  TextField, 
+  FormControl, 
+  Typography, 
+  Radio, 
+  RadioGroup, 
+  FormControlLabel,
+  Collapse,
+  IconButton,
+  FormGroup,
+  Checkbox,
+  Paper
+} from '@mui/material';
 import axios from 'axios';
 import MiniMatrixCard from './miniMatrixCard';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 interface CarverMatrix {
   matrixId: number;
@@ -11,14 +26,21 @@ interface CarverMatrix {
   description: string;
   hosts: string[];
   participants: string[];
+  roleBased: boolean;
 }
 
 const MatrixExplorer: React.FC = () => {
   const [matrices, setMatrices] = useState<CarverMatrix[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [roleBasedFilter, setRoleBasedFilter] = useState<'all' | 'enabled' | 'disabled'>('all');
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [roleFilters, setRoleFilters] = useState({
+    host: false,
+    participant: false,
+    both: false,
+  });
 
   useEffect(() => {
     const fetchUserEmail = async () => {
@@ -54,15 +76,37 @@ const MatrixExplorer: React.FC = () => {
     fetchMatrices();
   }, []);
 
+  const handleRoleFilterChange = (role: keyof typeof roleFilters) => {
+    setRoleFilters(prev => ({
+      ...prev,
+      [role]: !prev[role]
+    }));
+  };
+
   const filteredMatrices = matrices.filter((matrix) => {
     // Text search filter
     const term = searchTerm.toLowerCase();
     const matchesSearch = matrix.name.toLowerCase().includes(term) ||
       matrix.description.toLowerCase().includes(term);
 
-    // If no role filter is selected, only apply text search
-    if (roleFilter === 'all') {
+    // Role-based matrix filter
+    if (roleBasedFilter !== 'all') {
+      if (roleBasedFilter === 'enabled' && !matrix.roleBased) {
+        return false;
+      }
+      if (roleBasedFilter === 'disabled' && matrix.roleBased) {
+        return false;
+      }
+    }
+
+    // If no role filters are selected, only apply text search and role-based filter
+    if (!roleFilters.host && !roleFilters.participant && !roleFilters.both) {
       return matchesSearch;
+    }
+
+    // If role filters are selected but matrix is not role-based, hide it
+    if (!matrix.roleBased) {
+      return false;
     }
 
     // Role-based filtering
@@ -77,14 +121,18 @@ const MatrixExplorer: React.FC = () => {
 
     // Modified role filtering to prevent duplicates
     let matchesRole = false;
-    if (roleFilter === 'both') {
+    if (roleFilters.both) {
       matchesRole = isBoth;
-    } else if (roleFilter === 'host') {
-      matchesRole = isHost; // Show all matrices where user is a host, including those where they are both
-    } else if (roleFilter === 'participant') {
-      matchesRole = isParticipant; // Show all matrices where user is a participant, including those where they are both
     } else {
-      matchesRole = true; // 'all' filter
+      if (roleFilters.host) {
+        matchesRole = isHost;
+      }
+      if (roleFilters.participant) {
+        matchesRole = matchesRole || isParticipant;
+      }
+      if (!roleFilters.host && !roleFilters.participant) {
+        matchesRole = true;
+      }
     }
 
     return matchesSearch && matchesRole;
@@ -153,35 +201,175 @@ const MatrixExplorer: React.FC = () => {
         }}
       />
 
-      <FormControl fullWidth size="small">
-        <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Role Filter</InputLabel>
-        <Select
-          value={roleFilter}
-          label="Role Filter"
-          onChange={(e) => setRoleFilter(e.target.value)}
-          startAdornment={<FilterListIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />}
-          sx={{
-            color: '#ffffff',
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(255, 255, 255, 0.23)',
-            },
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#014093',
-            },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#014093',
-            },
-            '& .MuiSelect-icon': {
-              color: 'rgba(255, 255, 255, 0.7)',
+      <Box>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            p: 1,
+            borderRadius: 1,
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
             },
           }}
+          onClick={() => setFiltersOpen(!filtersOpen)}
         >
-          <MenuItem value="all">All Roles</MenuItem>
-          <MenuItem value="host">Host</MenuItem>
-          <MenuItem value="participant">Participant</MenuItem>
-          <MenuItem value="both">Both</MenuItem>
-        </Select>
-      </FormControl>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <FilterListIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontWeight: "bold",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+              }}
+            >
+              Filters
+            </Typography>
+          </Box>
+          <IconButton size="small" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+            {filtersOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </IconButton>
+        </Box>
+
+        <Collapse in={filtersOpen}>
+          <Paper
+            sx={{
+              p: 2,
+              mt: 1,
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontWeight: "bold",
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    mb: 2,
+                  }}
+                >
+                  Filter by Role
+                </Typography>
+                <FormControl component="fieldset" sx={{ width: '100%' }}>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={roleFilters.host}
+                          onChange={() => handleRoleFilterChange('host')}
+                          sx={{
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            '&.Mui-checked': {
+                              color: '#014093',
+                            },
+                          }}
+                        />
+                      }
+                      label={
+                        <Typography sx={{ color: '#ffffff' }}>Host</Typography>
+                      }
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={roleFilters.participant}
+                          onChange={() => handleRoleFilterChange('participant')}
+                          sx={{
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            '&.Mui-checked': {
+                              color: '#014093',
+                            },
+                          }}
+                        />
+                      }
+                      label={
+                        <Typography sx={{ color: '#ffffff' }}>Participant</Typography>
+                      }
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={roleFilters.both}
+                          onChange={() => handleRoleFilterChange('both')}
+                          sx={{
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            '&.Mui-checked': {
+                              color: '#014093',
+                            },
+                          }}
+                        />
+                      }
+                      label={
+                        <Typography sx={{ color: '#ffffff' }}>Host & Participant</Typography>
+                      }
+                    />
+                  </FormGroup>
+                </FormControl>
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontWeight: "bold",
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    mb: 2,
+                  }}
+                >
+                  Role-Based Matrix Filter
+                </Typography>
+                <FormControl component="fieldset" sx={{ width: '100%' }}>
+                  <RadioGroup
+                    value={roleBasedFilter}
+                    onChange={(e) => setRoleBasedFilter(e.target.value as 'all' | 'enabled' | 'disabled')}
+                    sx={{
+                      '& .MuiRadio-root': {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        '&.Mui-checked': {
+                          color: '#014093',
+                        },
+                      },
+                    }}
+                  >
+                    <FormControlLabel
+                      value="all"
+                      control={<Radio />}
+                      label={
+                        <Typography sx={{ color: '#ffffff' }}>All Matrices</Typography>
+                      }
+                    />
+                    <FormControlLabel
+                      value="enabled"
+                      control={<Radio />}
+                      label={
+                        <Typography sx={{ color: '#ffffff' }}>Role-Based Only</Typography>
+                      }
+                    />
+                    <FormControlLabel
+                      value="disabled"
+                      control={<Radio />}
+                      label={
+                        <Typography sx={{ color: '#ffffff' }}>Non-Role-Based Only</Typography>
+                      }
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </Box>
+            </Box>
+          </Paper>
+        </Collapse>
+      </Box>
 
       <Box
         sx={{

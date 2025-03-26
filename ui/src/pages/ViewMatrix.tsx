@@ -7,6 +7,8 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  Radio,
+  RadioGroup,
   Button,
   InputAdornment,
   Paper,
@@ -59,6 +61,7 @@ const ViewMatrix: React.FC = () => {
     participant: false,
     both: false,
   });
+  const [roleBasedFilter, setRoleBasedFilter] = useState<'all' | 'enabled' | 'disabled'>('all');
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -107,9 +110,24 @@ const ViewMatrix: React.FC = () => {
     const matchesSearch = matrix.name.toLowerCase().includes(term) ||
       matrix.description.toLowerCase().includes(term);
 
-    // If no role filters are selected, only apply text search
+    // Role-based matrix filter
+    if (roleBasedFilter !== 'all') {
+      if (roleBasedFilter === 'enabled' && !matrix.roleBased) {
+        return false;
+      }
+      if (roleBasedFilter === 'disabled' && matrix.roleBased) {
+        return false;
+      }
+    }
+
+    // If no role filters are selected, only apply text search and role-based filter
     if (!roleFilters.host && !roleFilters.participant && !roleFilters.both) {
       return matchesSearch;
+    }
+
+    // If role filters are selected but matrix is not role-based, hide it
+    if (!matrix.roleBased) {
+      return false;
     }
 
     // Role-based filtering
@@ -303,10 +321,63 @@ const ViewMatrix: React.FC = () => {
                     />
                   }
                   label={
-                    <Typography sx={{ color: '#ffffff' }}>Both</Typography>
+                    <Typography sx={{ color: '#ffffff' }}>Host & Participant</Typography>
                   }
                 />
               </FormGroup>
+            </FormControl>
+          </Box>
+
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <FilterListIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                }}
+              >
+                Role-Based Matrix Filter
+              </Typography>
+            </Box>
+            <FormControl component="fieldset" sx={{ width: '100%' }}>
+              <RadioGroup
+                value={roleBasedFilter}
+                onChange={(e) => setRoleBasedFilter(e.target.value as 'all' | 'enabled' | 'disabled')}
+                sx={{
+                  '& .MuiRadio-root': {
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    '&.Mui-checked': {
+                      color: '#014093',
+                    },
+                  },
+                }}
+              >
+                <FormControlLabel
+                  value="all"
+                  control={<Radio />}
+                  label={
+                    <Typography sx={{ color: '#ffffff' }}>All Matrices</Typography>
+                  }
+                />
+                <FormControlLabel
+                  value="enabled"
+                  control={<Radio />}
+                  label={
+                    <Typography sx={{ color: '#ffffff' }}>Role-Based Only</Typography>
+                  }
+                />
+                <FormControlLabel
+                  value="disabled"
+                  control={<Radio />}
+                  label={
+                    <Typography sx={{ color: '#ffffff' }}>Non-Role-Based Only</Typography>
+                  }
+                />
+              </RadioGroup>
             </FormControl>
           </Box>
         </Box>
@@ -487,11 +558,13 @@ const ViewMatrix: React.FC = () => {
                       textShadow: "0 0 10px rgba(255, 255, 255, 0.1)",
                     }}
                   >
-                    {matrix.hosts.includes(userEmail || "") && matrix.participants.includes(userEmail || "")
-                      ? "Host & Participant"
-                      : matrix.hosts.includes(userEmail || "")
-                      ? "Host"
-                      : "Participant"}
+                    {matrix.roleBased ? (
+                      matrix.hosts.includes(userEmail || "") && matrix.participants.includes(userEmail || "")
+                        ? "Host & Participant"
+                        : matrix.hosts.includes(userEmail || "")
+                        ? "Host"
+                        : "Participant"
+                    ) : null}
                   </Typography>
                   <Box sx={{ display: "flex", gap: 1 }}>
                     {matrix.hosts.includes(userEmail || "") && (
