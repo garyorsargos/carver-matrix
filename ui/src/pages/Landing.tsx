@@ -1,17 +1,43 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, Typography, Container, Paper, Grid } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../helpers/helpers";
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import GroupIcon from '@mui/icons-material/Group';
+import axios from 'axios';
 
-interface LandingProps {
-  userName: string;
+interface UserData {
+  firstName: string | null;
+  username: string;
 }
 
-const Landing: React.FC<LandingProps> = ({ userName }) => {
+const Landing: React.FC = () => {
   const navigate = useNavigate();
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get('/api/user2/whoami-upsert', { responseType: 'text' });
+        const dataString = response.data;
+        let parsedData;
+        
+        if (dataString.includes('}{')) {
+          const parts = dataString.split('}{');
+          parsedData = JSON.parse(parts[0] + '}');
+        } else {
+          parsedData = JSON.parse(dataString);
+        }
+        
+        setUserData(parsedData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   return (
     <Box
@@ -60,7 +86,7 @@ const Landing: React.FC<LandingProps> = ({ userName }) => {
                   fontSize: { xs: '2.5rem', md: '3rem' }
                 }}
               >
-                Welcome, {userName}
+                Welcome, {userData?.firstName || userData?.username || 'User'}
               </Typography>
               <Typography
                 variant="h5"

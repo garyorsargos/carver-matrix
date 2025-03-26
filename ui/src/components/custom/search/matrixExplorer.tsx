@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Box, TextField, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
 import axios from 'axios';
 import MiniMatrixCard from './miniMatrixCard';
+import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
 
 interface CarverMatrix {
   matrixId: number;
@@ -73,22 +75,10 @@ const MatrixExplorer: React.FC = () => {
     const isParticipant = matrix.participants?.includes(userEmail) || false;
     const isBoth = isHost && isParticipant;
 
-    console.log('Matrix:', matrix.name);
-    console.log('Current user email:', userEmail);
-    console.log('Hosts:', matrix.hosts);
-    console.log('Is host:', isHost);
-    console.log('Is participant:', isParticipant);
-    console.log('Is both:', isBoth);
-    console.log('Role filter:', roleFilter);
-
     const matchesRole = 
       (roleFilter === 'host' && isHost) ||
       (roleFilter === 'participant' && isParticipant) ||
       (roleFilter === 'both' && isBoth);
-
-    console.log('Matches role:', matchesRole);
-    console.log('Matches search:', matchesSearch);
-    console.log('Final result:', matchesSearch && matchesRole);
 
     return matchesSearch && matchesRole;
   });
@@ -108,48 +98,74 @@ const MatrixExplorer: React.FC = () => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        gap: 1,
-        p: 1,
-        backgroundColor: '#ffffff',
-        borderRadius: 1,
-        overflowX: 'hidden',
+        gap: 2,
+        p: 1.5,
         boxSizing: 'border-box',
       }}
     >
+      <Typography
+        variant="h6"
+        sx={{
+          color: "#ffffff",
+          fontWeight: "bold",
+          textTransform: "uppercase",
+          letterSpacing: "1px",
+          fontFamily: "'Roboto Condensed', sans-serif",
+        }}
+      >
+        Matrix Explorer
+      </Typography>
+
       <TextField
+        fullWidth
         size="small"
         placeholder="Search matrices..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
+        InputProps={{
+          startAdornment: (
+            <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />
+          ),
+        }}
         sx={{ 
-          mb: 1,
-          '& .MuiInputBase-input': {
-            color: 'black',
+          '& .MuiOutlinedInput-root': {
+            color: '#ffffff',
+            '& fieldset': {
+              borderColor: 'rgba(255, 255, 255, 0.23)',
+            },
+            '&:hover fieldset': {
+              borderColor: '#014093',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#014093',
+            },
           },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'rgba(0, 0, 0, 0.23)',
-          },
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'rgba(0, 0, 0, 0.87)',
+          '& .MuiInputBase-input::placeholder': {
+            color: 'rgba(255, 255, 255, 0.5)',
           },
         }}
       />
 
-      <FormControl size="small" sx={{ mb: 1 }}>
-        <InputLabel sx={{ color: 'black' }}>Role Filter</InputLabel>
+      <FormControl fullWidth size="small">
+        <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Role Filter</InputLabel>
         <Select
           value={roleFilter}
           label="Role Filter"
           onChange={(e) => setRoleFilter(e.target.value)}
+          startAdornment={<FilterListIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />}
           sx={{
+            color: '#ffffff',
             '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(0, 0, 0, 0.23)',
+              borderColor: 'rgba(255, 255, 255, 0.23)',
             },
             '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(0, 0, 0, 0.87)',
+              borderColor: '#014093',
             },
-            '& .MuiSelect-select': {
-              color: 'black',
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#014093',
+            },
+            '& .MuiSelect-icon': {
+              color: 'rgba(255, 255, 255, 0.7)',
             },
           }}
         >
@@ -167,8 +183,9 @@ const MatrixExplorer: React.FC = () => {
           overflowX: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          gap: 1,
+          gap: 1.5,
           boxSizing: 'border-box',
+          pr: 0.5,
         }}
       >
         {filteredMatrices.map((matrix) => (
@@ -177,7 +194,7 @@ const MatrixExplorer: React.FC = () => {
             title={matrix.name}
             description={matrix.description}
             onSelectMatrix={() => handleMatrixSelect(matrix.matrixId)}
-            titleColor="black"
+            titleColor="#ffffff"
           />
         ))}
       </Box>

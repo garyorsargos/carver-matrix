@@ -58,7 +58,7 @@ const MatrixLoader: React.FC = () => {
               return;
             }
 
-            // Save raw items into provider (we’ll let the UI decide which ones to display)
+            // Save raw items into provider (we'll let the UI decide which ones to display)
             setRawItems(matrixData.items);
 
             // Set the config, including hosts, participants, and the current user's email.
@@ -67,11 +67,11 @@ const MatrixLoader: React.FC = () => {
               randomAssignment: matrixData.randomAssignment,
               roleBased: matrixData.roleBased,
               fivePointScoring: matrixData.fivePointScoring,
-              cmulti: matrixData.cMulti,
-              amulti: matrixData.aMulti,
-              rmulti: matrixData.rMulti,
-              vmulti: matrixData.vMulti,
-              emulti: matrixData.eMulti,
+              cMulti: matrixData.cMulti,
+              aMulti: matrixData.aMulti,
+              rMulti: matrixData.rMulti,
+              vMulti: matrixData.vMulti,
+              eMulti: matrixData.eMulti,
               description: matrixData.description,
               name: matrixData.name,
               hosts: matrixData.hosts || [],

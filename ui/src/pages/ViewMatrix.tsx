@@ -20,6 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { ExportPdfButton } from '../components/custom/pdfExport/ExportPdfButton';
 
 interface CarverMatrix {
   matrixId: number;
@@ -41,6 +42,12 @@ interface CarverMatrix {
   randomAssignment: boolean;
   roleBased: boolean;
   fivePointScoring: boolean;
+  cMulti: number;
+  aMulti: number;
+  rMulti: number;
+  vMulti: number;
+  eMulti: number;
+  r2Multi: number;
 }
 
 const ViewMatrix: React.FC = () => {
@@ -345,7 +352,6 @@ const ViewMatrix: React.FC = () => {
                   backdropFilter: "blur(10px)",
                   border: "1px solid rgba(255, 255, 255, 0.1)",
                   transition: "all 0.2s ease-in-out",
-                  cursor: "pointer",
                   display: "flex",
                   flexDirection: "column",
                   minHeight: "200px",
@@ -354,10 +360,6 @@ const ViewMatrix: React.FC = () => {
                     backgroundColor: "rgba(255, 255, 255, 0.08)",
                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
                   },
-                }}
-                onClick={() => {
-                  const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
-                  navigate(url);
                 }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
@@ -465,14 +467,14 @@ const ViewMatrix: React.FC = () => {
                     variant="caption"
                     sx={{
                       color: matrix.hosts.includes(userEmail || "") && matrix.participants.includes(userEmail || "")
-                        ? "#4D9FFF" // Bright blue for both
+                        ? "#4D9FFF"
                         : matrix.hosts.includes(userEmail || "")
-                        ? "#4D9FFF" // Bright blue for host
-                        : "#00E676", // Bright green for participant
+                        ? "#4D9FFF"
+                        : "#00E676",
                       textTransform: "uppercase",
                       letterSpacing: "0.5px",
                       fontWeight: "bold",
-                      textShadow: "0 0 10px rgba(255, 255, 255, 0.1)", // Subtle glow effect
+                      textShadow: "0 0 10px rgba(255, 255, 255, 0.1)",
                     }}
                   >
                     {matrix.hosts.includes(userEmail || "") && matrix.participants.includes(userEmail || "")
@@ -481,24 +483,44 @@ const ViewMatrix: React.FC = () => {
                       ? "Host"
                       : "Participant"}
                   </Typography>
-                  <Tooltip title="Open Matrix">
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
-                        navigate(url);
-                      }}
-                      sx={{
-                        color: '#4D9FFF',
-                        '&:hover': {
-                          backgroundColor: 'rgba(77, 159, 255, 0.1)',
-                        },
-                      }}
-                    >
-                      <OpenInNewIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    {matrix.hosts.includes(userEmail || "") && (
+                      <ExportPdfButton 
+                        config={{
+                          name: matrix.name,
+                          description: matrix.description,
+                          randomAssignment: matrix.randomAssignment,
+                          roleBased: matrix.roleBased,
+                          fivePointScoring: matrix.fivePointScoring,
+                          cMulti: matrix.cMulti,
+                          aMulti: matrix.aMulti,
+                          rMulti: matrix.rMulti,
+                          vMulti: matrix.vMulti,
+                          eMulti: matrix.eMulti,
+                          r2Multi: matrix.r2Multi
+                        }} 
+                        items={matrix.items} 
+                      />
+                    )}
+                    <Tooltip title="Open Matrix">
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
+                          navigate(url);
+                        }}
+                        sx={{
+                          color: '#4D9FFF',
+                          '&:hover': {
+                            backgroundColor: 'rgba(77, 159, 255, 0.1)',
+                          },
+                        }}
+                      >
+                        <OpenInNewIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </Box>
               </Paper>
             ))

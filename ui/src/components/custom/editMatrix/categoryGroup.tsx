@@ -66,13 +66,24 @@ const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }
         <Select
           id="score-select"
           value={score.toString()}
-          label="Score"
           onChange={handleInputChange}
           sx={{
             ".MuiSelect-select": {
-              color: "black",
+              color: "#ffffff",
               fontSize: { xs: "0.75rem", md: "1rem" },
               minWidth: 50,
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'rgba(255, 255, 255, 0.23)',
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#014093',
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#014093',
+            },
+            '& .MuiSelect-icon': {
+              color: 'rgba(255, 255, 255, 0.7)',
             },
           }}
         >
