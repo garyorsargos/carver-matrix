@@ -18,7 +18,13 @@ import {
   IconButton,
   Typography,
   Stack,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider,
 } from "@mui/material";
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 interface RedirectProps {
   children: React.ReactElement | React.ReactElement[];
@@ -42,6 +48,32 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
   const location = useLocation();
   // 64 pixels accounts for the application bar offset
   const [height, setHeight] = useState<number>(window.innerHeight);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleProfile = () => {
+    handleProfileMenuClose();
+    navigate(ROUTES.profile);
+  };
+
+  const handleLogout = () => {
+    handleProfileMenuClose();
+    // Clear all cookies
+    document.cookie.split(";").forEach((cookie) => {
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    });
+    // Redirect to Keycloak logout
+    window.location.href = '/logout';
+  };
 
   /**
    * Checks the current route for validity, and reroutes a user
@@ -122,6 +154,7 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
                   display: "flex",
                   justifyContent: "space-around",
                   alignItems: "center",
+                  gap: "16px",
                 }}
               >
                 {/** roles is a state-managed object, so this component will render in real time if roles is updated */}
@@ -139,6 +172,56 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
                 ) : (
                   <></>
                 )}
+                <IconButton
+                  onClick={handleProfileMenuOpen}
+                  sx={{
+                    color: '#FFF',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: '#014093', width: 32, height: 32 }}>
+                    <AccountCircleIcon />
+                  </Avatar>
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleProfileMenuClose}
+                  PaperProps={{
+                    sx: {
+                      backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      mt: 1,
+                    },
+                  }}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                >
+                  <MenuItem
+                    onClick={handleProfile}
+                    sx={{
+                      color: '#FFF',
+                      '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                    }}
+                  >
+                    <AccountCircleIcon sx={{ mr: 1 }} />
+                    Profile
+                  </MenuItem>
+                  <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                  <MenuItem
+                    onClick={handleLogout}
+                    sx={{
+                      color: '#FFF',
+                      '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                    }}
+                  >
+                    <LogoutIcon sx={{ mr: 1 }} />
+                    Logout
+                  </MenuItem>
+                </Menu>
               </Box>
             </Toolbar>
           </Paper>
