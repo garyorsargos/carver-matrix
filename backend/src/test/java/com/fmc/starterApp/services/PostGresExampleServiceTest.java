@@ -1,15 +1,15 @@
 package com.fmc.starterApp.services;
 
-import com.fmc.starterApp.models.entity.PostgresExampleObject;
-import com.fmc.starterApp.repositories.PostgresRepository;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.fmc.starterApp.models.entity.PostgresExampleObject;
+import com.fmc.starterApp.repositories.PostgresRepository;
 
 class PostGresExampleServiceTest {
 
