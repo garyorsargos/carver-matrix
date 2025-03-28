@@ -742,13 +742,12 @@ export const CreateMatrix: React.FC = () => {
             >
               Add
             </Button>
-            {targets.length === 0 && (
+          </Box>
+          {targets.length === 0 && (
               <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', mt: 1 }}>
                 No targets added yet. Click "Add" to get started.
               </Typography>
             )}
-
-          </Box>
           {targets.map((target, index) => (
             <Paper
               key={index}
@@ -866,13 +865,12 @@ export const CreateMatrix: React.FC = () => {
             >
               Invite
             </Button>
-            {participantsData.length === 0 && (
+          </Box>
+          {participantsData.length === 0 && (
               <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', mt: 1 }}>
                 No collaborators added yet. Click "Invite" to add participants.
               </Typography>
             )}
-
-          </Box>
           {participantsData.map((participant, index) => (
             <Paper
               key={index}
