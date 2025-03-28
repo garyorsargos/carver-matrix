@@ -18,6 +18,7 @@ import {
   TextField,
   Snackbar,
   Alert,
+  Tooltip,
 } from "@mui/material";
 import { useState } from "react";
 import { IconButton } from "@mui/material";
@@ -25,6 +26,15 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { whoamiUpsert, createMatrix } from "./apiService";
 import SendIcon from "@mui/icons-material/Send";
 import { useNavigate } from "react-router-dom";
+
+// Tooltip descriptions to be added:
+// - Matrix Parameters: ADD TOOLTIP DESCRIPTION HERE
+// - Global Category Multipliers: ADD TOOLTIP DESCRIPTION HERE
+// - Score Range: ADD TOOLTIP DESCRIPTION HERE
+// - Role-Based Matrix: ADD TOOLTIP DESCRIPTION HERE
+// - Data Entry Assignment Method: ADD TOOLTIP DESCRIPTION HERE
+// - Targets: ADD TOOLTIP DESCRIPTION HERE
+// - Collaborators: ADD TOOLTIP DESCRIPTION HERE
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
@@ -59,7 +69,16 @@ export const CreateMatrix: React.FC = () => {
     { key: "Vulnerability", header: "V" },
     { key: "Effect", header: "E" },
     { key: "Recognizability", header: "R" },
-  ];
+  ] as const;
+
+  const carverTooltips: Record<typeof carverOrder[number]['key'], string> = {
+    Criticality: "The primary measure of target value and importance. Higher values indicate greater significance to the system or organization.",
+    Accessibility: "The ease of reaching and accessing the target. Higher values suggest easier access with fewer security measures.",
+    Recoverability: "The time and resources needed to restore functionality after an incident. Higher values mean longer recovery times.",
+    Vulnerability: "The susceptibility to attack or disruption. Higher values indicate greater weaknesses or vulnerabilities.",
+    Effect: "The immediate impact of a successful attack. Higher values represent more severe immediate consequences.",
+    Recognizability: "How easily the target can be identified. Higher values mean the target is more recognizable and requires less preparation to identify.",
+  };
 
   // Participant management
   const handleAddParticipant = () => {
@@ -218,41 +237,76 @@ export const CreateMatrix: React.FC = () => {
   return (
     <Box
       sx={{
-        backgroundColor: "lightgray",
+        backgroundColor: "#1a1a1a",
         height: "100vh",
         width: "100vw",
         display: "flex",
         justifyContent: "space-around",
         alignItems: "flex-start",
         pt: 1,
+        position: "relative",
       }}
     >
+      {/* Background Pattern */}
+      <Box
+        sx={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/military-pattern.svg')",
+          backgroundSize: "100px 100px",
+          backgroundPosition: "center",
+          opacity: 0.1,
+          zIndex: 0,
+        }}
+      />
+
       {/* Left section: Matrix parameters and multipliers */}
       <Box
         id="matrixCreatorBox"
         sx={{
-          backgroundColor: "white",
+          backgroundColor: "rgba(255, 255, 255, 0.05)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
           p: 2,
           borderRadius: 2,
           width: "48%",
           height: "85%",
-          boxShadow: 3,
+          maxHeight: "85%",
           display: "flex",
           flexDirection: "column",
           overflow: "auto",
+          position: "relative",
+          zIndex: 1,
         }}
       >
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" gap={2}>
           <TextField
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             variant="standard"
-            placeholder="Enter matrix Title..."
+            placeholder="Enter Matrix Title..."
             InputProps={{
               disableUnderline: false,
-              style: { fontSize: "3rem", color: "black" },
+              style: { fontSize: "3rem", color: "#ffffff" },
             }}
-            sx={{ flexGrow: 1 }}
+            sx={{ 
+              flexGrow: 1,
+              '& .MuiInput-root': {
+                color: '#ffffff',
+                '&:before': {
+                  borderBottomColor: 'rgba(255, 255, 255, 0.23)',
+                },
+                '&:hover:before': {
+                  borderBottomColor: '#014093',
+                },
+                '&.Mui-focused:before': {
+                  borderBottomColor: '#014093',
+                },
+              },
+            }}
             error={titleError}
             helperText={titleError ? "Matrix title is required" : ""}
           />
@@ -260,8 +314,19 @@ export const CreateMatrix: React.FC = () => {
             variant="contained"
             onClick={handleCreateMatrix}
             endIcon={<SendIcon />}
-            color="success"
-            sx={{ ml: 20, borderRadius: "20px", width: "170px" }}
+            sx={{ 
+              borderRadius: "20px", 
+              width: "170px",
+              backgroundColor: "#014093",
+              color: "#ffffff",
+              textTransform: "uppercase",
+              fontWeight: "bold",
+              letterSpacing: "1px",
+              flexShrink: 0,
+              '&:hover': {
+                backgroundColor: "#012B61",
+              },
+            }}
           >
             Create Matrix
           </Button>
@@ -276,9 +341,19 @@ export const CreateMatrix: React.FC = () => {
             onClose={() => setSnackbarOpen(false)}
             severity="success"
             variant="filled"
-            sx={{ width: "100%" }}
+            sx={{ 
+              width: "100%",
+              backgroundColor: '#1E4620',
+              color: '#ffffff',
+              '& .MuiAlert-icon': {
+                color: '#ffffff'
+              },
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+            }}
           >
-            Matrix Created Succesfully! Redirecting to 'View Matrix' page
+            Matrix Created Successfully! Redirecting to 'View Matrix' page
           </Alert>
         </Snackbar>
 
@@ -291,7 +366,17 @@ export const CreateMatrix: React.FC = () => {
             onClose={() => setSnackbarErrorOpen(false)}
             severity="error"
             variant="filled"
-            sx={{ width: "100%" }}
+            sx={{ 
+              width: "100%",
+              backgroundColor: '#7C0B02',
+              color: '#ffffff',
+              '& .MuiAlert-icon': {
+                color: '#ffffff'
+              },
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+            }}
           >
             You cannot have duplicate target names
           </Alert>
@@ -304,53 +389,95 @@ export const CreateMatrix: React.FC = () => {
           rows={1}
           variant="outlined"
           fullWidth
-          placeholder="Enter matrix description..."
-          InputProps={{
-            disableUnderline: true,
-            style: { fontSize: "1rem", color: "black" },
+          placeholder="Enter Matrix description..."
+          sx={{ 
+            mt: 2,
+            '& .MuiOutlinedInput-root': {
+              color: '#ffffff',
+              '& fieldset': {
+                borderColor: 'rgba(255, 255, 255, 0.23)',
+              },
+              '&:hover fieldset': {
+                borderColor: '#014093',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#014093',
+              },
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: 'rgba(255, 255, 255, 0.5)',
+            },
           }}
-          sx={{ flexGrow: 1 }}
         />
 
         <Box
           id="matrixParametersBox"
           sx={{
-            backgroundColor: "white",
             width: "100%",
             mt: 3,
             display: "flex",
             flexDirection: "column",
           }}
         >
-          <Typography variant="h4">Matrix Parameters</Typography>
+          <Tooltip title="" placement="right">
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                color: "#ffffff",
+                fontWeight: "bold",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                fontFamily: "'Roboto Condensed', sans-serif",
+                mb: 2,
+                cursor: "help",
+              }}
+            >
+              Matrix Parameters
+            </Typography>
+          </Tooltip>
           <Box
             sx={{
               display: "flex",
               flexDirection: "row",
-              gap: 10,
-              mt: 2,
+              gap: 4,
             }}
           >
             <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <FormControl fullWidth>
-                <FormLabel id="score-range-label">Score Range</FormLabel>
+                <Tooltip title="" placement="top">
+                  <FormLabel 
+                    id="score-range-label"
+                    sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}
+                  >
+                    Score Range
+                  </FormLabel>
+                </Tooltip>
                 <Select
                   labelId="score-range-label"
                   value={value}
                   onChange={scoreRangeHandleChange}
                   sx={{
-                    "& .MuiInputBase-input": { color: "black" },
-                    "& .MuiSelect-icon": { color: "black" },
-                    border: "1px solid lightgray",
+                    "& .MuiInputBase-input": { color: "#ffffff" },
+                    "& .MuiSelect-icon": { color: "#ffffff" },
+                    border: "1px solid rgba(255, 255, 255, 0.23)",
                     borderRadius: "20px",
                     mb: 1,
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    '&:hover': {
+                      borderColor: '#014093',
+                    },
+                    '&.Mui-focused': {
+                      borderColor: '#014093',
+                    },
                   }}
                 >
                   <MenuItem value={5}>5-Point Scoring</MenuItem>
                   <MenuItem value={10}>10-Point Scoring</MenuItem>
                 </Select>
               </FormControl>
-              <Typography>Role-Based Matrix</Typography>
+              <Tooltip title="" placement="top">
+                <Typography sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}>Role-Based Matrix</Typography>
+              </Tooltip>
               <FormControlLabel
                 control={
                   <Switch
@@ -359,29 +486,50 @@ export const CreateMatrix: React.FC = () => {
                     sx={{
                       "& .MuiSwitch-track": {
                         borderRadius: "20px",
-                        backgroundColor: RoleBasedChecked ? "blue" : "red",
+                        backgroundColor: RoleBasedChecked ? "#014093" : "rgba(255, 255, 255, 0.23)",
                         opacity: 1,
+                      },
+                      "& .MuiSwitch-thumb": {
+                        backgroundColor: "#ffffff",
                       },
                     }}
                   />
                 }
-                label={RoleBasedChecked ? "Enabled" : "Disabled"}
+                label={
+                  <Typography sx={{ color: "rgba(255, 255, 255, 0.7)" }}>
+                    {RoleBasedChecked ? "Enabled" : "Disabled"}
+                  </Typography>
+                }
                 sx={{ mb: 1 }}
               />
             </Box>
             <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <FormControl fullWidth>
-                <FormLabel id="data-entry-label">Data Entry Assignment Method</FormLabel>
+                <Tooltip title="" placement="top">
+                  <FormLabel 
+                    id="data-entry-label"
+                    sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}
+                  >
+                    Data Entry Assignment Method
+                  </FormLabel>
+                </Tooltip>
                 <Select
                   labelId="data-entry-label"
                   value={randomAssigned}
                   onChange={dataEntryHandleChange}
                   sx={{
-                    "& .MuiInputBase-input": { color: "black" },
-                    "& .MuiSelect-icon": { color: "black" },
-                    border: "1px solid lightgray",
+                    "& .MuiInputBase-input": { color: "#ffffff" },
+                    "& .MuiSelect-icon": { color: "#ffffff" },
+                    border: "1px solid rgba(255, 255, 255, 0.23)",
                     borderRadius: "20px",
                     mb: 1,
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    '&:hover': {
+                      borderColor: '#014093',
+                    },
+                    '&.Mui-focused': {
+                      borderColor: '#014093',
+                    },
                   }}
                 >
                   <MenuItem value={"random"}>Random</MenuItem>
@@ -390,27 +538,54 @@ export const CreateMatrix: React.FC = () => {
               </FormControl>
             </Box>
           </Box>
+
           <Box
             id="GlobalCategoryMultipliersBox"
             sx={{
-              backgroundColor: "white",
-              width: "80%",
-              mt: 2,
-              display: "flex",
-              flexDirection: "column",
+              width: "100%",
+              mt: 4,
             }}
           >
-            <Typography variant="h4">Global Category Multipliers</Typography>
-            <Table>
+            <Tooltip title="" placement="right">
+              <Typography 
+                variant="h4"
+                sx={{ 
+                  color: "#ffffff",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                  fontFamily: "'Roboto Condensed', sans-serif",
+                  mb: 2,
+                  cursor: "help",
+                }}
+              >
+                Global Category Multipliers
+              </Typography>
+            </Tooltip>
+            <Table size="small">
               <TableHead>
                 <TableRow>
                   {carverOrder.map((item) => (
                     <TableCell
                       key={item.key}
                       align="center"
-                      sx={{ color: "black", fontWeight: "bold" }}
+                      sx={{ 
+                        color: "#ffffff",
+                        fontWeight: "bold",
+                        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+                        padding: 1,
+                      }}
                     >
-                      {item.header}
+                      <Tooltip title={carverTooltips[item.key]} placement="top">
+                        <Box sx={{ 
+                          cursor: "help",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}>
+                          {item.header}
+                        </Box>
+                      </Tooltip>
                     </TableCell>
                   ))}
                 </TableRow>
@@ -418,7 +593,14 @@ export const CreateMatrix: React.FC = () => {
               <TableBody>
                 <TableRow>
                   {carverOrder.map((item) => (
-                    <TableCell key={item.key} align="center">
+                    <TableCell 
+                      key={item.key} 
+                      align="center"
+                      sx={{
+                        borderBottom: "none",
+                        padding: 1,
+                      }}
+                    >
                       <Select
                         value={
                           multipliers[item.key as keyof typeof initialMultipliers]
@@ -426,10 +608,18 @@ export const CreateMatrix: React.FC = () => {
                         onChange={multipliersHandleChange(item.key)}
                         size="small"
                         sx={{
-                          "& .MuiInputBase-input": { color: "black" },
-                          "& .MuiSelect-icon": { color: "black" },
-                          border: "1px solid lightgray",
+                          "& .MuiInputBase-input": { color: "#ffffff" },
+                          "& .MuiSelect-icon": { color: "#ffffff" },
+                          border: "1px solid rgba(255, 255, 255, 0.23)",
                           borderRadius: "20px",
+                          backgroundColor: "rgba(255, 255, 255, 0.05)",
+                          '&:hover': {
+                            borderColor: '#014093',
+                          },
+                          '&.Mui-focused': {
+                            borderColor: '#014093',
+                          },
+                          minWidth: "80px",
                         }}
                       >
                         {options.map((option) => (
@@ -447,20 +637,23 @@ export const CreateMatrix: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Combined Targets & Roles in one box (side-by-side) */}
+      {/* Combined Targets & Collaborators in one box (side-by-side) */}
       <Box
-        id="targetsAndRolesBox"
+        id="targetsAndCollaboratorsBox"
         sx={{
-          backgroundColor: "white",
+          backgroundColor: "rgba(255, 255, 255, 0.05)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
           p: 2,
           borderRadius: 2,
           width: "45%",
           height: "85%",
-          boxShadow: 3,
           display: "flex",
           flexDirection: "row",
           gap: 2,
           overflow: "auto",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         {/* Targets Column */}
@@ -479,10 +672,35 @@ export const CreateMatrix: React.FC = () => {
               mb: 2,
             }}
           >
-            <Typography variant="h4">Targets</Typography>
+            <Tooltip title="" placement="right">
+              <Typography 
+                variant="h4"
+                sx={{ 
+                  color: "#ffffff",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                  fontFamily: "'Roboto Condensed', sans-serif",
+                  cursor: "help",
+                }}
+              >
+                Targets
+              </Typography>
+            </Tooltip>
             <Button
               variant="contained"
-              sx={{ borderRadius: "20px", width: "100px" }}
+              sx={{ 
+                borderRadius: "20px", 
+                width: "100px",
+                backgroundColor: "#014093",
+                color: "#ffffff",
+                textTransform: "uppercase",
+                fontWeight: "bold",
+                letterSpacing: "1px",
+                '&:hover': {
+                  backgroundColor: "#012B61",
+                },
+              }}
               onClick={handleAddTarget}
             >
               Add
@@ -506,20 +724,42 @@ export const CreateMatrix: React.FC = () => {
                 fullWidth
                 placeholder="Enter target..."
                 sx={{
-                  border: "1px solid #ccc",
-                  borderRadius: "20px",
-                  input: { color: "black" },
-                  height: "100%",
+                  '& .MuiOutlinedInput-root': {
+                    color: '#ffffff',
+                    height: '100%',
+                    borderRadius: '20px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.23)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#014093',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#014093',
+                    },
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: 'rgba(255, 255, 255, 0.5)',
+                  },
                 }}
               />
-              <IconButton onClick={() => handleDeleteTarget(index)}>
-                <DeleteIcon color="error" />
+              <IconButton 
+                onClick={() => handleDeleteTarget(index)}
+                sx={{
+                  color: "rgba(255, 255, 255, 0.7)",
+                  '&:hover': {
+                    color: "#014093",
+                  },
+                }}
+              >
+                <DeleteIcon />
               </IconButton>
             </Box>
           ))}
         </Box>
 
-        {/* Roles Column */}
+        {/* Collaborators Column */}
         <Box
           sx={{
             flex: 1.25,
@@ -535,10 +775,35 @@ export const CreateMatrix: React.FC = () => {
               mb: 2,
             }}
           >
-            <Typography variant="h4">Roles</Typography>
+            <Tooltip title="" placement="right">
+              <Typography 
+                variant="h4"
+                sx={{ 
+                  color: "#ffffff",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                  fontFamily: "'Roboto Condensed', sans-serif",
+                  cursor: "help",
+                }}
+              >
+                Collaborators
+              </Typography>
+            </Tooltip>
             <Button
               variant="contained"
-              sx={{ borderRadius: "20px", width: "100px" }}
+              sx={{ 
+                borderRadius: "20px", 
+                width: "100px",
+                backgroundColor: "#014093",
+                color: "#ffffff",
+                textTransform: "uppercase",
+                fontWeight: "bold",
+                letterSpacing: "1px",
+                '&:hover': {
+                  backgroundColor: "#012B61",
+                },
+              }}
               onClick={handleAddParticipant}
             >
               Invite
@@ -549,14 +814,15 @@ export const CreateMatrix: React.FC = () => {
               key={index}
               elevation={0}
               sx={{
-                color: "black",
+                color: "#ffffff",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 gap: 1,
-                border: "1px solid #ccc",
+                border: "1px solid rgba(255, 255, 255, 0.23)",
                 borderRadius: "20px",
-                backgroundColor: "white",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(10px)",
                 mb: 1,
                 pl: 1,
                 height: "56px",
@@ -569,25 +835,62 @@ export const CreateMatrix: React.FC = () => {
                 placeholder="Enter email..."
                 InputProps={{
                   disableUnderline: false,
-                  style: { fontSize: "1rem", color: "black" },
+                  style: { fontSize: "1rem", color: "#ffffff" },
                 }}
-                sx={{ flexGrow: 1 }}
+                sx={{ 
+                  flexGrow: 1,
+                  '& .MuiInput-root': {
+                    color: '#ffffff',
+                    '&:before': {
+                      borderBottomColor: 'rgba(255, 255, 255, 0.23)',
+                    },
+                    '&:hover:before': {
+                      borderBottomColor: '#014093',
+                    },
+                    '&.Mui-focused:before': {
+                      borderBottomColor: '#014093',
+                    },
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: 'rgba(255, 255, 255, 0.5)',
+                  },
+                }}
               />
               <Select
                 value={participant.role}
                 onChange={(e) => handleParticipantRoleChange(index, e)}
                 sx={{
-                  color: "gray",
-                  backgroundColor: "white",
+                  color: "#ffffff",
+                  backgroundColor: "rgba(255, 255, 255, 0.05)",
                   height: "40px",
+                  '& .MuiSelect-icon': {
+                    color: '#ffffff',
+                  },
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.23)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#014093',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#014093',
+                  },
                 }}
               >
                 <MenuItem value="Participant">Participant</MenuItem>
                 <MenuItem value="Host">Host</MenuItem>
                 <MenuItem value="Host and Participant">Host and Participant</MenuItem>
               </Select>
-              <IconButton onClick={() => handleDeleteParticipant(index)}>
-                <DeleteIcon color="error" />
+              <IconButton 
+                onClick={() => handleDeleteParticipant(index)}
+                sx={{
+                  color: "rgba(255, 255, 255, 0.7)",
+                  '&:hover': {
+                    color: "#014093",
+                  },
+                }}
+              >
+                <DeleteIcon />
               </IconButton>
             </Paper>
           ))}
