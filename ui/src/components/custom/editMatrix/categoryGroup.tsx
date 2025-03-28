@@ -8,7 +8,8 @@ interface CategoryDisplayProps {
 }
 
 const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }) => {
-  const { setMultiMatrix, itemIdMap, setUpdates, rawItems } = useMultiMatrix();
+  const { setMultiMatrix, itemIdMap, setUpdates, rawItems, config } = useMultiMatrix();
+  const currentEmail = config.currentUserEmail;
 
   // Map the UI category names to API field names.
   const categoryMap: { [key: string]: string } = {
@@ -23,10 +24,13 @@ const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }
 
   // Find the raw item for this target
   const rawItem = rawItems.find(item => item.itemName === targetTitle);
-  const initialScore = rawItem ? rawItem[apiCategory] : undefined;
-  const [score, setScore] = React.useState<number | undefined>(initialScore);
+  const scores = rawItem ? (rawItem[apiCategory] || {}) as { [email: string]: number } : {};
+  const initialScore = currentEmail ? scores[currentEmail] || 0 : 0;
+  const [score, setScore] = React.useState<number>(initialScore);
 
   const handleInputChange = (event: SelectChangeEvent<string>) => {
+    if (!currentEmail) return;
+    
     const newScore = Number(event.target.value);
     setScore(newScore);
 
@@ -47,17 +51,33 @@ const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }
       console.warn(`No itemId found for ${targetTitle}`);
       return;
     }
+
     setUpdates((prevUpdates) => {
       const existingIndex = prevUpdates.findIndex((u: any) => u.itemId === itemId);
       if (existingIndex !== -1) {
-        // Merge the new change with the existing update.
-        const updatedItem = { ...prevUpdates[existingIndex], [apiCategory]: newScore };
+        // Get existing scores or initialize new ones
+        const existingScores = prevUpdates[existingIndex][apiCategory] || {};
+        const updatedScores = {
+          ...existingScores,
+          [currentEmail]: newScore
+        };
+
+        // Merge the new change with the existing update
+        const updatedItem = {
+          ...prevUpdates[existingIndex],
+          [apiCategory]: updatedScores
+        };
         const newUpdates = [...prevUpdates];
         newUpdates[existingIndex] = updatedItem;
         return newUpdates;
       } else {
-        // Create a new update entry.
-        return [...prevUpdates, { itemId, [apiCategory]: newScore }];
+        // Create a new update entry with user-specific score
+        return [...prevUpdates, {
+          itemId,
+          [apiCategory]: {
+            [currentEmail]: newScore
+          }
+        }];
       }
     });
   };
@@ -67,7 +87,7 @@ const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }
       <FormControl fullWidth sx={{ mt: 1, minWidth: 50 }}>
         <Select
           id="score-select"
-          value={score?.toString() || ""}
+          value={score.toString()}
           onChange={handleInputChange}
           sx={{
             ".MuiSelect-select": {
@@ -89,6 +109,7 @@ const CategoryGroup: React.FC<CategoryDisplayProps> = ({ category, targetTitle }
             },
           }}
         >
+          <MenuItem value="0">-</MenuItem>
           <MenuItem value="1">1</MenuItem>
           <MenuItem value="2">2</MenuItem>
           <MenuItem value="3">3</MenuItem>

@@ -323,6 +323,26 @@ const EditMatrixContent: React.FC = () => {
   const [successToast, setSuccessToast] = useState(false);
   const [errorToast, setErrorToast] = useState(false);
   
+  const categoriesConst = [
+    "Criticality",
+    "Accessibility",
+    "Recuperability",
+    "Vulnerability",
+    "Effect",
+    "Recognizability",
+  ] as const;
+
+  const categories = [...categoriesConst];
+
+  const categoryToPropertyMap: { [key: string]: string } = {
+    "Criticality": "criticality",
+    "Accessibility": "accessibility",
+    "Recuperability": "recoverability",
+    "Vulnerability": "vulnerability",
+    "Effect": "effect",
+    "Recognizability": "recognizability",
+  };
+
   // Determine user roles if roleBased is enabled.
   const isRoleBased = config.roleBased;
   const isHost =
@@ -391,44 +411,22 @@ const EditMatrixContent: React.FC = () => {
   const matrixMap = useMemo(() => {
     const map = new Map<string, Map<string, number>>();
     displayedItems.forEach((item: any) => {
-      map.set(
-        item.itemName,
-        new Map([
-          ["Criticality", item.criticality],
-          ["Accessibility", item.accessibility],
-          ["Recuperability", item.recoverability],
-          ["Vulnerability", item.vulnerability],
-          ["Effect", item.effect],
-          ["Recognizability", item.recognizability],
-        ])
-      );
+      const categoryMap = new Map<string, number>();
+      categories.forEach(category => {
+        const key = categoryToPropertyMap[category];
+        // Get the user's score from the scores object for this category
+        const scores = (item[key] || {}) as { [email: string]: number };
+        const userScore = currentEmail ? (scores[currentEmail] || 0) : 0;
+        categoryMap.set(category, userScore);
+      });
+      map.set(item.itemName, categoryMap);
     });
     return map;
-  }, [displayedItems]);
+  }, [displayedItems, categories, currentEmail, categoryToPropertyMap]);
 
   const targets = useMemo(() => {
     return Array.from(matrixMap.keys()).sort((a, b) => a.localeCompare(b));
   }, [matrixMap]);
-
-  const categories = [
-    "Criticality",
-    "Accessibility",
-    "Recuperability",
-    "Vulnerability",
-    "Effect",
-    "Recognizability",
-  ];
-
-  type Category = "Criticality" | "Accessibility" | "Recuperability" | "Vulnerability" | "Effect" | "Recognizability";
-
-  const categoryTooltips: Record<Category, string> = {
-    Criticality: "The importance of the target to the organization's mission and the impact of its loss",
-    Accessibility: "How easily the target can be reached and accessed by potential threats",
-    Recuperability: "The ability of the organization to recover from an attack on this target",
-    Vulnerability: "The susceptibility of the target to various types of attacks or threats",
-    Effect: "The overall impact and consequences of a successful attack on this target",
-    Recognizability: "How easily the target can be identified and distinguished from other assets"
-  };
 
   const handleSubmitUpdates = () => {
     const params = new URLSearchParams(window.location.search);
@@ -438,8 +436,27 @@ const EditMatrixContent: React.FC = () => {
       setErrorToast(true);
       return;
     }
+
+    // Format updates to send only the current user's scores
+    const formattedUpdates = updates.map((update: any) => {
+      const formattedUpdate: any = { itemId: update.itemId };
+      
+      // For each category in the update
+      Object.entries(update).forEach(([key, value]) => {
+        if (key !== 'itemId') {
+          // If the value is an object with user scores, get current user's score
+          const scores = value as { [email: string]: number };
+          formattedUpdate[key] = scores[currentEmail || ''] || 0;
+        }
+      });
+      
+      return formattedUpdate;
+    });
+
+    console.log("Sending formatted updates:", formattedUpdates);
+
     axios
-      .put(`/api/carvermatrices/${matrixId}/carveritems/update`, updates)
+      .put(`/api/carvermatrices/${matrixId}/carveritems/update`, formattedUpdates)
       .then((response) => {
         console.log("Updates submitted successfully", response);
         setSuccessToast(true);
@@ -746,7 +763,7 @@ const EditMatrixContent: React.FC = () => {
                           fontFamily: "'Roboto Condensed', sans-serif",
                           textTransform: "uppercase",
                           letterSpacing: "0.5px",
-                          width: '25%', // Use percentage instead of fixed width
+                          width: '25%',
                         }}
                       >
                         Target
@@ -762,16 +779,9 @@ const EditMatrixContent: React.FC = () => {
                             fontFamily: "'Roboto Condensed', sans-serif",
                             textTransform: "uppercase",
                             letterSpacing: "0.5px",
-                            width: '12.5%', // Use percentage instead of fixed width ((100% - 25%) / 6)
                           }}
                         >
-                          <Tooltip 
-                            title={categoryTooltips[category as Category]}
-                            arrow
-                            placement="top"
-                          >
-                            <span>{category}</span>
-                          </Tooltip>
+                          {category.charAt(0)}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -788,14 +798,27 @@ const EditMatrixContent: React.FC = () => {
                         >
                           {target}
                         </TableCell>
-                        {categories.map((category) => (
-                          <TableCell key={category} align="center">
-                            <CategoryGroup
-                              category={category}
-                              targetTitle={target}
-                            />
-                          </TableCell>
-                        ))}
+                        {categories.map((category) => {
+                          const item = displayedItems.find(item => item.itemName === target);
+                          const key = categoryToPropertyMap[category];
+                          const scores = item ? (item[key] || {}) as { [email: string]: number } : {};
+                          const userScore = currentEmail ? (scores[currentEmail] || 0) : 0;
+                          
+                          return (
+                            <TableCell
+                              key={category}
+                              align="center"
+                              sx={{
+                                color: userScore > 0 ? '#fff' : 'rgba(255, 255, 255, 0.3)',
+                              }}
+                            >
+                              <CategoryGroup
+                                category={category}
+                                targetTitle={target}
+                              />
+                            </TableCell>
+                          );
+                        })}
                       </TableRow>
                     ))}
                   </TableBody>
