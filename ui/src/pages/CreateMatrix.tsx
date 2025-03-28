@@ -27,14 +27,6 @@ import { whoamiUpsert, createMatrix } from "./apiService";
 import SendIcon from "@mui/icons-material/Send";
 import { useNavigate } from "react-router-dom";
 
-// Tooltip descriptions to be added:
-// - Matrix Parameters: ADD TOOLTIP DESCRIPTION HERE
-// - Global Category Multipliers: ADD TOOLTIP DESCRIPTION HERE
-// - Score Range: ADD TOOLTIP DESCRIPTION HERE
-// - Role-Based Matrix: ADD TOOLTIP DESCRIPTION HERE
-// - Data Entry Assignment Method: ADD TOOLTIP DESCRIPTION HERE
-// - Targets: ADD TOOLTIP DESCRIPTION HERE
-// - Collaborators: ADD TOOLTIP DESCRIPTION HERE
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
@@ -47,6 +39,7 @@ export const CreateMatrix: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarErrorOpen, setSnackbarErrorOpen] = useState(false);
   const [titleError, setTitleError] = useState(false);
+  const [snackbarTargetErrorOpen, setSnackbarTargetErrorOpen] = useState(false);
   const [participantsData, setParticipantsData] = useState<
     { email: string; role: string }[]
   >([]);
@@ -222,13 +215,20 @@ export const CreateMatrix: React.FC = () => {
         fivePointScoring: value === 5 ? true : false,
         items: items,
       };
-
-      const response = await createMatrix(matrixData, userId);
-      console.log("Matrix Created:", response.data);
-      setSnackbarOpen(true);
-      setTimeout(() => {
-        navigate("/ViewMatrix");
-      }, 3000);
+      if (targets.length != 0)
+      {
+        const response = await createMatrix(matrixData, userId);
+        console.log("Matrix Created:", response.data);
+        setSnackbarOpen(true);
+        setTimeout(() => {
+          navigate("/ViewMatrix");
+        }, 3000);
+      }
+      else
+      {
+        setSnackbarOpen(false);
+        setSnackbarTargetErrorOpen(true);
+      }
     } catch (error) {
       console.error("Error creating matrix or verifying user", error);
     }
@@ -333,6 +333,32 @@ export const CreateMatrix: React.FC = () => {
         </Box>
 
         <Snackbar
+          open={snackbarTargetErrorOpen}
+          autoHideDuration={3000}
+          onClose={() => setSnackbarTargetErrorOpen(false)}
+        >
+          <Alert
+            onClose={() => setSnackbarTargetErrorOpen(false)}
+            severity="error"
+            variant="filled"
+            sx={{ 
+              width: "100%",
+              backgroundColor: '#7C0B02',
+              color: '#ffffff',
+              '& .MuiAlert-icon': {
+                color: '#ffffff'
+              },
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            Must have at least one target
+          </Alert>
+      </Snackbar>
+
+
+        <Snackbar
           open={snackbarOpen}
           autoHideDuration={3000}
           onClose={() => setSnackbarOpen(false)}
@@ -398,7 +424,7 @@ export const CreateMatrix: React.FC = () => {
                 borderColor: 'rgba(255, 255, 255, 0.23)',
               },
               '&:hover fieldset': {
-                borderColor: '#014093',
+                borderColor: '#ffffff',
               },
               '&.Mui-focused fieldset': {
                 borderColor: '#014093',
@@ -417,9 +443,10 @@ export const CreateMatrix: React.FC = () => {
             mt: 3,
             display: "flex",
             flexDirection: "column",
+            marginTop: "50px",
           }}
         >
-          <Tooltip title="" placement="right">
+          <Tooltip title="Define the configuration options for your CARVER matrix, such as scoring scale, role restrictions, and how data entry is assigned." placement="top">
             <Typography 
               variant="h4" 
               sx={{ 
@@ -444,7 +471,7 @@ export const CreateMatrix: React.FC = () => {
           >
             <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <FormControl fullWidth>
-                <Tooltip title="" placement="top">
+                <Tooltip title="Select whether the matrix uses a 5-point or 10-point scale to evaluate each CARVER criterion." placement="top">
                   <FormLabel 
                     id="score-range-label"
                     sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}
@@ -475,8 +502,8 @@ export const CreateMatrix: React.FC = () => {
                   <MenuItem value={10}>10-Point Scoring</MenuItem>
                 </Select>
               </FormControl>
-              <Tooltip title="" placement="top">
-                <Typography sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}>Role-Based Matrix</Typography>
+              <Tooltip title="Toggle whether collaborators have different permissions based on their role (e.g., Hosts vs. Participants)." placement="top">
+                <Typography sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}>Enforce Role Restrictions</Typography>
               </Tooltip>
               <FormControlLabel
                 control={
@@ -505,7 +532,7 @@ export const CreateMatrix: React.FC = () => {
             </Box>
             <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <FormControl fullWidth>
-                <Tooltip title="" placement="top">
+                <Tooltip title="Choose whether data entry tasks are randomly distributed or manually assigned to specific collaborators." placement="top">
                   <FormLabel 
                     id="data-entry-label"
                     sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}
@@ -546,7 +573,7 @@ export const CreateMatrix: React.FC = () => {
               mt: 4,
             }}
           >
-            <Tooltip title="" placement="right">
+            <Tooltip title="Adjust the relative importance of each CARVER category globally. These multipliers affect how much weight each factor has in final scoring." placement="top">
               <Typography 
                 variant="h4"
                 sx={{ 
@@ -672,7 +699,7 @@ export const CreateMatrix: React.FC = () => {
               mb: 2,
             }}
           >
-            <Tooltip title="" placement="right">
+            <Tooltip title="Define the specific assets, systems, or entities to be evaluated in your CARVER matrix." placement="top">
               <Typography 
                 variant="h4"
                 sx={{ 
@@ -707,42 +734,53 @@ export const CreateMatrix: React.FC = () => {
             </Button>
           </Box>
           {targets.map((target, index) => (
-            <Box
+            <Paper
               key={index}
+              elevation={0}
               sx={{
+                color: "#ffffff",
                 display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
                 gap: 1,
+                border: "1px solid rgba(255, 255, 255, 0.23)",
+                borderRadius: "20px",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(10px)",
                 mb: 1,
+                pl: 1,
                 height: "56px",
               }}
             >
               <TextField
                 value={target}
                 onChange={(e) => handleTargetChange(index, e)}
-                variant="outlined"
+                variant="standard"
                 fullWidth
                 placeholder="Enter target..."
-                sx={{
-                  '& .MuiOutlinedInput-root': {
+                InputProps={{
+                  disableUnderline: false,
+                  style: { fontSize: "1rem", color: "#ffffff" },
+                }}
+                sx={{ 
+                  flexGrow: 1,
+                  '& .MuiInput-root': {
                     color: '#ffffff',
-                    height: '100%',
-                    borderRadius: '20px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.23)',
+                    '&:before': {
+                      borderBottomColor: 'rgba(255, 255, 255, 0.23)',
                     },
-                    '&:hover fieldset': {
-                      borderColor: '#014093',
+                    '&:hover:before': {
+                      borderBottomColor: '#014093',
                     },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#014093',
+                    '&.Mui-focused:before': {
+                      borderBottomColor: '#014093',
                     },
                   },
                   '& .MuiInputBase-input::placeholder': {
                     color: 'rgba(255, 255, 255, 0.5)',
                   },
                 }}
+                
               />
               <IconButton 
                 onClick={() => handleDeleteTarget(index)}
@@ -755,7 +793,7 @@ export const CreateMatrix: React.FC = () => {
               >
                 <DeleteIcon />
               </IconButton>
-            </Box>
+            </Paper>
           ))}
         </Box>
 
@@ -775,7 +813,7 @@ export const CreateMatrix: React.FC = () => {
               mb: 2,
             }}
           >
-            <Tooltip title="" placement="right">
+            <Tooltip title="Invite users to participate in the matrix evaluation process, assigning them roles to control their level of access and responsibility." placement="top">
               <Typography 
                 variant="h4"
                 sx={{ 
@@ -837,7 +875,7 @@ export const CreateMatrix: React.FC = () => {
                   disableUnderline: false,
                   style: { fontSize: "1rem", color: "#ffffff" },
                 }}
-                sx={{ 
+                sx={{
                   flexGrow: 1,
                   '& .MuiInput-root': {
                     color: '#ffffff',
@@ -845,7 +883,7 @@ export const CreateMatrix: React.FC = () => {
                       borderBottomColor: 'rgba(255, 255, 255, 0.23)',
                     },
                     '&:hover:before': {
-                      borderBottomColor: '#014093',
+                      borderBottomColor: '#ffffff',
                     },
                     '&.Mui-focused:before': {
                       borderBottomColor: '#014093',
