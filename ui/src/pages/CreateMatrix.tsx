@@ -742,42 +742,53 @@ export const CreateMatrix: React.FC = () => {
             </Button>
           </Box>
           {targets.map((target, index) => (
-            <Box
+            <Paper
               key={index}
+              elevation={0}
               sx={{
+                color: "#ffffff",
                 display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
                 gap: 1,
+                border: "1px solid rgba(255, 255, 255, 0.23)",
+                borderRadius: "20px",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(10px)",
                 mb: 1,
+                pl: 1,
                 height: "56px",
               }}
             >
               <TextField
                 value={target}
                 onChange={(e) => handleTargetChange(index, e)}
-                variant="outlined"
+                variant="standard"
                 fullWidth
                 placeholder="Enter target..."
-                sx={{
-                  '& .MuiOutlinedInput-root': {
+                InputProps={{
+                  disableUnderline: false,
+                  style: { fontSize: "1rem", color: "#ffffff" },
+                }}
+                sx={{ 
+                  flexGrow: 1,
+                  '& .MuiInput-root': {
                     color: '#ffffff',
-                    height: '100%',
-                    borderRadius: '20px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.23)',
+                    '&:before': {
+                      borderBottomColor: 'rgba(255, 255, 255, 0.23)',
                     },
-                    '&:hover fieldset': {
-                      borderColor: '#014093',
+                    '&:hover:before': {
+                      borderBottomColor: '#014093',
                     },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#014093',
+                    '&.Mui-focused:before': {
+                      borderBottomColor: '#014093',
                     },
                   },
                   '& .MuiInputBase-input::placeholder': {
                     color: 'rgba(255, 255, 255, 0.5)',
                   },
                 }}
+                
               />
               <IconButton 
                 onClick={() => handleDeleteTarget(index)}
@@ -790,7 +801,7 @@ export const CreateMatrix: React.FC = () => {
               >
                 <DeleteIcon />
               </IconButton>
-            </Box>
+            </Paper>
           ))}
         </Box>
 
@@ -872,7 +883,7 @@ export const CreateMatrix: React.FC = () => {
                   disableUnderline: false,
                   style: { fontSize: "1rem", color: "#ffffff" },
                 }}
-                sx={{ 
+                sx={{
                   flexGrow: 1,
                   '& .MuiInput-root': {
                     color: '#ffffff',
@@ -880,7 +891,7 @@ export const CreateMatrix: React.FC = () => {
                       borderBottomColor: 'rgba(255, 255, 255, 0.23)',
                     },
                     '&:hover:before': {
-                      borderBottomColor: '#014093',
+                      borderBottomColor: '#ffffff',
                     },
                     '&.Mui-focused:before': {
                       borderBottomColor: '#014093',
