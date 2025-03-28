@@ -26,12 +26,15 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { whoamiUpsert, createMatrix } from "./apiService";
 import SendIcon from "@mui/icons-material/Send";
 import { useNavigate } from "react-router-dom";
+import GroupsIcon from '@mui/icons-material/Groups';
+import PlaceIcon from '@mui/icons-material/Place';
+
 
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
+  const [dataEntryMethod, setDataEntryMethodRandom] = useState(true);
   const [value, setValue] = useState<number>(5);
-  const [randomAssigned, setRandomAssigned] = useState<string>("random");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const navigate = useNavigate();
@@ -142,12 +145,14 @@ export const CreateMatrix: React.FC = () => {
     setRoleBasedChecked(event.target.checked);
   };
 
-  const scoreRangeHandleChange = (event: SelectChangeEvent<number>) => {
-    setValue(event.target.value as number);
+  const dataEntryHandleChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setDataEntryMethodRandom(event.target.checked);
   };
 
-  const dataEntryHandleChange = (event: SelectChangeEvent<string>) => {
-    setRandomAssigned(event.target.value as string);
+  const scoreRangeHandleChange = (event: SelectChangeEvent<number>) => {
+    setValue(event.target.value as number);
   };
 
   const handleCreateMatrix = async () => {
@@ -210,7 +215,7 @@ export const CreateMatrix: React.FC = () => {
         vMulti: multipliers["Vulnerability"],
         eMulti: multipliers["Effect"],
         r2Multi: multipliers["Recognizability"],
-        randomAssignment: randomAssigned === "random" ? true : false,
+        randomAssignment: dataEntryMethod,
         roleBased: RoleBasedChecked,
         fivePointScoring: value === 5 ? true : false,
         items: items,
@@ -324,7 +329,7 @@ export const CreateMatrix: React.FC = () => {
               letterSpacing: "1px",
               flexShrink: 0,
               '&:hover': {
-                backgroundColor: "#012B61",
+                boxShadow: '0 0 8px #014093'
               },
             }}
           >
@@ -435,7 +440,6 @@ export const CreateMatrix: React.FC = () => {
             },
           }}
         />
-
         <Box
           id="matrixParametersBox"
           sx={{
@@ -540,28 +544,30 @@ export const CreateMatrix: React.FC = () => {
                     Data Entry Assignment Method
                   </FormLabel>
                 </Tooltip>
-                <Select
-                  labelId="data-entry-label"
-                  value={randomAssigned}
-                  onChange={dataEntryHandleChange}
-                  sx={{
-                    "& .MuiInputBase-input": { color: "#ffffff" },
-                    "& .MuiSelect-icon": { color: "#ffffff" },
-                    border: "1px solid rgba(255, 255, 255, 0.23)",
-                    borderRadius: "20px",
-                    mb: 1,
-                    backgroundColor: "rgba(255, 255, 255, 0.05)",
-                    '&:hover': {
-                      borderColor: '#014093',
-                    },
-                    '&.Mui-focused': {
-                      borderColor: '#014093',
-                    },
-                  }}
-                >
-                  <MenuItem value={"random"}>Random</MenuItem>
-                  <MenuItem value={"assigned"}>Assigned</MenuItem>
-                </Select>
+                <FormControlLabel
+                control={
+                  <Switch
+                    checked={dataEntryMethod}
+                    onChange={dataEntryHandleChange}
+                    sx={{
+                      "& .MuiSwitch-track": {
+                        borderRadius: "20px",
+                        backgroundColor: dataEntryMethod ? "#014093" : "rgba(255, 255, 255, 0.23)",
+                        opacity: 1,
+                      },
+                      "& .MuiSwitch-thumb": {
+                        backgroundColor: "#ffffff",
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Typography sx={{ color: "rgba(255, 255, 255, 0.7)" }}>
+                    {dataEntryMethod ? "Random" : "Assigned"}
+                  </Typography>
+                }
+                sx={{ mb: 1 }}
+              />
               </FormControl>
             </Box>
           </Box>
@@ -676,7 +682,7 @@ export const CreateMatrix: React.FC = () => {
           width: "45%",
           height: "85%",
           display: "flex",
-          flexDirection: "row",
+          flexDirection: "column",
           gap: 2,
           overflow: "auto",
           position: "relative",
@@ -689,6 +695,9 @@ export const CreateMatrix: React.FC = () => {
             flex: 1,
             display: "flex",
             flexDirection: "column",
+            maxHeight: "50%",       
+            overflowY: "auto",
+            pr: 1,                  
           }}
         >
           <Box
@@ -711,6 +720,7 @@ export const CreateMatrix: React.FC = () => {
                   cursor: "help",
                 }}
               >
+                <PlaceIcon sx={{ marginRight: "10px" , fontSize: "1.5rem" }} />
                 Targets
               </Typography>
             </Tooltip>
@@ -732,6 +742,12 @@ export const CreateMatrix: React.FC = () => {
             >
               Add
             </Button>
+            {targets.length === 0 && (
+              <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', mt: 1 }}>
+                No targets added yet. Click "Add" to get started.
+              </Typography>
+            )}
+
           </Box>
           {targets.map((target, index) => (
             <Paper
@@ -803,6 +819,9 @@ export const CreateMatrix: React.FC = () => {
             flex: 1.25,
             display: "flex",
             flexDirection: "column",
+            maxHeight: "50%",  
+            overflowY: "auto",
+            pr: 1,
           }}
         >
           <Box
@@ -825,6 +844,7 @@ export const CreateMatrix: React.FC = () => {
                   cursor: "help",
                 }}
               >
+                <GroupsIcon sx={{ marginRight: "10px" , fontSize: "1.5rem" }} />
                 Collaborators
               </Typography>
             </Tooltip>
@@ -846,6 +866,12 @@ export const CreateMatrix: React.FC = () => {
             >
               Invite
             </Button>
+            {participantsData.length === 0 && (
+              <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', mt: 1 }}>
+                No collaborators added yet. Click "Invite" to add participants.
+              </Typography>
+            )}
+
           </Box>
           {participantsData.map((participant, index) => (
             <Paper
