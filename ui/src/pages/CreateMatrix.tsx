@@ -424,7 +424,7 @@ export const CreateMatrix: React.FC = () => {
                 borderColor: 'rgba(255, 255, 255, 0.23)',
               },
               '&:hover fieldset': {
-                borderColor: '#014093',
+                borderColor: '#ffffff',
               },
               '&.Mui-focused fieldset': {
                 borderColor: '#014093',
