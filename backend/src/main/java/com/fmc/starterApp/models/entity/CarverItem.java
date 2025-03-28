@@ -3,6 +3,8 @@ package com.fmc.starterApp.models.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,6 +16,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CollectionTable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,17 +47,29 @@ public class CarverItem {
     @Column(name = "item_name", nullable = false)
     private String itemName;
 
-    private Integer criticality;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Integer> criticality = new HashMap<>();
 
-    private Integer accessibility;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Integer> accessibility = new HashMap<>();
 
-    private Integer recoverability;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Integer> recoverability = new HashMap<>();
 
-    private Integer vulnerability;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Integer> vulnerability = new HashMap<>();
 
-    private Integer effect;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Integer> effect = new HashMap<>();
 
-    private Integer recognizability;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Integer> recognizability = new HashMap<>();
 
     @Column(columnDefinition = "TEXT[]")
     @JdbcTypeCode(SqlTypes.ARRAY)
