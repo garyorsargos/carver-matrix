@@ -22,33 +22,38 @@ import {
   MenuItem,
   Avatar,
   Divider,
+  Breadcrumbs,
+  Link,
 } from "@mui/material";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 interface RedirectProps {
   children: React.ReactElement | React.ReactElement[];
 }
 
-/**
- * Redirect is the primary application component. Its holds
- * all other routes for the application, and is constantly
- * listening to the Global Context value "roles". If "roles"
- * doesn't contain the appropriate role, the user will be
- * instantly redirected away from the page back to the /Home
- * page route. This prevents URL fuzzing as well (when a user
- * attempts to manually type in a URL they know exists).
- *
- * @param children React Element or Elements
- * @returns The component(s) associated with the current URI
- */
 export const Redirect: React.FC<RedirectProps> = ({ children }) => {
   const { roles } = useContext(GlobalContext);
   const navigate = useNavigate();
   const location = useLocation();
-  // 64 pixels accounts for the application bar offset
   const [height, setHeight] = useState<number>(window.innerHeight);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  // Map routes to display names for breadcrumbs
+  const routeNames = {
+    [ROUTES.landing]: "Home",
+    [ROUTES.createMatrix]: "Create Matrix",
+    [ROUTES.editMatrix]: "Edit Matrix",
+    [ROUTES.viewMatrix]: "View Matrices",
+    [ROUTES.profile]: "Profile",
+    [ROUTES.admin]: "Admin Dashboard",
+  };
+
+  // Define parent-child relationships for routes
+  const routeHierarchy = {
+    [ROUTES.viewMatrix]: [ROUTES.createMatrix, ROUTES.editMatrix],
+  };
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -119,6 +124,84 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
     palette: { ...blueTheme.palette, mode: "dark" },
   } as Theme);
 
+  // Generate breadcrumbs based on current location
+  const getBreadcrumbs = () => {
+    const pathnames = location.pathname.split('/').filter((x) => x);
+    let currentPath = '';
+    let breadcrumbPaths: string[] = [];
+
+    // Build the breadcrumb paths array
+    pathnames.forEach((value) => {
+      currentPath += `/${value}`;
+      
+      // Check if this path needs a parent path inserted before it
+      Object.entries(routeHierarchy).forEach(([parent, children]) => {
+        if (children.includes(currentPath) && !breadcrumbPaths.includes(parent)) {
+          breadcrumbPaths.push(parent);
+        }
+      });
+      
+      breadcrumbPaths.push(currentPath);
+    });
+
+    return (
+      <Breadcrumbs 
+        separator={<NavigateNextIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1.2rem' }} />}
+        sx={{ ml: 2 }}
+      >
+        <Link
+          component="button"
+          onClick={() => navigate(ROUTES.landing)}
+          sx={{
+            color: '#ffffff',
+            textDecoration: 'none',
+            '&:hover': {
+              textDecoration: 'underline',
+            },
+            fontSize: '1rem',
+            fontFamily: "'Roboto Condensed', sans-serif",
+          }}
+        >
+          CARVER Dashboard
+        </Link>
+        {breadcrumbPaths.map((path, index) => {
+          const isLast = index === breadcrumbPaths.length - 1;
+          const routeName = routeNames[path] || path;
+
+          return isLast ? (
+            <Typography
+              key={path}
+              sx={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '1rem',
+                fontFamily: "'Roboto Condensed', sans-serif",
+              }}
+            >
+              {routeName}
+            </Typography>
+          ) : (
+            <Link
+              key={path}
+              component="button"
+              onClick={() => navigate(path)}
+              sx={{
+                color: '#ffffff',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+                fontSize: '1rem',
+                fontFamily: "'Roboto Condensed', sans-serif",
+              }}
+            >
+              {routeName}
+            </Link>
+          );
+        })}
+      </Breadcrumbs>
+    );
+  };
+
   // Height - 64 accounts for the height of the Appbar
   // Offset the height difference to fill the page top to bottom
   return (
@@ -140,19 +223,20 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
               <Box
                 style={{
                   display: "flex",
-                  justifyContent: "space-around",
+                  justifyContent: "flex-start",
                   alignItems: "center",
+                  flex: 1,
                 }}
               >
-                <IconButton onClick={() => navigate(ROUTES.viewMatrix)}>
+                <IconButton onClick={() => navigate(ROUTES.landing)}>
                   <img src="/AIDIV-logo.svg" />
                 </IconButton>
-                <Typography variant="h5">CARVER Matrix App</Typography>
+                {getBreadcrumbs()}
               </Box>
               <Box
                 style={{
                   display: "flex",
-                  justifyContent: "space-around",
+                  justifyContent: "flex-end",
                   alignItems: "center",
                   gap: "16px",
                 }}
