@@ -27,14 +27,6 @@ import { whoamiUpsert, createMatrix } from "./apiService";
 import SendIcon from "@mui/icons-material/Send";
 import { useNavigate } from "react-router-dom";
 
-// Tooltip descriptions to be added:
-// - Matrix Parameters: ADD TOOLTIP DESCRIPTION HERE
-// - Global Category Multipliers: ADD TOOLTIP DESCRIPTION HERE
-// - Score Range: ADD TOOLTIP DESCRIPTION HERE
-// - Role-Based Matrix: ADD TOOLTIP DESCRIPTION HERE
-// - Data Entry Assignment Method: ADD TOOLTIP DESCRIPTION HERE
-// - Targets: ADD TOOLTIP DESCRIPTION HERE
-// - Collaborators: ADD TOOLTIP DESCRIPTION HERE
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
@@ -454,7 +446,7 @@ export const CreateMatrix: React.FC = () => {
             marginTop: "50px",
           }}
         >
-          <Tooltip title="" placement="right">
+          <Tooltip title="Define the configuration options for your CARVER matrix, such as scoring scale, role restrictions, and how data entry is assigned." placement="top">
             <Typography 
               variant="h4" 
               sx={{ 
@@ -479,7 +471,7 @@ export const CreateMatrix: React.FC = () => {
           >
             <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <FormControl fullWidth>
-                <Tooltip title="" placement="top">
+                <Tooltip title="Select whether the matrix uses a 5-point or 10-point scale to evaluate each CARVER criterion." placement="top">
                   <FormLabel 
                     id="score-range-label"
                     sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}
@@ -510,7 +502,7 @@ export const CreateMatrix: React.FC = () => {
                   <MenuItem value={10}>10-Point Scoring</MenuItem>
                 </Select>
               </FormControl>
-              <Tooltip title="" placement="top">
+              <Tooltip title="Toggle whether collaborators have different permissions based on their role (e.g., Hosts vs. Participants)." placement="top">
                 <Typography sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}>Enforce Role Restrictions</Typography>
               </Tooltip>
               <FormControlLabel
@@ -540,7 +532,7 @@ export const CreateMatrix: React.FC = () => {
             </Box>
             <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <FormControl fullWidth>
-                <Tooltip title="" placement="top">
+                <Tooltip title="Choose whether data entry tasks are randomly distributed or manually assigned to specific collaborators." placement="top">
                   <FormLabel 
                     id="data-entry-label"
                     sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}
@@ -581,7 +573,7 @@ export const CreateMatrix: React.FC = () => {
               mt: 4,
             }}
           >
-            <Tooltip title="" placement="right">
+            <Tooltip title="Adjust the relative importance of each CARVER category globally. These multipliers affect how much weight each factor has in final scoring." placement="top">
               <Typography 
                 variant="h4"
                 sx={{ 
@@ -707,7 +699,7 @@ export const CreateMatrix: React.FC = () => {
               mb: 2,
             }}
           >
-            <Tooltip title="" placement="right">
+            <Tooltip title="Define the specific assets, systems, or entities to be evaluated in your CARVER matrix." placement="top">
               <Typography 
                 variant="h4"
                 sx={{ 
@@ -821,7 +813,7 @@ export const CreateMatrix: React.FC = () => {
               mb: 2,
             }}
           >
-            <Tooltip title="" placement="right">
+            <Tooltip title="Invite users to participate in the matrix evaluation process, assigning them roles to control their level of access and responsibility." placement="top">
               <Typography 
                 variant="h4"
                 sx={{ 
