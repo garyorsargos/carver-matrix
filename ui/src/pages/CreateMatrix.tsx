@@ -47,6 +47,7 @@ export const CreateMatrix: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarErrorOpen, setSnackbarErrorOpen] = useState(false);
   const [titleError, setTitleError] = useState(false);
+  const [snackbarTargetErrorOpen, setSnackbarTargetErrorOpen] = useState(false);
   const [participantsData, setParticipantsData] = useState<
     { email: string; role: string }[]
   >([]);
@@ -222,13 +223,20 @@ export const CreateMatrix: React.FC = () => {
         fivePointScoring: value === 5 ? true : false,
         items: items,
       };
-
-      const response = await createMatrix(matrixData, userId);
-      console.log("Matrix Created:", response.data);
-      setSnackbarOpen(true);
-      setTimeout(() => {
-        navigate("/ViewMatrix");
-      }, 3000);
+      if (targets.length != 0)
+      {
+        const response = await createMatrix(matrixData, userId);
+        console.log("Matrix Created:", response.data);
+        setSnackbarOpen(true);
+        setTimeout(() => {
+          navigate("/ViewMatrix");
+        }, 3000);
+      }
+      else
+      {
+        setSnackbarOpen(false);
+        setSnackbarTargetErrorOpen(true);
+      }
     } catch (error) {
       console.error("Error creating matrix or verifying user", error);
     }
@@ -333,6 +341,32 @@ export const CreateMatrix: React.FC = () => {
         </Box>
 
         <Snackbar
+          open={snackbarTargetErrorOpen}
+          autoHideDuration={3000}
+          onClose={() => setSnackbarTargetErrorOpen(false)}
+        >
+          <Alert
+            onClose={() => setSnackbarTargetErrorOpen(false)}
+            severity="error"
+            variant="filled"
+            sx={{ 
+              width: "100%",
+              backgroundColor: '#7C0B02',
+              color: '#ffffff',
+              '& .MuiAlert-icon': {
+                color: '#ffffff'
+              },
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            Must have at least one target
+          </Alert>
+      </Snackbar>
+
+
+        <Snackbar
           open={snackbarOpen}
           autoHideDuration={3000}
           onClose={() => setSnackbarOpen(false)}
@@ -417,6 +451,7 @@ export const CreateMatrix: React.FC = () => {
             mt: 3,
             display: "flex",
             flexDirection: "column",
+            marginTop: "50px",
           }}
         >
           <Tooltip title="" placement="right">
