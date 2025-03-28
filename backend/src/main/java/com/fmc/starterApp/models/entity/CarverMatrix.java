@@ -2,6 +2,7 @@ package com.fmc.starterApp.models.entity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Transient;
 
 @Getter
 @Setter
@@ -84,4 +86,8 @@ public class CarverMatrix {
         items.remove(item);
         item.setCarverMatrix(null);
     }
+
+    @Transient
+    @JsonProperty("images")
+    private List<Map<String, Object>> images;
 }

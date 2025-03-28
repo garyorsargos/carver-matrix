@@ -31,6 +31,10 @@ public class MatrixImage {
     @JoinColumn(name = "matrix_id", nullable = false)
     private CarverMatrix carverMatrix;
 
+    @ManyToOne
+    @JoinColumn(name = "item_id", nullable = false)
+    private CarverItem carverItem;
+
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 

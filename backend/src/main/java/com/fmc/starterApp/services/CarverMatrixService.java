@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.io.IOException;
 
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,10 @@ import com.fmc.starterApp.models.entity.CarverItem;
 import com.fmc.starterApp.models.entity.CarverMatrix;
 import com.fmc.starterApp.models.entity.User2;
 import com.fmc.starterApp.repositories.CarverMatrixRepository;
+import com.fmc.starterApp.repositories.MatrixImageRepository;
 import com.fmc.starterApp.repositories.User2Repository;
 import com.fmc.starterApp.repositories.CarverItemRepository;
+import com.fmc.starterApp.services.ImageService;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.AllArgsConstructor;
@@ -34,6 +37,10 @@ public class CarverMatrixService {
     private User2Repository user2Repository;
     @Autowired
     private CarverItemRepository carverItemRepository;
+    @Autowired
+    private ImageService imageService;
+    @Autowired
+    private MatrixImageRepository matrixImageRepository;
 
     @Transactional
     public List<CarverMatrix> getMatricesByHost(Long userId) {
@@ -54,6 +61,20 @@ public class CarverMatrixService {
         CarverMatrix matrix = carverMatrixRepository.findFirstByMatrixId(matrixId);
         if (matrix != null) {
             Hibernate.initialize(matrix.getItems());
+
+            // Fetch images for matrix
+            List<Map<String, Object>> images = matrixImageRepository.findAll().stream()
+                .filter(img -> img.getCarverMatrix() != null && img.getCarverMatrix().getMatrixId().equals(matrixId))
+                .map(img -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("imageId", img.getImageId());
+                    map.put("imageUrl", img.getImageUrl());
+                    map.put("itemId", img.getCarverItem() != null ? img.getCarverItem().getItemId() : null);
+                    return map;
+                })
+                .toList();
+
+            matrix.setImages(images);
         }
         return matrix;
     }
@@ -85,45 +106,97 @@ public class CarverMatrixService {
             List<String> participants = new ArrayList<>(Arrays.asList(matrix.getParticipants()));
             List<CarverItem> items = matrix.getItems();
             Random random = new Random();
-            
-            
+
             Collections.shuffle(participants, random);
             List<String> initialAssignments = new ArrayList<>(participants.subList(0, Math.min(items.size(), participants.size())));
-            
-            
+
             for (int i = 0; i < items.size(); i++) {
-                items.get(i).setTargetUsers(new String[]{initialAssignments.get(i % initialAssignments.size())});
+                CarverItem item = items.get(i);
+                String assignedUser = initialAssignments.get(i % initialAssignments.size());
+                item.setTargetUsers(new String[]{assignedUser});
+
+                if (item.getCriticality() == null) item.setCriticality(new HashMap<>());
+                if (item.getAccessibility() == null) item.setAccessibility(new HashMap<>());
+                if (item.getRecoverability() == null) item.setRecoverability(new HashMap<>());
+                if (item.getVulnerability() == null) item.setVulnerability(new HashMap<>());
+                if (item.getEffect() == null) item.setEffect(new HashMap<>());
+                if (item.getRecognizability() == null) item.setRecognizability(new HashMap<>());
+
+                item.getCriticality().put(assignedUser, 0);
+                item.getAccessibility().put(assignedUser, 0);
+                item.getRecoverability().put(assignedUser, 0);
+                item.getVulnerability().put(assignedUser, 0);
+                item.getEffect().put(assignedUser, 0);
+                item.getRecognizability().put(assignedUser, 0);
             }
 
-            
             List<String> remainingParticipants = new ArrayList<>(participants);
             remainingParticipants.removeAll(initialAssignments);
             Collections.shuffle(remainingParticipants, random);
-            
-            
+
             List<Integer> itemIndices = new ArrayList<>();
             for (int i = 0; i < items.size(); i++) {
                 itemIndices.add(i);
             }
             Collections.shuffle(itemIndices, random);
-            
+
             int index = 0;
             while (!remainingParticipants.isEmpty()) {
                 int itemIndex = itemIndices.get(index % items.size());
                 CarverItem item = items.get(itemIndex);
+                String extraUser = remainingParticipants.remove(0);
+
                 List<String> currentUsers = new ArrayList<>(Arrays.asList(item.getTargetUsers()));
-                currentUsers.add(remainingParticipants.remove(0));
+                currentUsers.add(extraUser);
                 item.setTargetUsers(currentUsers.toArray(new String[0]));
+
+                if (item.getCriticality() == null) item.setCriticality(new HashMap<>());
+                if (item.getAccessibility() == null) item.setAccessibility(new HashMap<>());
+                if (item.getRecoverability() == null) item.setRecoverability(new HashMap<>());
+                if (item.getVulnerability() == null) item.setVulnerability(new HashMap<>());
+                if (item.getEffect() == null) item.setEffect(new HashMap<>());
+                if (item.getRecognizability() == null) item.setRecognizability(new HashMap<>());
+
+                item.getCriticality().put(extraUser, 0);
+                item.getAccessibility().put(extraUser, 0);
+                item.getRecoverability().put(extraUser, 0);
+                item.getVulnerability().put(extraUser, 0);
+                item.getEffect().put(extraUser, 0);
+                item.getRecognizability().put(extraUser, 0);
+
                 index++;
             }
         } else {
             for (CarverItem item : matrix.getItems()) {
                 item.setTargetUsers(new String[0]);
+
+                item.setCriticality(new HashMap<>());
+                item.setAccessibility(new HashMap<>());
+                item.setRecoverability(new HashMap<>());
+                item.setVulnerability(new HashMap<>());
+                item.setEffect(new HashMap<>());
+                item.setRecognizability(new HashMap<>());
             }
         }
 
-        return carverMatrixRepository.save(matrix);
+        CarverMatrix savedMatrix = carverMatrixRepository.save(matrix);
+
+        for (CarverItem item : savedMatrix.getItems()) {
+            if (item.getBase64Images() != null) {
+                for (String base64String : item.getBase64Images()) {
+                    try {
+                        imageService.uploadBase64Image(base64String, savedMatrix.getMatrixId(), item.getItemId());
+                    } catch (IOException e) {
+                        e.printStackTrace(); // or log it
+                    }
+                }
+            }
+        }
+
+        return savedMatrix;
     }
+
+
 
     @Transactional
     public CarverMatrix updateCarverMatrix(Long matrixId, CarverMatrix updatedMatrix) {
@@ -213,36 +286,50 @@ public class CarverMatrixService {
     }
 
     @Transactional
-    public List<CarverItem> updateCarverItems(CarverMatrix matrix, List<CarverItem> itemUpdates) {
+    public List<CarverItem> updateCarverItemsFromMap(CarverMatrix matrix, List<Map<String, Object>> updates, String userEmail) {
         List<CarverItem> updatedItems = new ArrayList<>();
-        for (CarverItem update : itemUpdates) {
-            if (update.getItemId() == null) {
-                throw new IllegalArgumentException("Each update must include an itemId.");
+
+        for (Map<String, Object> update : updates) {
+            Long itemId = ((Number) update.get("itemId")).longValue();
+
+            CarverItem item = carverItemRepository.findById(itemId).orElseThrow(() -> new IllegalArgumentException("CarverItem not found with ID: " + itemId));
+
+            if (!item.getCarverMatrix().getMatrixId().equals(matrix.getMatrixId())) {
+                throw new IllegalArgumentException("CarverItem " + itemId + " does not belong to matrix " + matrix.getMatrixId());
             }
-            CarverItem existingItem = carverItemRepository.findById(update.getItemId()).orElseThrow(() -> new IllegalArgumentException("CarverItem not found with ID: " + update.getItemId()));
-            if (!existingItem.getCarverMatrix().getMatrixId().equals(matrix.getMatrixId())) {
-                throw new IllegalArgumentException("CarverItem with ID " + update.getItemId() +" does not belong to CarverMatrix " + matrix.getMatrixId());
+
+            if (item.getCriticality() == null) item.setCriticality(new HashMap<>());
+            if (item.getAccessibility() == null) item.setAccessibility(new HashMap<>());
+            if (item.getRecoverability() == null) item.setRecoverability(new HashMap<>());
+            if (item.getVulnerability() == null) item.setVulnerability(new HashMap<>());
+            if (item.getEffect() == null) item.setEffect(new HashMap<>());
+            if (item.getRecognizability() == null) item.setRecognizability(new HashMap<>());
+
+            if (update.containsKey("criticality")) {
+                item.getCriticality().put(userEmail, ((Number) update.get("criticality")).intValue());
             }
-            if (update.getCriticality() != null) {
-                existingItem.setCriticality(update.getCriticality());
+            if (update.containsKey("accessibility")) {
+                item.getAccessibility().put(userEmail, ((Number) update.get("accessibility")).intValue());
             }
-            if (update.getAccessibility() != null) {
-                existingItem.setAccessibility(update.getAccessibility());
+            if (update.containsKey("recoverability")) {
+                item.getRecoverability().put(userEmail, ((Number) update.get("recoverability")).intValue());
             }
-            if (update.getRecoverability() != null) {
-                existingItem.setRecoverability(update.getRecoverability());
+            if (update.containsKey("vulnerability")) {
+                item.getVulnerability().put(userEmail, ((Number) update.get("vulnerability")).intValue());
             }
-            if (update.getVulnerability() != null) {
-                existingItem.setVulnerability(update.getVulnerability());
+            if (update.containsKey("effect")) {
+                item.getEffect().put(userEmail, ((Number) update.get("effect")).intValue());
             }
-            if (update.getEffect() != null) {
-                existingItem.setEffect(update.getEffect());
+            if (update.containsKey("recognizability")) {
+                item.getRecognizability().put(userEmail, ((Number) update.get("recognizability")).intValue());
             }
-            if (update.getRecognizability() != null) {
-                existingItem.setRecognizability(update.getRecognizability());
-            }
-            updatedItems.add(existingItem);
+
+            updatedItems.add(item);
         }
+
         return carverItemRepository.saveAll(updatedItems);
     }
+
+
+
 }
