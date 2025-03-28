@@ -476,7 +476,7 @@ export const CreateMatrix: React.FC = () => {
                 </Select>
               </FormControl>
               <Tooltip title="" placement="top">
-                <Typography sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}>Role-Based Matrix</Typography>
+                <Typography sx={{ color: "rgba(255, 255, 255, 0.7)", cursor: "help" }}>Enforce Role Restrictions</Typography>
               </Tooltip>
               <FormControlLabel
                 control={
