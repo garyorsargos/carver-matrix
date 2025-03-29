@@ -677,19 +677,21 @@ const EditMatrixContent: React.FC = () => {
               {config.name || "Matrix Editor"}
             </Typography>
             <Box sx={{ display: "flex", gap: 1, alignItems: 'center' }}>
-              <Tooltip title="Save Changes">
-                <IconButton
-                  onClick={handleSubmitUpdates}
-                  sx={{
-                    color: '#00E676',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 230, 118, 0.1)',
-                    },
-                  }}
-                >
-                  <SaveIcon />
-                </IconButton>
-              </Tooltip>
+              {activeView !== 'host' && (
+                <Tooltip title="Save Changes">
+                  <IconButton
+                    onClick={handleSubmitUpdates}
+                    sx={{
+                      color: '#00E676',
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 230, 118, 0.1)',
+                      },
+                    }}
+                  >
+                    <SaveIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
               {(!isRoleBased || (isHost && isParticipant)) && (
                 <Paper
                   sx={{
