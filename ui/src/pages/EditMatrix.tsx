@@ -86,20 +86,24 @@ const HostPane: React.FC<{
           }
         });
       } else {
-        // For non-random: check if all participants have submitted scores
+        // For non-random: calculate progress based on actual submissions
         const participants = config.participants || [];
         if (participants.length === 0) return;
+
+        let totalPossibleSubmissions = items.length * participants.length;
+        let totalSubmissions = 0;
 
         items.forEach(item => {
           const scores = item[key] || {};
           const submittedUsers = participants.filter((user: string) => 
             scores[user] !== undefined && scores[user] > 0
           );
-          
-          if (submittedUsers.length === participants.length) {
-            filledItems++;
-          }
+          totalSubmissions += submittedUsers.length;
         });
+
+        // Calculate percentage of total possible submissions that are completed
+        completions[category] = totalPossibleSubmissions > 0 ? (totalSubmissions / totalPossibleSubmissions) * 100 : 0;
+        return;
       }
 
       completions[category] = totalItems > 0 ? (filledItems / totalItems) * 100 : 0;
