@@ -50,23 +50,83 @@ const HostPane: React.FC<{
     "Recognizability": "recognizability",
   };
 
+  // Get multipliers mapping
+  const categoryToMultiplierMap: { [key: string]: string } = {
+    "Criticality": "cMulti",
+    "Accessibility": "aMulti",
+    "Recuperability": "rMulti",
+    "Vulnerability": "vMulti",
+    "Effect": "eMulti",
+    "Recognizability": "r2Multi",
+  };
+
   // Calculate completion percentage for each category
   const categoryCompletions = useMemo(() => {
     const completions: { [key: string]: number } = {};
+    
     categories.forEach(category => {
-      const key = category.toLowerCase();
+      const key = categoryToPropertyMap[category];
       const totalItems = items.length;
-      const filledItems = items.filter(item => item[key] > 0).length;
+      let filledItems = 0;
+
+      if (config.randomAssignment) {
+        // For random assignment: check if all assigned users have submitted scores
+        items.forEach(item => {
+          const scores = item[key] || {};
+          const targetUsers = item.targetUsers || [];
+          if (targetUsers.length === 0) return; // Skip if no users assigned
+          
+          // Count how many assigned users have submitted a score
+          const submittedUsers = targetUsers.filter((user: string) => 
+            scores[user] !== undefined && scores[user] > 0
+          );
+          
+          if (submittedUsers.length === targetUsers.length) {
+            filledItems++;
+          }
+        });
+      } else {
+        // For non-random: check if all participants have submitted scores
+        const participants = config.participants || [];
+        if (participants.length === 0) return;
+
+        items.forEach(item => {
+          const scores = item[key] || {};
+          const submittedUsers = participants.filter((user: string) => 
+            scores[user] !== undefined && scores[user] > 0
+          );
+          
+          if (submittedUsers.length === participants.length) {
+            filledItems++;
+          }
+        });
+      }
+
       completions[category] = totalItems > 0 ? (filledItems / totalItems) * 100 : 0;
     });
+    
     return completions;
-  }, [items, categories]);
+  }, [items, categories, config.randomAssignment, config.participants, categoryToPropertyMap]);
 
   // Calculate overall completion
   const overallCompletion = useMemo(() => {
     const total = Object.values(categoryCompletions).reduce((acc, val) => acc + val, 0);
     return total / categories.length;
   }, [categoryCompletions, categories]);
+
+  // Calculate average scores with multipliers for the matrix view
+  const getAverageScore = (item: any, category: string): number => {
+    const key = categoryToPropertyMap[category];
+    const scores = item[key] || {};
+    const values = Object.values(scores) as number[];
+    
+    if (values.length === 0) return 0;
+    
+    const average = values.reduce((sum, score) => sum + score, 0) / values.length;
+    const multiplier = config[categoryToMultiplierMap[category]] || 1;
+    
+    return Number((average * multiplier).toFixed(1));
+  };
 
   return (
     <Box sx={{ p: 2 }}>
@@ -188,7 +248,7 @@ const HostPane: React.FC<{
               <Box key={category} sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                   <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    {category.charAt(0)} ({config[`${category.charAt(0).toLowerCase()}Multi`]}x)
+                    {category.charAt(0)} ({config[categoryToMultiplierMap[category]]}x)
                   </Typography>
                   <Typography sx={{ color: '#fff' }}>
                     {Math.round(categoryCompletions[category])}%
@@ -211,8 +271,8 @@ const HostPane: React.FC<{
           </Paper>
         </Grid>
 
-        {/* Compact Matrix View */}
-        <Grid item xs={12} sx={{ mt: 2 }}>
+        {/* Matrix Overview */}
+        <Grid item xs={12} sx={{ mt: 4 }}>
           <Paper
             sx={{
               p: 2,
@@ -238,16 +298,6 @@ const HostPane: React.FC<{
                     transform: 'translateY(-1px)',
                     boxShadow: '0 4px 8px rgba(147, 51, 234, 0.15)',
                     border: '1px solid rgba(147, 51, 234, 0.3)',
-                  },
-                  '& .MuiButton-root': {
-                    color: '#fff',
-                    fontSize: '0.95rem',
-                    fontWeight: 'bold',
-                    textTransform: 'none',
-                    padding: 0,
-                  },
-                  '& .MuiButton-startIcon': {
-                    marginRight: 1,
                   },
                 }}
               >
@@ -294,17 +344,20 @@ const HostPane: React.FC<{
                       >
                         {item.itemName}
                       </TableCell>
-                      {categories.map((category) => (
-                        <TableCell
-                          key={category}
-                          align="center"
-                          sx={{
-                            color: item[categoryToPropertyMap[category]] > 0 ? '#fff' : 'rgba(255, 255, 255, 0.3)',
-                          }}
-                        >
-                          {item[categoryToPropertyMap[category]]}
-                        </TableCell>
-                      ))}
+                      {categories.map((category) => {
+                        const avgScore = getAverageScore(item, category);
+                        return (
+                          <TableCell
+                            key={category}
+                            align="center"
+                            sx={{
+                              color: avgScore > 0 ? '#fff' : 'rgba(255, 255, 255, 0.3)',
+                            }}
+                          >
+                            {avgScore}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -369,38 +422,45 @@ const EditMatrixContent: React.FC = () => {
 
   // Compute displayed items based on role
   const displayedItems = useMemo(() => {
+    if (!currentEmail) return rawItems;
+
     if (isRoleBased) {
       if (isHost && !isParticipant) {
         // Host only: show all.
         return rawItems;
       } else if (isParticipant && !isHost) {
-        // Participant only: show only items where currentEmail is in targetUsers.
-        return rawItems.filter(
-          (item: any) =>
-            Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
-        );
+        // Participant only: show items based on assignment type
+        if (config.randomAssignment) {
+          // For random assignment, use targetUsers
+          return rawItems.filter(
+            (item: any) =>
+              Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
+          );
+        } else {
+          // For non-random assignment, show all items if user is in participants list
+          return config.participants?.includes(currentEmail) ? rawItems : [];
+        }
       } else if (isHost && isParticipant) {
         // Both: show participant view in participant mode, all items in host mode
-        return activeView === 'participant'
-          ? rawItems.filter(
+        if (activeView === 'participant') {
+          if (config.randomAssignment) {
+            // For random assignment, use targetUsers
+            return rawItems.filter(
               (item: any) =>
                 Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
-            )
-          : rawItems;
+            );
+          } else {
+            // For non-random assignment, show all items if user is in participants list
+            return config.participants?.includes(currentEmail) ? rawItems : [];
+          }
+        } else {
+          return rawItems;
+        }
       }
-    } else {
-      // Not roleBased: show all items
-      return rawItems;
     }
+    // Not roleBased: show all items
     return rawItems;
-  }, [
-    isRoleBased,
-    isHost,
-    isParticipant,
-    rawItems,
-    currentEmail,
-    activeView,
-  ]);
+  }, [isRoleBased, isHost, isParticipant, rawItems, currentEmail, activeView, config.randomAssignment, config.participants]);
 
   // Debugging: log when displayedItems changes.
   useEffect(() => {

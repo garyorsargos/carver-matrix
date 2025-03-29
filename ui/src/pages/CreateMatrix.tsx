@@ -181,12 +181,12 @@ export const CreateMatrix: React.FC = () => {
 
       const items = targets.map((target) => ({
         itemName: target,
-        criticality: 0,
-        accessibility: 0,
-        recoverability: 0,
-        vulnerability: 0,
-        effect: 0,
-        recognizability: 0,
+        criticality: {},
+        accessibility: {},
+        recoverability: {},
+        vulnerability: {},
+        effect: {},
+        recognizability: {}
       }));
 
       const hosts = [

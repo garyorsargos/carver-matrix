@@ -170,6 +170,26 @@ const ViewMatrix: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
+  const transformItemsForPdf = (items: CarverMatrix['items']) => {
+    return items.map(item => {
+      const getAverageScore = (scores: any) => {
+        if (typeof scores === 'number') return scores;
+        const values = Object.values(scores || {}).filter(score => score !== undefined && score !== null) as number[];
+        return values.length > 0 ? values.reduce((sum, score) => sum + score, 0) / values.length : 0;
+      };
+
+      return {
+        itemName: item.itemName,
+        criticality: { default: getAverageScore(item.criticality) },
+        accessibility: { default: getAverageScore(item.accessibility) },
+        recoverability: { default: getAverageScore(item.recoverability) },
+        vulnerability: { default: getAverageScore(item.vulnerability) },
+        effect: { default: getAverageScore(item.effect) },
+        recognizability: { default: getAverageScore(item.recognizability) }
+      };
+    });
+  };
+
   return (
     <Box 
       sx={{
@@ -582,7 +602,7 @@ const ViewMatrix: React.FC = () => {
                           eMulti: matrix.eMulti,
                           r2Multi: matrix.r2Multi
                         }} 
-                        items={matrix.items} 
+                        items={transformItemsForPdf(matrix.items)} 
                       />
                     )}
                     <Tooltip title="Open Matrix">
