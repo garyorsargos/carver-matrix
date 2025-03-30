@@ -28,7 +28,6 @@ import {
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import axios from "axios";
 
 interface RedirectProps {
   children: React.ReactElement | React.ReactElement[];
@@ -69,24 +68,22 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
     navigate(ROUTES.profile);
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     handleProfileMenuClose();
     
-    try {
-      // Call our backend logout endpoint
-      await axios.get('/api/user2/logout');
-      
-      // Clear client-side storage
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Redirect to Keycloak end session endpoint
-      window.location.href = '/auth/realms/starter-app/protocol/openid-connect/logout';
-    } catch (error) {
-      console.error('Logout failed:', error);
-      // Even if the backend call fails, try to logout from Keycloak
-      window.location.href = '/auth/realms/starter-app/protocol/openid-connect/logout';
-    }
+    // Get the base URL of the application
+    const baseUrl = window.location.origin;
+    
+    // First hit the OAuth2 proxy's sign_out endpoint to clear the Redis session
+    fetch('/oauth2/sign_out', { method: 'GET', credentials: 'include' })
+      .finally(() => {
+        // Then redirect to Keycloak's logout endpoint with the proper parameters
+        const logoutUrl = new URL('https://keycloak.zeus.socom.dev/realms/zeus-apps/protocol/openid-connect/logout');
+        logoutUrl.searchParams.append('post_logout_redirect_uri', baseUrl);
+        logoutUrl.searchParams.append('client_id', 'starter-app');
+        
+        window.location.href = logoutUrl.toString();
+      });
   };
 
   /**

@@ -43,6 +43,7 @@ export const CreateMatrix: React.FC = () => {
   const [snackbarErrorOpen, setSnackbarErrorOpen] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const [snackbarTargetErrorOpen, setSnackbarTargetErrorOpen] = useState(false);
+  const [snackbarParticipantErrorOpen, setSnackbarParticipantErrorOpen] = useState(false);
   const [participantsData, setParticipantsData] = useState<
     { email: string; role: string }[]
   >([]);
@@ -179,6 +180,16 @@ export const CreateMatrix: React.FC = () => {
         return;
       } else {
         setTitleError(false);
+      }
+
+      // Check for at least one participant (either Participant or Host and Participant role)
+      const participantCount = participantsData.filter(
+        p => p.role === "Participant" || p.role === "Host and Participant"
+      ).length;
+
+      if (participantCount === 0) {
+        setSnackbarParticipantErrorOpen(true);
+        return;
       }
 
       const whoamiUpsertResponse = await whoamiUpsert();
@@ -373,14 +384,15 @@ export const CreateMatrix: React.FC = () => {
           sx={{
             display: "flex",
             justifyContent: "center",
-            width: "100%",
+            width: "96.5%",
             flex: 1,
             gap: 2,
             pl: 0,
-            pr: 4,
+            pr: 0,
             pb: 2,
-            maxWidth: "1600px",
+            maxWidth: "96.5%",
             margin: "0 auto",
+            overflow: "hidden",
           }}
         >
           {/* Left section: Matrix parameters and multipliers */}
@@ -392,13 +404,14 @@ export const CreateMatrix: React.FC = () => {
               border: "1px solid rgba(255, 255, 255, 0.1)",
               p: 2,
               borderRadius: 2,
-              width: "47%",
+              flex: 1,
               height: "70vh",
               display: "flex",
               flexDirection: "column",
               overflow: "auto",
               position: "relative",
               zIndex: 1,
+              minWidth: 0, // Prevent flex item from overflowing
             }}
           >
             <TextField
@@ -670,9 +683,10 @@ export const CreateMatrix: React.FC = () => {
               display: "flex",
               flexDirection: "column",
               gap: 1,
-              width: "47%",
+              flex: 1,
               height: "73.75vh",
               justifyContent: "space-between",
+              minWidth: 0, // Prevent flex item from overflowing
             }}
           >
             <Box
@@ -1053,6 +1067,31 @@ export const CreateMatrix: React.FC = () => {
           }}
         >
           Must have at least one target
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={snackbarParticipantErrorOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarParticipantErrorOpen(false)}
+      >
+        <Alert
+          onClose={() => setSnackbarParticipantErrorOpen(false)}
+          severity="error"
+          variant="filled"
+          sx={{ 
+            width: "100%",
+            backgroundColor: '#7C0B02',
+            color: '#ffffff',
+            '& .MuiAlert-icon': {
+              color: '#ffffff'
+            },
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          Must have at least one user with Participant role
         </Alert>
       </Snackbar>
     </Box>
