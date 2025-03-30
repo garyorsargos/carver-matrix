@@ -62,18 +62,14 @@ public class CarverMatrixService {
         if (matrix != null) {
             Hibernate.initialize(matrix.getItems());
 
-            // Fetch images for matrix
-            List<Map<String, Object>> images = matrixImageRepository.findAll().stream()
-                .filter(img -> img.getCarverMatrix() != null && img.getCarverMatrix().getMatrixId().equals(matrixId))
-                .map(img -> {
+            //Fetch images for matrix
+            List<Map<String, Object>> images = matrixImageRepository.findAll().stream().filter(img -> img.getCarverMatrix() != null && img.getCarverMatrix().getMatrixId().equals(matrixId)).map(img -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("imageId", img.getImageId());
                     map.put("imageUrl", img.getImageUrl());
                     map.put("itemId", img.getCarverItem() != null ? img.getCarverItem().getItemId() : null);
                     return map;
-                })
-                .toList();
-
+                }).toList();
             matrix.setImages(images);
         }
         return matrix;
@@ -187,7 +183,7 @@ public class CarverMatrixService {
                     try {
                         imageService.uploadBase64Image(base64String, savedMatrix.getMatrixId(), item.getItemId());
                     } catch (IOException e) {
-                        e.printStackTrace(); // or log it
+                        e.printStackTrace();
                     }
                 }
             }

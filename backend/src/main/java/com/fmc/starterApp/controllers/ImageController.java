@@ -96,20 +96,15 @@ public class ImageController {
     @GetMapping("/matrix/{matrixId}")
     public ResponseEntity<?> getImagesByMatrixId(@PathVariable Long matrixId) {
         try {
-            List<Map<String, Object>> images = matrixImageRepository.findAll().stream()
-                .filter(img -> img.getCarverMatrix() != null && img.getCarverMatrix().getMatrixId().equals(matrixId))
-                .map(img -> {
+            List<Map<String, Object>> images = matrixImageRepository.findAll().stream().filter(img -> img.getCarverMatrix() != null && img.getCarverMatrix().getMatrixId().equals(matrixId)).map(img -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("imageId", img.getImageId());
                     map.put("imageUrl", img.getImageUrl());
                     map.put("itemId", img.getCarverItem() != null ? img.getCarverItem().getItemId() : null);
                     return map;
-                })
-                .toList();
-
+                }).toList();
             Map<String, Object> response = new HashMap<>();
             response.put("images", images);
-
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();

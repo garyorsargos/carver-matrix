@@ -106,7 +106,6 @@ public class ImageService {
 
         String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName);
 
-        //Save metadata
         CarverMatrix matrix = carverMatrixRepository.findById(matrixId).orElseThrow(() -> new IllegalArgumentException("Invalid matrixId: " + matrixId));
 
         CarverItem item = carverItemRepository.findById(itemId).orElseThrow(() -> new IllegalArgumentException("Invalid itemId: " + itemId));
