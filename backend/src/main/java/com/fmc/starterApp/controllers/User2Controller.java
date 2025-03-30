@@ -16,6 +16,9 @@ import com.fmc.starterApp.models.entity.User2;
 import com.fmc.starterApp.services.User2Service;
 
 import lombok.AllArgsConstructor;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 @RestController
@@ -54,5 +57,25 @@ public class User2Controller {
     public ResponseEntity<User2> whoAmIUpsert(@AuthenticationPrincipal Jwt jwt) {
         User2 user = user2Service.upsertUser(jwt);
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        // Clear all cookies
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                cookie.setValue("");
+                cookie.setPath("/");
+                cookie.setMaxAge(0);
+                response.addCookie(cookie);
+            }
+        }
+
+        // Clear the session
+        request.getSession().invalidate();
+
+        // Return success
+        return ResponseEntity.ok().build();
     }
 }

@@ -50,23 +50,87 @@ const HostPane: React.FC<{
     "Recognizability": "recognizability",
   };
 
+  // Get multipliers mapping
+  const categoryToMultiplierMap: { [key: string]: string } = {
+    "Criticality": "cMulti",
+    "Accessibility": "aMulti",
+    "Recuperability": "rMulti",
+    "Vulnerability": "vMulti",
+    "Effect": "eMulti",
+    "Recognizability": "r2Multi",
+  };
+
   // Calculate completion percentage for each category
   const categoryCompletions = useMemo(() => {
     const completions: { [key: string]: number } = {};
+    
     categories.forEach(category => {
-      const key = category.toLowerCase();
+      const key = categoryToPropertyMap[category];
       const totalItems = items.length;
-      const filledItems = items.filter(item => item[key] > 0).length;
+      let filledItems = 0;
+
+      if (config.randomAssignment) {
+        // For random assignment: check if all assigned users have submitted scores
+        items.forEach(item => {
+          const scores = item[key] || {};
+          const targetUsers = item.targetUsers || [];
+          if (targetUsers.length === 0) return; // Skip if no users assigned
+          
+          // Count how many assigned users have submitted a score
+          const submittedUsers = targetUsers.filter((user: string) => 
+            scores[user] !== undefined && scores[user] > 0
+          );
+          
+          if (submittedUsers.length === targetUsers.length) {
+            filledItems++;
+          }
+        });
+      } else {
+        // For non-random: calculate progress based on actual submissions
+        const participants = config.participants || [];
+        if (participants.length === 0) return;
+
+        let totalPossibleSubmissions = items.length * participants.length;
+        let totalSubmissions = 0;
+
+        items.forEach(item => {
+          const scores = item[key] || {};
+          const submittedUsers = participants.filter((user: string) => 
+            scores[user] !== undefined && scores[user] > 0
+          );
+          totalSubmissions += submittedUsers.length;
+        });
+
+        // Calculate percentage of total possible submissions that are completed
+        completions[category] = totalPossibleSubmissions > 0 ? (totalSubmissions / totalPossibleSubmissions) * 100 : 0;
+        return;
+      }
+
       completions[category] = totalItems > 0 ? (filledItems / totalItems) * 100 : 0;
     });
+    
     return completions;
-  }, [items, categories]);
+  }, [items, categories, config.randomAssignment, config.participants, categoryToPropertyMap]);
 
   // Calculate overall completion
   const overallCompletion = useMemo(() => {
     const total = Object.values(categoryCompletions).reduce((acc, val) => acc + val, 0);
     return total / categories.length;
   }, [categoryCompletions, categories]);
+
+  // Calculate average scores with multipliers for the matrix view
+  const getAverageScore = (item: any, category: string): number => {
+    const key = categoryToPropertyMap[category];
+    const scores = item[key] || {};
+    const values = Object.values(scores) as number[];
+    
+    if (values.length === 0) return 0;
+    
+    const average = values.reduce((sum, score) => sum + score, 0) / values.length;
+    const multiplier = config[categoryToMultiplierMap[category]] || 1;
+    
+    return Number((average * multiplier).toFixed(1));
+  };
 
   return (
     <Box sx={{ p: 2 }}>
@@ -188,7 +252,7 @@ const HostPane: React.FC<{
               <Box key={category} sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                   <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    {category.charAt(0)} ({config[`${category.charAt(0).toLowerCase()}Multi`]}x)
+                    {category.charAt(0)} ({config[categoryToMultiplierMap[category]]}x)
                   </Typography>
                   <Typography sx={{ color: '#fff' }}>
                     {Math.round(categoryCompletions[category])}%
@@ -211,8 +275,8 @@ const HostPane: React.FC<{
           </Paper>
         </Grid>
 
-        {/* Compact Matrix View */}
-        <Grid item xs={12} sx={{ mt: 2 }}>
+        {/* Matrix Overview */}
+        <Grid item xs={12} sx={{ mt: 4 }}>
           <Paper
             sx={{
               p: 2,
@@ -238,16 +302,6 @@ const HostPane: React.FC<{
                     transform: 'translateY(-1px)',
                     boxShadow: '0 4px 8px rgba(147, 51, 234, 0.15)',
                     border: '1px solid rgba(147, 51, 234, 0.3)',
-                  },
-                  '& .MuiButton-root': {
-                    color: '#fff',
-                    fontSize: '0.95rem',
-                    fontWeight: 'bold',
-                    textTransform: 'none',
-                    padding: 0,
-                  },
-                  '& .MuiButton-startIcon': {
-                    marginRight: 1,
                   },
                 }}
               >
@@ -294,17 +348,20 @@ const HostPane: React.FC<{
                       >
                         {item.itemName}
                       </TableCell>
-                      {categories.map((category) => (
-                        <TableCell
-                          key={category}
-                          align="center"
-                          sx={{
-                            color: item[categoryToPropertyMap[category]] > 0 ? '#fff' : 'rgba(255, 255, 255, 0.3)',
-                          }}
-                        >
-                          {item[categoryToPropertyMap[category]]}
-                        </TableCell>
-                      ))}
+                      {categories.map((category) => {
+                        const avgScore = getAverageScore(item, category);
+                        return (
+                          <TableCell
+                            key={category}
+                            align="center"
+                            sx={{
+                              color: avgScore > 0 ? '#fff' : 'rgba(255, 255, 255, 0.3)',
+                            }}
+                          >
+                            {avgScore}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -323,6 +380,35 @@ const EditMatrixContent: React.FC = () => {
   const [successToast, setSuccessToast] = useState(false);
   const [errorToast, setErrorToast] = useState(false);
   
+  const categoriesConst = [
+    "Criticality",
+    "Accessibility",
+    "Recuperability",
+    "Vulnerability",
+    "Effect",
+    "Recognizability",
+  ] as const;
+
+  const categories = [...categoriesConst];
+
+  const categoryToPropertyMap: { [key: string]: string } = {
+    "Criticality": "criticality",
+    "Accessibility": "accessibility",
+    "Recuperability": "recoverability",
+    "Vulnerability": "vulnerability",
+    "Effect": "effect",
+    "Recognizability": "recognizability",
+  };
+
+  const carverTooltips: Record<string, string> = {
+    "Criticality": "The primary measure of target value and importance. Higher values indicate greater significance to the system or organization.",
+    "Accessibility": "The ease of reaching and accessing the target. Higher values suggest easier access with fewer security measures.",
+    "Recuperability": "The time and resources needed to restore functionality after an incident. Higher values mean longer recovery times.",
+    "Vulnerability": "The susceptibility to attack or disruption. Higher values indicate greater weaknesses or vulnerabilities.",
+    "Effect": "The immediate impact of a successful attack. Higher values represent more severe immediate consequences.",
+    "Recognizability": "How easily the target can be identified. Higher values mean the target is more recognizable and requires less preparation to identify.",
+  };
+
   // Determine user roles if roleBased is enabled.
   const isRoleBased = config.roleBased;
   const isHost =
@@ -349,38 +435,45 @@ const EditMatrixContent: React.FC = () => {
 
   // Compute displayed items based on role
   const displayedItems = useMemo(() => {
+    if (!currentEmail) return rawItems;
+
     if (isRoleBased) {
       if (isHost && !isParticipant) {
         // Host only: show all.
         return rawItems;
       } else if (isParticipant && !isHost) {
-        // Participant only: show only items where currentEmail is in targetUsers.
-        return rawItems.filter(
-          (item: any) =>
-            Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
-        );
+        // Participant only: show items based on assignment type
+        if (config.randomAssignment) {
+          // For random assignment, use targetUsers
+          return rawItems.filter(
+            (item: any) =>
+              Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
+          );
+        } else {
+          // For non-random assignment, show all items if user is in participants list
+          return config.participants?.includes(currentEmail) ? rawItems : [];
+        }
       } else if (isHost && isParticipant) {
         // Both: show participant view in participant mode, all items in host mode
-        return activeView === 'participant'
-          ? rawItems.filter(
+        if (activeView === 'participant') {
+          if (config.randomAssignment) {
+            // For random assignment, use targetUsers
+            return rawItems.filter(
               (item: any) =>
                 Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
-            )
-          : rawItems;
+            );
+          } else {
+            // For non-random assignment, show all items if user is in participants list
+            return config.participants?.includes(currentEmail) ? rawItems : [];
+          }
+        } else {
+          return rawItems;
+        }
       }
-    } else {
-      // Not roleBased: show all items
-      return rawItems;
     }
+    // Not roleBased: show all items
     return rawItems;
-  }, [
-    isRoleBased,
-    isHost,
-    isParticipant,
-    rawItems,
-    currentEmail,
-    activeView,
-  ]);
+  }, [isRoleBased, isHost, isParticipant, rawItems, currentEmail, activeView, config.randomAssignment, config.participants]);
 
   // Debugging: log when displayedItems changes.
   useEffect(() => {
@@ -391,44 +484,22 @@ const EditMatrixContent: React.FC = () => {
   const matrixMap = useMemo(() => {
     const map = new Map<string, Map<string, number>>();
     displayedItems.forEach((item: any) => {
-      map.set(
-        item.itemName,
-        new Map([
-          ["Criticality", item.criticality],
-          ["Accessibility", item.accessibility],
-          ["Recuperability", item.recoverability],
-          ["Vulnerability", item.vulnerability],
-          ["Effect", item.effect],
-          ["Recognizability", item.recognizability],
-        ])
-      );
+      const categoryMap = new Map<string, number>();
+      categories.forEach(category => {
+        const key = categoryToPropertyMap[category];
+        // Get the user's score from the scores object for this category
+        const scores = (item[key] || {}) as { [email: string]: number };
+        const userScore = currentEmail ? (scores[currentEmail] || 0) : 0;
+        categoryMap.set(category, userScore);
+      });
+      map.set(item.itemName, categoryMap);
     });
     return map;
-  }, [displayedItems]);
+  }, [displayedItems, categories, currentEmail, categoryToPropertyMap]);
 
   const targets = useMemo(() => {
     return Array.from(matrixMap.keys()).sort((a, b) => a.localeCompare(b));
   }, [matrixMap]);
-
-  const categories = [
-    "Criticality",
-    "Accessibility",
-    "Recuperability",
-    "Vulnerability",
-    "Effect",
-    "Recognizability",
-  ];
-
-  type Category = "Criticality" | "Accessibility" | "Recuperability" | "Vulnerability" | "Effect" | "Recognizability";
-
-  const categoryTooltips: Record<Category, string> = {
-    Criticality: "The importance of the target to the organization's mission and the impact of its loss",
-    Accessibility: "How easily the target can be reached and accessed by potential threats",
-    Recuperability: "The ability of the organization to recover from an attack on this target",
-    Vulnerability: "The susceptibility of the target to various types of attacks or threats",
-    Effect: "The overall impact and consequences of a successful attack on this target",
-    Recognizability: "How easily the target can be identified and distinguished from other assets"
-  };
 
   const handleSubmitUpdates = () => {
     const params = new URLSearchParams(window.location.search);
@@ -438,8 +509,27 @@ const EditMatrixContent: React.FC = () => {
       setErrorToast(true);
       return;
     }
+
+    // Format updates to send only the current user's scores
+    const formattedUpdates = updates.map((update: any) => {
+      const formattedUpdate: any = { itemId: update.itemId };
+      
+      // For each category in the update
+      Object.entries(update).forEach(([key, value]) => {
+        if (key !== 'itemId') {
+          // If the value is an object with user scores, get current user's score
+          const scores = value as { [email: string]: number };
+          formattedUpdate[key] = scores[currentEmail || ''] || 0;
+        }
+      });
+      
+      return formattedUpdate;
+    });
+
+    console.log("Sending formatted updates:", formattedUpdates);
+
     axios
-      .put(`/api/carvermatrices/${matrixId}/carveritems/update`, updates)
+      .put(`/api/carvermatrices/${matrixId}/carveritems/update`, formattedUpdates)
       .then((response) => {
         console.log("Updates submitted successfully", response);
         setSuccessToast(true);
@@ -596,19 +686,21 @@ const EditMatrixContent: React.FC = () => {
               {config.name || "Matrix Editor"}
             </Typography>
             <Box sx={{ display: "flex", gap: 1, alignItems: 'center' }}>
-              <Tooltip title="Save Changes">
-                <IconButton
-                  onClick={handleSubmitUpdates}
-                  sx={{
-                    color: '#00E676',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 230, 118, 0.1)',
-                    },
-                  }}
-                >
-                  <SaveIcon />
-                </IconButton>
-              </Tooltip>
+              {activeView !== 'host' && (
+                <Tooltip title="Save Changes">
+                  <IconButton
+                    onClick={handleSubmitUpdates}
+                    sx={{
+                      color: '#00E676',
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 230, 118, 0.1)',
+                      },
+                    }}
+                  >
+                    <SaveIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
               {(!isRoleBased || (isHost && isParticipant)) && (
                 <Paper
                   sx={{
@@ -746,7 +838,7 @@ const EditMatrixContent: React.FC = () => {
                           fontFamily: "'Roboto Condensed', sans-serif",
                           textTransform: "uppercase",
                           letterSpacing: "0.5px",
-                          width: '25%', // Use percentage instead of fixed width
+                          width: '25%',
                         }}
                       >
                         Target
@@ -762,15 +854,12 @@ const EditMatrixContent: React.FC = () => {
                             fontFamily: "'Roboto Condensed', sans-serif",
                             textTransform: "uppercase",
                             letterSpacing: "0.5px",
-                            width: '12.5%', // Use percentage instead of fixed width ((100% - 25%) / 6)
                           }}
                         >
-                          <Tooltip 
-                            title={categoryTooltips[category as Category]}
-                            arrow
-                            placement="top"
-                          >
-                            <span>{category}</span>
+                          <Tooltip title={carverTooltips[category]} placement="top">
+                            <Box sx={{ cursor: "help" }}>
+                              {category.charAt(0)}
+                            </Box>
                           </Tooltip>
                         </TableCell>
                       ))}
@@ -788,14 +877,27 @@ const EditMatrixContent: React.FC = () => {
                         >
                           {target}
                         </TableCell>
-                        {categories.map((category) => (
-                          <TableCell key={category} align="center">
-                            <CategoryGroup
-                              category={category}
-                              targetTitle={target}
-                            />
-                          </TableCell>
-                        ))}
+                        {categories.map((category) => {
+                          const item = displayedItems.find(item => item.itemName === target);
+                          const key = categoryToPropertyMap[category];
+                          const scores = item ? (item[key] || {}) as { [email: string]: number } : {};
+                          const userScore = currentEmail ? (scores[currentEmail] || 0) : 0;
+                          
+                          return (
+                            <TableCell
+                              key={category}
+                              align="center"
+                              sx={{
+                                color: userScore > 0 ? '#fff' : 'rgba(255, 255, 255, 0.3)',
+                              }}
+                            >
+                              <CategoryGroup
+                                category={category}
+                                targetTitle={target}
+                              />
+                            </TableCell>
+                          );
+                        })}
                       </TableRow>
                     ))}
                   </TableBody>

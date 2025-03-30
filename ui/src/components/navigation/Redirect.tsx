@@ -70,14 +70,20 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
 
   const handleLogout = () => {
     handleProfileMenuClose();
-    // Clear all cookies
-    document.cookie.split(";").forEach((cookie) => {
-      const eqPos = cookie.indexOf("=");
-      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-    });
-    // Redirect to Keycloak logout
-    window.location.href = '/logout';
+    
+    // Get the base URL of the application
+    const baseUrl = window.location.origin;
+    
+    // First hit the OAuth2 proxy's sign_out endpoint to clear the Redis session
+    fetch('/oauth2/sign_out', { method: 'GET', credentials: 'include' })
+      .finally(() => {
+        // Then redirect to Keycloak's logout endpoint with the proper parameters
+        const logoutUrl = new URL('https://keycloak.zeus.socom.dev/realms/zeus-apps/protocol/openid-connect/logout');
+        logoutUrl.searchParams.append('post_logout_redirect_uri', baseUrl);
+        logoutUrl.searchParams.append('client_id', 'starter-app');
+        
+        window.location.href = logoutUrl.toString();
+      });
   };
 
   /**

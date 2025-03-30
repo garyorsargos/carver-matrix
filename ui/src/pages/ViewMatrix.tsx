@@ -170,6 +170,26 @@ const ViewMatrix: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
+  const transformItemsForPdf = (items: CarverMatrix['items']) => {
+    return items.map(item => {
+      const getAverageScore = (scores: any) => {
+        if (typeof scores === 'number') return scores;
+        const values = Object.values(scores || {}).filter(score => score !== undefined && score !== null) as number[];
+        return values.length > 0 ? values.reduce((sum, score) => sum + score, 0) / values.length : 0;
+      };
+
+      return {
+        itemName: item.itemName,
+        criticality: { default: getAverageScore(item.criticality) },
+        accessibility: { default: getAverageScore(item.accessibility) },
+        recoverability: { default: getAverageScore(item.recoverability) },
+        vulnerability: { default: getAverageScore(item.vulnerability) },
+        effect: { default: getAverageScore(item.effect) },
+        recognizability: { default: getAverageScore(item.recognizability) }
+      };
+    });
+  };
+
   return (
     <Box 
       sx={{
@@ -520,7 +540,7 @@ const ViewMatrix: React.FC = () => {
                       Role Based
                     </Typography>
                   )}
-                  {matrix.fivePointScoring && (
+                  {matrix.fivePointScoring ? (
                     <Typography
                       variant="caption"
                       sx={{
@@ -531,6 +551,18 @@ const ViewMatrix: React.FC = () => {
                       }}
                     >
                       5-Point Scale
+                    </Typography>
+                  ) : (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "rgba(255, 255, 255, 0.5)",
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "2px 8px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      10-Point Scale
                     </Typography>
                   )}
                 </Box>
@@ -582,7 +614,7 @@ const ViewMatrix: React.FC = () => {
                           eMulti: matrix.eMulti,
                           r2Multi: matrix.r2Multi
                         }} 
-                        items={matrix.items} 
+                        items={transformItemsForPdf(matrix.items)} 
                       />
                     )}
                     <Tooltip title="Open Matrix">
