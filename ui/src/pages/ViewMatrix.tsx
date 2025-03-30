@@ -540,7 +540,7 @@ const ViewMatrix: React.FC = () => {
                       Role Based
                     </Typography>
                   )}
-                  {matrix.fivePointScoring && (
+                  {matrix.fivePointScoring ? (
                     <Typography
                       variant="caption"
                       sx={{
@@ -551,6 +551,18 @@ const ViewMatrix: React.FC = () => {
                       }}
                     >
                       5-Point Scale
+                    </Typography>
+                  ) : (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "rgba(255, 255, 255, 0.5)",
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "2px 8px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      10-Point Scale
                     </Typography>
                   )}
                 </Box>

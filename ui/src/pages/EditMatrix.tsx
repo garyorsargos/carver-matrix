@@ -400,6 +400,15 @@ const EditMatrixContent: React.FC = () => {
     "Recognizability": "recognizability",
   };
 
+  const carverTooltips: Record<string, string> = {
+    "Criticality": "The primary measure of target value and importance. Higher values indicate greater significance to the system or organization.",
+    "Accessibility": "The ease of reaching and accessing the target. Higher values suggest easier access with fewer security measures.",
+    "Recuperability": "The time and resources needed to restore functionality after an incident. Higher values mean longer recovery times.",
+    "Vulnerability": "The susceptibility to attack or disruption. Higher values indicate greater weaknesses or vulnerabilities.",
+    "Effect": "The immediate impact of a successful attack. Higher values represent more severe immediate consequences.",
+    "Recognizability": "How easily the target can be identified. Higher values mean the target is more recognizable and requires less preparation to identify.",
+  };
+
   // Determine user roles if roleBased is enabled.
   const isRoleBased = config.roleBased;
   const isHost =
@@ -847,7 +856,11 @@ const EditMatrixContent: React.FC = () => {
                             letterSpacing: "0.5px",
                           }}
                         >
-                          {category.charAt(0)}
+                          <Tooltip title={carverTooltips[category]} placement="top">
+                            <Box sx={{ cursor: "help" }}>
+                              {category.charAt(0)}
+                            </Box>
+                          </Tooltip>
                         </TableCell>
                       ))}
                     </TableRow>

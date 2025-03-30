@@ -28,6 +28,7 @@ import {
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import axios from "axios";
 
 interface RedirectProps {
   children: React.ReactElement | React.ReactElement[];
@@ -68,16 +69,24 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
     navigate(ROUTES.profile);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     handleProfileMenuClose();
-    // Clear all cookies
-    document.cookie.split(";").forEach((cookie) => {
-      const eqPos = cookie.indexOf("=");
-      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-    });
-    // Redirect to Keycloak logout
-    window.location.href = '/logout';
+    
+    try {
+      // Call our backend logout endpoint
+      await axios.get('/api/user2/logout');
+      
+      // Clear client-side storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to Keycloak end session endpoint
+      window.location.href = '/auth/realms/starter-app/protocol/openid-connect/logout';
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if the backend call fails, try to logout from Keycloak
+      window.location.href = '/auth/realms/starter-app/protocol/openid-connect/logout';
+    }
   };
 
   /**
