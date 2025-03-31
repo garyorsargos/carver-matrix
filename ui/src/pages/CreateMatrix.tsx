@@ -19,6 +19,7 @@ import {
   Snackbar,
   Alert,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import { useState } from "react";
 import { IconButton } from "@mui/material";
@@ -247,7 +248,7 @@ export const CreateMatrix: React.FC = () => {
         setSnackbarOpen(true);
         setTimeout(() => {
           navigate("/ViewMatrix");
-        }, 3000);
+        }, 1500);
       }
       else
       {
@@ -999,13 +1000,19 @@ export const CreateMatrix: React.FC = () => {
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        sx={{
+          '& .MuiPaper-root': {
+            width: '100%',
+            maxWidth: '400px',
+          }
+        }}
       >
         <Alert
-          onClose={() => setSnackbarOpen(false)}
+          onClose={undefined}
           severity="success"
           variant="filled"
           sx={{ 
-            width: "100%",
             backgroundColor: '#1E4620',
             color: '#ffffff',
             '& .MuiAlert-icon': {
@@ -1014,9 +1021,60 @@ export const CreateMatrix: React.FC = () => {
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
+            width: '100%',
+            '& .MuiAlert-message': {
+              width: '100%',
+              padding: '8px 0',
+              overflow: 'hidden'
+            },
+            '& .MuiAlert-action': {
+              display: 'none'
+            }
           }}
         >
-          Matrix Created Successfully! Redirecting to 'View Matrix' page
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            width: '100%',
+            overflow: 'hidden'
+          }}>
+            <Box sx={{ 
+              flex: 1,
+              overflow: 'hidden',
+              minWidth: 0
+            }}>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Matrix Created Successfully!
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  opacity: 0.9,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Redirecting to Matrix Explorer
+              </Typography>
+            </Box>
+            <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <CircularProgress
+                size={20}
+                sx={{
+                  color: '#ffffff'
+                }}
+              />
+            </Box>
+          </Box>
         </Alert>
       </Snackbar>
 

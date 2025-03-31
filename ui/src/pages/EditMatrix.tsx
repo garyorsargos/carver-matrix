@@ -18,6 +18,7 @@ import {
   Grid,
   LinearProgress,
   Chip,
+  CircularProgress,
 } from "@mui/material";
 import MatrixExplorer from "../components/custom/search/matrixExplorer";
 import CategoryGroup from "../components/custom/editMatrix/categoryGroup";
@@ -33,6 +34,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 // Host Pane Component
 const HostPane: React.FC<{
@@ -533,11 +535,19 @@ const EditMatrixContent: React.FC = () => {
       .then((response) => {
         console.log("Updates submitted successfully", response);
         setSuccessToast(true);
+        // Add 1.5 second delay before refreshing
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       })
       .catch((error) => {
         console.error("Error submitting updates", error);
         setErrorToast(true);
       });
+  };
+
+  const handleRefresh = () => {
+    window.location.reload();
   };
 
   const handleViewChange = (_: React.SyntheticEvent, newValue: 'host' | 'participant') => {
@@ -583,10 +593,16 @@ const EditMatrixContent: React.FC = () => {
         open={successToast}
         autoHideDuration={3000}
         onClose={() => setSuccessToast(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        sx={{
+          '& .MuiPaper-root': {
+            width: '100%',
+            maxWidth: '400px',
+          }
+        }}
       >
         <Alert
-          onClose={() => setSuccessToast(false)}
+          onClose={undefined}
           severity="success"
           variant="filled"
           sx={{
@@ -598,9 +614,60 @@ const EditMatrixContent: React.FC = () => {
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
+            width: '100%',
+            '& .MuiAlert-message': {
+              width: '100%',
+              padding: '8px 0',
+              overflow: 'hidden'
+            },
+            '& .MuiAlert-action': {
+              display: 'none'
+            }
           }}
         >
-          Matrix updated successfully
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            width: '100%',
+            overflow: 'hidden'
+          }}>
+            <Box sx={{ 
+              flex: 1,
+              overflow: 'hidden',
+              minWidth: 0
+            }}>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Matrix updated successfully
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  opacity: 0.9,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Reloading Data
+              </Typography>
+            </Box>
+            <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <CircularProgress
+                size={20}
+                sx={{
+                  color: '#ffffff'
+                }}
+              />
+            </Box>
+          </Box>
         </Alert>
       </Snackbar>
 
@@ -701,6 +768,19 @@ const EditMatrixContent: React.FC = () => {
                   </IconButton>
                 </Tooltip>
               )}
+              <Tooltip title="Refresh">
+                <IconButton
+                  onClick={handleRefresh}
+                  sx={{
+                    color: '#4D9FFF',
+                    '&:hover': {
+                      backgroundColor: 'rgba(77, 159, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <RefreshIcon />
+                </IconButton>
+              </Tooltip>
               {(!isRoleBased || (isHost && isParticipant)) && (
                 <Paper
                   sx={{
