@@ -1,10 +1,14 @@
 package com.fmc.starterApp.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,13 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.List;
-import java.util.Map;
-import com.fmc.starterApp.models.entity.CarverMatrix;
 import com.fmc.starterApp.models.entity.CarverItem;
+import com.fmc.starterApp.models.entity.CarverMatrix;
 import com.fmc.starterApp.services.CarverMatrixService;
 
 import lombok.AllArgsConstructor;
@@ -123,4 +123,29 @@ public class CarverMatrixController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    /**
+     * DELETE endpoint for deleting a CarverMatrix by its matrixId.
+     * <p>
+     * On successful deletion, this endpoint returns a 200 OK status with a success message.
+     * If the CarverMatrix is not found, a 404 Not Found status is returned.
+     * For any other errors, a 500 Internal Server Error status is returned.
+     * </p>
+     *
+     * @param matrixId the unique identifier of the CarverMatrix to be deleted
+     * @return a ResponseEntity indicating the outcome of the deletion operation
+     */
+    @DeleteMapping("/{matrixId}")
+    public ResponseEntity<?> deleteCarverMatrix(@PathVariable Long matrixId) {
+        try {
+            carverMatrixService.deleteCarverMatrix(matrixId);
+            return new ResponseEntity("CarverMatrix deleted successfully", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
