@@ -61,6 +61,7 @@ public class MatrixImage {
 
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private CarverItem carverItem;
 
     /**

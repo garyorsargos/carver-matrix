@@ -1,5 +1,6 @@
 package com.fmc.starterApp.services;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,9 +24,6 @@ import com.fmc.starterApp.repositories.CarverItemRepository;
 import com.fmc.starterApp.repositories.CarverMatrixRepository;
 import com.fmc.starterApp.repositories.MatrixImageRepository;
 import com.fmc.starterApp.repositories.User2Repository;
-
-import com.fmc.starterApp.repositories.CarverItemRepository;
-import com.fmc.starterApp.services.ImageService;
 
 import lombok.AllArgsConstructor;
 
@@ -145,6 +142,7 @@ public class CarverMatrixService {
           }else{
              throw new IllegalArgumentException("CarverMatrix must not be null");
           }
+          return matrix;
         } catch (Exception e) {
             throw new RuntimeException("Failed to retrieve CarverMatrix with ID: " + matrixId, e);
         }
@@ -511,5 +509,5 @@ public class CarverMatrixService {
         CarverMatrix matrix = carverMatrixRepository.findById(matrixId)
             .orElseThrow(() -> new IllegalArgumentException("CarverMatrix not found with ID: " + matrixId));
         carverMatrixRepository.delete(matrix);
-    
+    }   
 }
