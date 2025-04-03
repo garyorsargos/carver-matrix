@@ -6,6 +6,7 @@ import CreateMatrix from "../pages/CreateMatrix";
 import EditMatrix from "../pages/EditMatrix";
 import ViewMatrix from "../pages/ViewMatrix";
 import Landing from "../pages/Landing";
+import Profile from "../pages/Profile";
 
 // User Roles
 export const USER_ROLES = {
@@ -154,6 +155,7 @@ export const ROUTES: { [key: string]: string } = {
   createMatrix: "/ModifyMatrix",
   editMatrix: "/EditMatrix",
   viewMatrix: "/ViewMatrix",
+  profile: "/Profile",
 };
 
 export const ADMIN_ROUTES: string[] = [ROUTES.admin];
@@ -181,7 +183,7 @@ export const routesConfig = [
       },
       {
         path: ROUTES.landing,
-        element: <Landing userName="User" />,
+        element: <Landing />,
       },
       {
         path: ROUTES.admin,
@@ -198,6 +200,10 @@ export const routesConfig = [
       {
         path: ROUTES.viewMatrix,
         element: <ViewMatrix />,
+      },
+      {
+        path: ROUTES.profile,
+        element: <Profile />,
       },
     ],
   },

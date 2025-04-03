@@ -5,12 +5,16 @@ interface MatrixCardProps {
   title: string;
   description: string;
   onEditMatrix: () => void;
+  titleColor?: string;
+  buttonVariant?: 'text' | 'outlined' | 'contained';
 }
 
 const MatrixCard: React.FC<MatrixCardProps> = ({
   title,
   description,
   onEditMatrix,
+  titleColor = "gray",
+  buttonVariant = "outlined",
 }) => {
   return (
     <Paper
@@ -22,7 +26,7 @@ const MatrixCard: React.FC<MatrixCardProps> = ({
         boxShadow: 2,
       }}
     >
-      <Typography variant="h6" fontWeight="bold" color="gray">
+      <Typography variant="h6" fontWeight="bold" color={titleColor}>
         {title}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -31,7 +35,7 @@ const MatrixCard: React.FC<MatrixCardProps> = ({
 
       {/* Buttons */}
       <Box display="flex" justifyContent="space-between">
-        <Button variant="outlined" color="primary" onClick={onEditMatrix}>
+        <Button variant={buttonVariant} color="primary" onClick={onEditMatrix}>
           Edit Matrix
         </Button>
       </Box>

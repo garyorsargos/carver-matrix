@@ -18,30 +18,73 @@ import {
   IconButton,
   Typography,
   Stack,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider,
+  Breadcrumbs,
+  Link,
 } from "@mui/material";
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutIcon from '@mui/icons-material/Logout';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 interface RedirectProps {
   children: React.ReactElement | React.ReactElement[];
 }
 
-/**
- * Redirect is the primary application component. Its holds
- * all other routes for the application, and is constantly
- * listening to the Global Context value "roles". If "roles"
- * doesn't contain the appropriate role, the user will be
- * instantly redirected away from the page back to the /Home
- * page route. This prevents URL fuzzing as well (when a user
- * attempts to manually type in a URL they know exists).
- *
- * @param children React Element or Elements
- * @returns The component(s) associated with the current URI
- */
 export const Redirect: React.FC<RedirectProps> = ({ children }) => {
   const { roles } = useContext(GlobalContext);
   const navigate = useNavigate();
   const location = useLocation();
-  // 64 pixels accounts for the application bar offset
   const [height, setHeight] = useState<number>(window.innerHeight);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  // Map routes to display names for breadcrumbs
+  const routeNames = {
+    [ROUTES.landing]: "Home",
+    [ROUTES.createMatrix]: "Create Matrix",
+    [ROUTES.editMatrix]: "Edit Matrix",
+    [ROUTES.viewMatrix]: "View Matrices",
+    [ROUTES.profile]: "Profile",
+    [ROUTES.admin]: "Admin Dashboard",
+  };
+
+  // Define parent-child relationships for routes
+  const routeHierarchy = {
+    [ROUTES.viewMatrix]: [ROUTES.createMatrix, ROUTES.editMatrix],
+  };
+
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleProfile = () => {
+    handleProfileMenuClose();
+    navigate(ROUTES.profile);
+  };
+
+  const handleLogout = () => {
+    handleProfileMenuClose();
+    
+    // Get the base URL of the application
+    const baseUrl = window.location.origin;
+    
+    // First hit the OAuth2 proxy's sign_out endpoint to clear the Redis session
+    fetch('/oauth2/sign_out', { method: 'GET', credentials: 'include' })
+      .finally(() => {
+        // Then redirect to Keycloak's logout endpoint with the proper parameters
+        const logoutUrl = new URL('https://keycloak.zeus.socom.dev/realms/zeus-apps/protocol/openid-connect/logout');
+        logoutUrl.searchParams.append('post_logout_redirect_uri', baseUrl);
+        logoutUrl.searchParams.append('client_id', 'starter-app');
+        
+        window.location.href = logoutUrl.toString();
+      });
+  };
 
   /**
    * Checks the current route for validity, and reroutes a user
@@ -49,13 +92,13 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
    */
   useEffect(() => {
     if (!Object.values(ROUTES).includes(location.pathname)) {
-      navigate(ROUTES.home);
+      navigate(ROUTES.landing);
     }
     if (
       ADMIN_ROUTES.includes(location.pathname) &&
       !roles.includes(USER_ROLES.admin)
     ) {
-      navigate(ROUTES.home);
+      navigate(ROUTES.landing);
     }
   }, [roles, location.pathname]);
 
@@ -87,6 +130,84 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
     palette: { ...blueTheme.palette, mode: "dark" },
   } as Theme);
 
+  // Generate breadcrumbs based on current location
+  const getBreadcrumbs = () => {
+    const pathnames = location.pathname.split('/').filter((x) => x);
+    let currentPath = '';
+    let breadcrumbPaths: string[] = [];
+
+    // Build the breadcrumb paths array
+    pathnames.forEach((value) => {
+      currentPath += `/${value}`;
+      
+      // Check if this path needs a parent path inserted before it
+      Object.entries(routeHierarchy).forEach(([parent, children]) => {
+        if (children.includes(currentPath) && !breadcrumbPaths.includes(parent)) {
+          breadcrumbPaths.push(parent);
+        }
+      });
+      
+      breadcrumbPaths.push(currentPath);
+    });
+
+    return (
+      <Breadcrumbs 
+        separator={<NavigateNextIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1.2rem' }} />}
+        sx={{ ml: 2 }}
+      >
+        <Link
+          component="button"
+          onClick={() => navigate(ROUTES.landing)}
+          sx={{
+            color: '#ffffff',
+            textDecoration: 'none',
+            '&:hover': {
+              textDecoration: 'underline',
+            },
+            fontSize: '1rem',
+            fontFamily: "'Roboto Condensed', sans-serif",
+          }}
+        >
+          CARVER Dashboard
+        </Link>
+        {breadcrumbPaths.map((path, index) => {
+          const isLast = index === breadcrumbPaths.length - 1;
+          const routeName = routeNames[path] || path;
+
+          return isLast ? (
+            <Typography
+              key={path}
+              sx={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '1rem',
+                fontFamily: "'Roboto Condensed', sans-serif",
+              }}
+            >
+              {routeName}
+            </Typography>
+          ) : (
+            <Link
+              key={path}
+              component="button"
+              onClick={() => navigate(path)}
+              sx={{
+                color: '#ffffff',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+                fontSize: '1rem',
+                fontFamily: "'Roboto Condensed', sans-serif",
+              }}
+            >
+              {routeName}
+            </Link>
+          );
+        })}
+      </Breadcrumbs>
+    );
+  };
+
   // Height - 64 accounts for the height of the Appbar
   // Offset the height difference to fill the page top to bottom
   return (
@@ -108,20 +229,22 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
               <Box
                 style={{
                   display: "flex",
-                  justifyContent: "space-around",
+                  justifyContent: "flex-start",
                   alignItems: "center",
+                  flex: 1,
                 }}
               >
-                <IconButton onClick={() => navigate(ROUTES.home)}>
+                <IconButton onClick={() => navigate(ROUTES.landing)}>
                   <img src="/AIDIV-logo.svg" />
                 </IconButton>
-                <Typography variant="h5">CARVER Matrix App</Typography>
+                {getBreadcrumbs()}
               </Box>
               <Box
                 style={{
                   display: "flex",
-                  justifyContent: "space-around",
+                  justifyContent: "flex-end",
                   alignItems: "center",
+                  gap: "16px",
                 }}
               >
                 {/** roles is a state-managed object, so this component will render in real time if roles is updated */}
@@ -139,6 +262,56 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
                 ) : (
                   <></>
                 )}
+                <IconButton
+                  onClick={handleProfileMenuOpen}
+                  sx={{
+                    color: '#FFF',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: '#014093', width: 32, height: 32 }}>
+                    <AccountCircleIcon />
+                  </Avatar>
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleProfileMenuClose}
+                  PaperProps={{
+                    sx: {
+                      backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      mt: 1,
+                    },
+                  }}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                >
+                  <MenuItem
+                    onClick={handleProfile}
+                    sx={{
+                      color: '#FFF',
+                      '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                    }}
+                  >
+                    <AccountCircleIcon sx={{ mr: 1 }} />
+                    Profile
+                  </MenuItem>
+                  <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                  <MenuItem
+                    onClick={handleLogout}
+                    sx={{
+                      color: '#FFF',
+                      '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                    }}
+                  >
+                    <LogoutIcon sx={{ mr: 1 }} />
+                    Logout
+                  </MenuItem>
+                </Menu>
               </Box>
             </Toolbar>
           </Paper>

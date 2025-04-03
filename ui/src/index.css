@@ -1,6 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700&display=swap');
+
 body {
   margin: 0;
   padding: 0;
-  background-image: url("/app-background.png");
-  background-size: cover;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-family: 'Roboto Condensed', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Military-style scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #014093;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #012B61;
+}
+
+/* Military-style selection */
+::selection {
+  background: #014093;
+  color: #ffffff;
+}
+
+/* Military-style focus outline */
+*:focus {
+  outline: 2px solid #014093;
+  outline-offset: 2px;
 }

@@ -7,11 +7,11 @@ export type ConfigType = {
   randomAssignment: boolean;
   roleBased: boolean;
   fivePointScoring: boolean;
-  cmulti: number;
-  amulti: number;
-  rmulti: number;
-  vmulti: number;
-  emulti: number;
+  cMulti: number;
+  aMulti: number;
+  rMulti: number;
+  vMulti: number;
+  eMulti: number;
   description: string;
   name: string;
   // New fields for role-based matrices:
@@ -75,11 +75,11 @@ const initialConfig: ConfigType = {
   randomAssignment: true,
   roleBased: false,
   fivePointScoring: true,
-  cmulti: 1.0,
-  amulti: 1.0,
-  rmulti: 1.0,
-  vmulti: 1.0,
-  emulti: 1.0,
+  cMulti: 1.0,
+  aMulti: 1.0,
+  rMulti: 1.0,
+  vMulti: 1.0,
+  eMulti: 1.0,
   description: "",
   name: "",
   hosts: [],
