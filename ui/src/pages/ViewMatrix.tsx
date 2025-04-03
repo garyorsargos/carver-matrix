@@ -22,6 +22,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { ExportPdfButton } from '../components/custom/pdfExport/ExportPdfButton';
 
 interface CarverMatrix {
@@ -600,22 +601,37 @@ const ViewMatrix: React.FC = () => {
                   </Typography>
                   <Box sx={{ display: "flex", gap: 1 }}>
                     {matrix.hosts.includes(userEmail || "") && (
-                      <ExportPdfButton 
-                        config={{
-                          name: matrix.name,
-                          description: matrix.description,
-                          randomAssignment: matrix.randomAssignment,
-                          roleBased: matrix.roleBased,
-                          fivePointScoring: matrix.fivePointScoring,
-                          cMulti: matrix.cMulti,
-                          aMulti: matrix.aMulti,
-                          rMulti: matrix.rMulti,
-                          vMulti: matrix.vMulti,
-                          eMulti: matrix.eMulti,
-                          r2Multi: matrix.r2Multi
-                        }} 
-                        items={transformItemsForPdf(matrix.items)} 
-                      />
+                      <>
+                        <ExportPdfButton 
+                          config={{
+                            name: matrix.name,
+                            description: matrix.description,
+                            randomAssignment: matrix.randomAssignment,
+                            roleBased: matrix.roleBased,
+                            fivePointScoring: matrix.fivePointScoring,
+                            cMulti: matrix.cMulti,
+                            aMulti: matrix.aMulti,
+                            rMulti: matrix.rMulti,
+                            vMulti: matrix.vMulti,
+                            eMulti: matrix.eMulti,
+                            r2Multi: matrix.r2Multi
+                          }} 
+                          items={transformItemsForPdf(matrix.items)} 
+                        />
+                        <Tooltip title="Delete Matrix">
+                          <IconButton
+                            size="small"
+                            sx={{
+                              color: '#ff4444',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                              },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </>
                     )}
                     <Tooltip title="Open Matrix">
                       <IconButton
