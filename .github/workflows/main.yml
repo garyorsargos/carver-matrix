@@ -54,8 +54,8 @@ jobs:
 
       - name: Build with Maven
         working-directory: backend
-        run: mvn clean install --batch-mode
+        run: mvn clean install
 
       - name: Run Tests
         working-directory: backend
-        run: mvn test --batch-mode
+        run: mvn test
