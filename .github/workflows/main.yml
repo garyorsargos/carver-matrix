@@ -1,34 +1,59 @@
-name: Update Code
+name: Update Code & Test
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  update-code:
+  # Deprecated job - update-code job is commented out but preserved for future use.
+  #
+  # update-code:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Install SSH and Git
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y openssh-client git
+  #
+  #     - name: Set up SSH key
+  #       env:
+  #         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  #         AWS_CONTAINER_IP: ${{ secrets.AWS_CONTAINER_IP }}
+  #       run: |
+  #         mkdir -p ~/.ssh
+  #         echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+  #         chmod 600 ~/.ssh/id_rsa
+  #         eval "$(ssh-agent -s)"
+  #         ssh-add ~/.ssh/id_rsa
+  #         ssh-keyscan -H "$AWS_CONTAINER_IP" >> ~/.ssh/known_hosts
+  #
+  #     - name: Pull Latest Code on Remote AWS Container
+  #       env:
+  #         AWS_CONTAINER_IP: ${{ secrets.AWS_CONTAINER_IP }}
+  #         AWS_USER: ${{ secrets.AWS_USER }}
+  #       run: |
+  #         ssh "$AWS_USER@$AWS_CONTAINER_IP" "cd carver-matrix && git pull origin main"
+
+  # New job: Build and Test
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Install SSH and Git
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openssh-client git
-          
-      - name: Set up SSH key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          AWS_CONTAINER_IP: ${{ secrets.AWS_CONTAINER_IP }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-          ssh-keyscan -H "$AWS_CONTAINER_IP" >> ~/.ssh/known_hosts
-          
-      - name: Pull Latest Code on Remote AWS Container
-        env:
-          AWS_CONTAINER_IP: ${{ secrets.AWS_CONTAINER_IP }}
-          AWS_USER: ${{ secrets.AWS_USER }}
-        run: |
-          ssh "$AWS_USER@$AWS_CONTAINER_IP" "cd carver-matrix && git pull origin main"
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean install --batch-mode
+
+      - name: Run Tests
+        run: mvn test --batch-mode
