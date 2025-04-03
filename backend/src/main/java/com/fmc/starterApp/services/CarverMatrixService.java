@@ -490,5 +490,22 @@ public class CarverMatrixService {
         // Save all updated items.
         return carverItemRepository.saveAll(updatedItems);
     }
-
+  
+    /**
+     * Deletes a CarverMatrix identified by its matrixId.
+     * <p>
+     * This method retrieves the CarverMatrix from the repository and deletes it.
+     * Due to the cascading configuration (cascade = CascadeType.ALL and orphanRemoval = true),
+     * any associated CarverItems will be automatically removed.
+     * </p>
+     *
+     * @param matrixId the unique identifier of the CarverMatrix to be deleted
+     * @throws IllegalArgumentException if the CarverMatrix is not found with the given matrixId
+     */
+    @Transactional
+    public void deleteCarverMatrix(Long matrixId) {
+        CarverMatrix matrix = carverMatrixRepository.findById(matrixId)
+            .orElseThrow(() -> new IllegalArgumentException("CarverMatrix not found with ID: " + matrixId));
+        carverMatrixRepository.delete(matrix);
+    }
 }
