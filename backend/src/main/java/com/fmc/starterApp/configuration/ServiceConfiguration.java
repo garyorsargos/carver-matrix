@@ -26,8 +26,8 @@ public class ServiceConfiguration {
         return new User2Service(user2Repository); }
 
     @Bean
-    CarverMatrixService carverMatrixService(final CarverMatrixRepository carverMatrixRepository, final User2Repository user2Repository, final CarverItemRepository carverItemRepository) {
-        return new CarverMatrixService(carverMatrixRepository, user2Repository, carverItemRepository); }
+    CarverMatrixService carverMatrixService(final CarverMatrixRepository carverMatrixRepository, final User2Repository user2Repository, final CarverItemRepository carverItemRepository, final ImageService imageService, final MatrixImageRepository matrixImageRepository) {
+        return new CarverMatrixService(carverMatrixRepository, user2Repository, carverItemRepository, imageService, matrixImageRepository); }
 
     @Bean
     AdminService adminService(final UsersRepository usersRepository, final UserLogsRepository userLogsRepository) {

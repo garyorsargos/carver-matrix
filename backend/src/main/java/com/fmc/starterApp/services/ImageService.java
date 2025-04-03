@@ -1,5 +1,11 @@
 package com.fmc.starterApp.services;
 
+import com.fmc.starterApp.models.entity.CarverMatrix;
+import com.fmc.starterApp.models.entity.CarverItem;
+import com.fmc.starterApp.models.entity.MatrixImage;
+import com.fmc.starterApp.repositories.CarverMatrixRepository;
+import com.fmc.starterApp.repositories.CarverItemRepository;
+import com.fmc.starterApp.repositories.MatrixImageRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
@@ -16,6 +22,14 @@ import com.fmc.starterApp.repositories.MatrixImageRepository;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
+import software.amazon.awssdk.core.sync.RequestBody;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.UUID;
+
 
 /**
  * Service class for managing image uploads associated with Carver Matrices.
@@ -40,6 +54,9 @@ public class ImageService {
 
     @Autowired
     private CarverMatrixRepository carverMatrixRepository;
+
+    @Autowired
+    private CarverItemRepository carverItemRepository;
 
     @Value("${AWS_S3_BUCKET_NAME}")
     private String bucketName;
@@ -77,7 +94,7 @@ public class ImageService {
      * @throws IOException if an error occurs while reading the file's input stream.
      * @throws RuntimeException if the S3 upload or database operation fails.
      */
-    public String uploadImage(MultipartFile file, Long matrixId) throws IOException {
+    public String uploadImage(MultipartFile file, Long matrixId, Long itemId) throws IOException {
         // Validate input file and matrixId.
         if (file == null) {
             throw new IllegalArgumentException("MultipartFile must not be null");
@@ -124,13 +141,61 @@ public class ImageService {
         matrixImage.setUploadedAt(LocalDateTime.now());
         matrixImage.setCarverMatrix(carverMatrix);
 
+        if (itemId != null) {
+            CarverItem carverItem = carverItemRepository.findById(itemId).orElseThrow(() -> new IllegalArgumentException("Invalid itemId: " + itemId));
+            matrixImage.setCarverItem(carverItem);
+        }
+
         try {
             // Save the MatrixImage metadata to the database.
             matrixImageRepository.save(matrixImage);
         } catch (Exception e) {
             throw new RuntimeException("Failed to persist image metadata in the database", e);
         }
-
         return fileUrl;
+    }
+    
+    public void uploadBase64Image(String base64String, Long matrixId, Long itemId) throws IOException {
+        String[] parts = base64String.split(",");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid base64 image format.");
+        }
+
+        String metadata = parts[0];
+        String base64Data = parts[1];
+
+        String extension = "png";
+        if (metadata.contains("image/jpeg")) {
+            extension = "jpg";
+        } else if (metadata.contains("image/gif")) {
+            extension = "gif";
+        }
+
+        byte[] imageBytes = Base64.getDecoder().decode(base64Data);
+        String fileName = System.currentTimeMillis() + "_" + UUID.randomUUID() + "." + extension;
+
+        //Upload to S3
+        s3Client.putObject(
+            PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(fileName)
+                .contentType("image/" + extension)
+                .build(),
+            RequestBody.fromBytes(imageBytes)
+        );
+
+        String fileUrl = String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName);
+
+        CarverMatrix matrix = carverMatrixRepository.findById(matrixId).orElseThrow(() -> new IllegalArgumentException("Invalid matrixId: " + matrixId));
+
+        CarverItem item = carverItemRepository.findById(itemId).orElseThrow(() -> new IllegalArgumentException("Invalid itemId: " + itemId));
+
+        MatrixImage matrixImage = new MatrixImage();
+        matrixImage.setImageUrl(fileUrl);
+        matrixImage.setUploadedAt(LocalDateTime.now());
+        matrixImage.setCarverMatrix(matrix);
+        matrixImage.setCarverItem(item);
+
+        matrixImageRepository.save(matrixImage);
     }
 }

@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -114,10 +115,13 @@ public class CarverItem {
     @JsonProperty("targetUsers")
     private String[] targetUsers = new String[0];
 
+    @Transient
+    @JsonProperty("images")
+    private List<String> base64Images;
+
     /**
      * The timestamp when the item was created.
      */
-    
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt = LocalDateTime.now();
 }

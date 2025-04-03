@@ -3,6 +3,7 @@ package com.fmc.starterApp.models.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -25,6 +26,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Transient;
 
 /**
  * Represents a Carver Matrix, which aggregates multiple {@link CarverItem} objects and defines
@@ -207,4 +209,8 @@ public class CarverMatrix {
             item.setCarverMatrix(null);
         }
     }
+
+    @Transient
+    @JsonProperty("images")
+    private List<Map<String, Object>> images;
 }

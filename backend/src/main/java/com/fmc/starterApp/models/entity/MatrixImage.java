@@ -59,6 +59,10 @@ public class MatrixImage {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private CarverMatrix carverMatrix;
 
+    @ManyToOne
+    @JoinColumn(name = "item_id", nullable = false)
+    private CarverItem carverItem;
+
     /**
      * The URL of the image.
      * <p>This field is mandatory, should be a valid URL, and is limited to 500 characters.</p>

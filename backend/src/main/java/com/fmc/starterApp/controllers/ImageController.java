@@ -17,6 +17,10 @@ import com.fmc.starterApp.models.entity.MatrixImage;
 import com.fmc.starterApp.repositories.MatrixImageRepository;
 import com.fmc.starterApp.services.ImageService;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 import software.amazon.awssdk.services.s3.S3Client;
 
 /**
@@ -63,8 +67,7 @@ public class ImageController {
      *         otherwise, a BAD_REQUEST or INTERNAL_SERVER_ERROR status with an error message.
      */
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,
-                                              @RequestParam("matrixId") Long matrixId) {
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,@RequestParam("matrixId") Long matrixId,@RequestParam(value = "itemId", required = false) Long itemId) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("File is required.");
         }
@@ -74,7 +77,7 @@ public class ImageController {
         }
 
         try {
-            String fileUrl = imageService.uploadImage(file, matrixId);
+            String fileUrl = imageService.uploadImage(file, matrixId, itemId);
             return ResponseEntity.ok(fileUrl);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
@@ -144,4 +147,24 @@ public class ImageController {
                     .body("Error: " + e.getMessage());
         }
     }
+    
+    @GetMapping("/matrix/{matrixId}")
+    public ResponseEntity<?> getImagesByMatrixId(@PathVariable Long matrixId) {
+        try {
+            List<Map<String, Object>> images = matrixImageRepository.findAll().stream().filter(img -> img.getCarverMatrix() != null && img.getCarverMatrix().getMatrixId().equals(matrixId)).map(img -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("imageId", img.getImageId());
+                    map.put("imageUrl", img.getImageUrl());
+                    map.put("itemId", img.getCarverItem() != null ? img.getCarverItem().getItemId() : null);
+                    return map;
+                }).toList();
+            Map<String, Object> response = new HashMap<>();
+            response.put("images", images);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
 }
