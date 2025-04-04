@@ -96,8 +96,12 @@ const MatrixLoader: React.FC = () => {
 
             // For backwards compatibility (when roleBased is false), apply filtering based on randomAssignment.
             let processedItems = matrixData.items;
-            if (!matrixData.roleBased) {
-              processedItems = matrixData.items;
+            if (!matrixData.roleBased && matrixData.randomAssignment) {
+              // When role restrictions are disabled but random assignment is enabled,
+              // only show items where the current user is in targetUsers
+              processedItems = matrixData.items.filter((item: any) => 
+                Array.isArray(item.targetUsers) && item.targetUsers.includes(currentUserEmail)
+              );
             }
 
             // Build a matrix map and id map from the processed items
