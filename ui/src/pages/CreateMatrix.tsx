@@ -30,8 +30,6 @@ import { useNavigate } from "react-router-dom";
 import GroupsIcon from '@mui/icons-material/Groups';
 import PlaceIcon from '@mui/icons-material/Place';
 
-
-
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
   const [dataEntryMethod, setDataEntryMethodRandom] = useState(false);
@@ -44,6 +42,9 @@ export const CreateMatrix: React.FC = () => {
   const [snackbarErrorOpen, setSnackbarErrorOpen] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const [snackbarTargetErrorOpen, setSnackbarTargetErrorOpen] = useState(false);
+  const [snackbarTargetErrorCharsOpen, setSnackbarTargetErrorCharsOpen] = useState(false);
+  const [snackbarCollaboratorsEmailsOpen, setSnackbarCollaboratorsEmailsOpen] = useState(false);
+  const [snackbarDuplicateEmailsOpen, setSnackbarDuplicateEmailsOpen] = useState(false);
   const [snackbarParticipantErrorOpen, setSnackbarParticipantErrorOpen] = useState(false);
   const [participantsData, setParticipantsData] = useState<
     { email: string; role: string }[]
@@ -170,6 +171,31 @@ export const CreateMatrix: React.FC = () => {
     try {
       // Duplicate check for targets
       const trimmedTargets = targets.map((target) => target.trim());
+
+      // Check for empty targets
+      const hasEmptyTarget = trimmedTargets.some((target) => target === "");
+      if (hasEmptyTarget) {
+        setSnackbarTargetErrorCharsOpen(true);
+        return;
+      }
+
+      // Check for empty emails
+      const hasEmptyEmail = participantsData.some((p) => p.email.trim() === "");
+      if (hasEmptyEmail) {
+        setSnackbarCollaboratorsEmailsOpen(true);
+        return;
+      }
+
+      // Check for duplicate emails
+      const emails = participantsData.map(p => p.email.trim().toLowerCase());
+      const uniqueEmails = new Set(emails);
+
+      if (uniqueEmails.size !== emails.length)
+      {
+        setSnackbarDuplicateEmailsOpen(true);
+        return;
+      }
+
       const uniqueTargets = new Set(trimmedTargets);
       if (uniqueTargets.size !== trimmedTargets.length) {
         setSnackbarErrorOpen(true);
@@ -209,7 +235,6 @@ export const CreateMatrix: React.FC = () => {
         effect: {},
         recognizability: {}
       }));
-
       const hosts = [
         email,
         ...participantsData
@@ -1125,6 +1150,81 @@ export const CreateMatrix: React.FC = () => {
           }}
         >
           Must have at least one target
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={snackbarTargetErrorCharsOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarTargetErrorCharsOpen(false)}
+      >
+        <Alert
+          onClose={() => setSnackbarTargetErrorCharsOpen(false)}
+          severity="error"
+          variant="filled"
+          sx={{ 
+            width: "100%",
+            backgroundColor: '#7C0B02',
+            color: '#ffffff',
+            '& .MuiAlert-icon': {
+              color: '#ffffff'
+            },
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          Each target must have at least 1 character
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={snackbarCollaboratorsEmailsOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarCollaboratorsEmailsOpen(false)}
+      >
+        <Alert
+          onClose={() => setSnackbarCollaboratorsEmailsOpen(false)}
+          severity="error"
+          variant="filled"
+          sx={{ 
+            width: "100%",
+            backgroundColor: '#7C0B02',
+            color: '#ffffff',
+            '& .MuiAlert-icon': {
+              color: '#ffffff'
+            },
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          Cannot have empty email
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={snackbarDuplicateEmailsOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarDuplicateEmailsOpen(false)}
+      >
+        <Alert
+          onClose={() => setSnackbarDuplicateEmailsOpen(false)}
+          severity="error"
+          variant="filled"
+          sx={{ 
+            width: "100%",
+            backgroundColor: '#7C0B02',
+            color: '#ffffff',
+            '& .MuiAlert-icon': {
+              color: '#ffffff'
+            },
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          Cannot have duplicate emails
         </Alert>
       </Snackbar>
 
