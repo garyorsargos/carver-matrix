@@ -20,17 +20,18 @@ import {
   Alert,
   Tooltip,
   CircularProgress,
+  Modal,
+  IconButton,
 } from "@mui/material";
 import { useState } from "react";
-import { IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { whoamiUpsert, createMatrix } from "./apiService";
 import SendIcon from "@mui/icons-material/Send";
 import { useNavigate } from "react-router-dom";
 import GroupsIcon from '@mui/icons-material/Groups';
 import PlaceIcon from '@mui/icons-material/Place';
-
-
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 export const CreateMatrix: React.FC = () => {
   const [RoleBasedChecked, setRoleBasedChecked] = useState(true);
@@ -48,6 +49,10 @@ export const CreateMatrix: React.FC = () => {
   const [participantsData, setParticipantsData] = useState<
     { email: string; role: string }[]
   >([]);
+  const [targetImages, setTargetImages] = useState<{ [key: number]: string[] }>({});
+  const [openImageModal, setOpenImageModal] = useState(false);
+  const [currentTargetIndex, setCurrentTargetIndex] = useState<number | null>(null);
+  const [dragActive, setDragActive] = useState(false);
 
   const initialMultipliers = {
     Criticality: 1.0,
@@ -166,6 +171,71 @@ export const CreateMatrix: React.FC = () => {
     setValue(event.target.value as number);
   };
 
+  const handleImageUpload = (index: number) => {
+    setCurrentTargetIndex(index);
+    setOpenImageModal(true);
+  };
+
+  const handleCloseImageModal = () => {
+    setOpenImageModal(false);
+    setCurrentTargetIndex(null);
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      handleFiles(files);
+    }
+  };
+
+  const handleFiles = async (files: File[]) => {
+    if (currentTargetIndex === null) return;
+
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    const base64Images = await Promise.all(
+      imageFiles.map(file => {
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve(reader.result as string);
+          };
+          reader.readAsDataURL(file);
+        });
+      })
+    );
+
+    setTargetImages(prev => ({
+      ...prev,
+      [currentTargetIndex]: [...(prev[currentTargetIndex] || []), ...base64Images]
+    }));
+  };
+
+  const handleRemoveImage = (targetIndex: number, imageIndex: number) => {
+    setTargetImages(prev => ({
+      ...prev,
+      [targetIndex]: prev[targetIndex].filter((_, i) => i !== imageIndex)
+    }));
+  };
+
   const handleCreateMatrix = async () => {
     try {
       // Duplicate check for targets
@@ -200,14 +270,15 @@ export const CreateMatrix: React.FC = () => {
       const parsedFirstObject = JSON.parse(firstObjectStr);
       const { userId, email } = parsedFirstObject;
 
-      const items = targets.map((target) => ({
+      const items = targets.map((target, index) => ({
         itemName: target,
         criticality: {},
         accessibility: {},
         recoverability: {},
         vulnerability: {},
         effect: {},
-        recognizability: {}
+        recognizability: {},
+        images: targetImages[index] || []
       }));
 
       const hosts = [
@@ -785,7 +856,6 @@ export const CreateMatrix: React.FC = () => {
                     value={target}
                     onChange={(e) => handleTargetChange(index, e)}
                     variant="standard"
-                    fullWidth
                     placeholder="Enter target..."
                     InputProps={{
                       disableUnderline: true,
@@ -795,7 +865,7 @@ export const CreateMatrix: React.FC = () => {
                         fontWeight: "500",
                       },
                     }}
-                    sx={{ 
+                    sx={{
                       flexGrow: 1,
                       '& .MuiInputBase-root': {
                         padding: "4px 0",
@@ -806,20 +876,32 @@ export const CreateMatrix: React.FC = () => {
                       },
                     }}
                   />
-                  <IconButton 
-                    onClick={() => handleDeleteTarget(index)}
-                    sx={{
-                      color: "rgba(255, 255, 255, 0.5)",
-                      padding: "6px",
-                      transition: "all 0.2s ease",
-                      '&:hover': {
-                        color: "#ff4444",
-                        backgroundColor: "rgba(255, 68, 68, 0.08)",
-                      },
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Tooltip title="Upload Images">
+                      <IconButton
+                        onClick={() => handleImageUpload(index)}
+                        sx={{
+                          color: targetImages[index]?.length ? '#014093' : '#ffffff',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          },
+                        }}
+                      >
+                        <AttachFileIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <IconButton
+                      onClick={() => handleDeleteTarget(index)}
+                      sx={{
+                        color: '#ffffff',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        },
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
                 </Paper>
               ))}
             </Box>
@@ -1152,6 +1234,109 @@ export const CreateMatrix: React.FC = () => {
           Must have at least one user with Participant role
         </Alert>
       </Snackbar>
+
+      {/* Image Upload Modal */}
+      <Modal
+        open={openImageModal}
+        onClose={handleCloseImageModal}
+        aria-labelledby="image-upload-modal"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+            Upload Images
+          </Typography>
+          
+          <Box
+            sx={{
+              border: '2px dashed',
+              borderColor: dragActive ? 'primary.main' : 'grey.300',
+              borderRadius: 2,
+              p: 3,
+              textAlign: 'center',
+              cursor: 'pointer',
+              mb: 2,
+            }}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            onClick={() => document.getElementById('file-input')?.click()}
+          >
+            <input
+              id="file-input"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileInput}
+              style={{ display: 'none' }}
+            />
+            <CloudUploadIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
+            <Typography>
+              Drag and drop images here or click to select
+            </Typography>
+          </Box>
+
+          {currentTargetIndex !== null && targetImages[currentTargetIndex] && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Uploaded Images:
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {targetImages[currentTargetIndex].map((image, idx) => (
+                  <Box
+                    key={idx}
+                    sx={{
+                      position: 'relative',
+                      width: 80,
+                      height: 80,
+                    }}
+                  >
+                    <img
+                      src={image}
+                      alt={`Uploaded ${idx + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '4px',
+                      }}
+                    />
+                    <IconButton
+                      size="small"
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        bgcolor: 'rgba(0,0,0,0.5)',
+                        '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
+                      }}
+                      onClick={() => handleRemoveImage(currentTargetIndex, idx)}
+                    >
+                      <DeleteIcon sx={{ fontSize: 16, color: 'white' }} />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button onClick={handleCloseImageModal}>Close</Button>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 };
