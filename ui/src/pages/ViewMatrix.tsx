@@ -18,11 +18,16 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ROUTES } from "../helpers/helpers";
-import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { ExportPdfButton } from '../components/custom/pdfExport/ExportPdfButton';
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import { ExportPdfButton } from "../components/custom/pdfExport/ExportPdfButton";
 
 interface CarverMatrix {
   matrixId: number;
@@ -61,19 +66,27 @@ const ViewMatrix: React.FC = () => {
     participant: false,
     both: false,
   });
-  const [roleBasedFilter, setRoleBasedFilter] = useState<'all' | 'enabled' | 'disabled'>('all');
+  const [roleBasedFilter, setRoleBasedFilter] = useState<
+    "all" | "enabled" | "disabled"
+  >("all");
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [matrixToDelete, setMatrixToDelete] = useState<CarverMatrix | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchUserEmail = async () => {
       try {
-        const response = await axios.get('/api/user2/whoami-upsert', { withCredentials: true });
-        if (response.data.includes('{')) {
-          const userData = JSON.parse(response.data.split('}{')[0] + '}');
+        const response = await axios.get("/api/user2/whoami-upsert", {
+          withCredentials: true,
+        });
+        if (response.data.includes("{")) {
+          const userData = JSON.parse(response.data.split("}{")[0] + "}");
           setUserEmail(userData.email);
         }
       } catch (error) {
-        console.error('Error fetching user email:', error);
+        console.error("Error fetching user email:", error);
       }
     };
 
@@ -97,9 +110,9 @@ const ViewMatrix: React.FC = () => {
   }, []);
 
   const handleRoleFilterChange = (role: keyof typeof roleFilters) => {
-    setRoleFilters(prev => ({
+    setRoleFilters((prev) => ({
       ...prev,
-      [role]: !prev[role]
+      [role]: !prev[role],
     }));
   };
 
@@ -107,15 +120,16 @@ const ViewMatrix: React.FC = () => {
   const filteredMatrices = matrices.filter((matrix) => {
     // Text search filter
     const term = searchTerm.toLowerCase();
-    const matchesSearch = matrix.name.toLowerCase().includes(term) ||
+    const matchesSearch =
+      matrix.name.toLowerCase().includes(term) ||
       matrix.description.toLowerCase().includes(term);
 
     // Role-based matrix filter
-    if (roleBasedFilter !== 'all') {
-      if (roleBasedFilter === 'enabled' && !matrix.roleBased) {
+    if (roleBasedFilter !== "all") {
+      if (roleBasedFilter === "enabled" && !matrix.roleBased) {
         return false;
       }
-      if (roleBasedFilter === 'disabled' && matrix.roleBased) {
+      if (roleBasedFilter === "disabled" && matrix.roleBased) {
         return false;
       }
     }
@@ -132,7 +146,7 @@ const ViewMatrix: React.FC = () => {
 
     // Role-based filtering
     if (!userEmail) {
-      console.log('No user email available');
+      console.log("No user email available");
       return false;
     }
 
@@ -156,26 +170,30 @@ const ViewMatrix: React.FC = () => {
       }
     }
 
-    console.log('Matrix:', matrix.name);
-    console.log('Current user email:', userEmail);
-    console.log('Hosts:', matrix.hosts);
-    console.log('Is host:', isHost);
-    console.log('Is participant:', isParticipant);
-    console.log('Is both:', isBoth);
-    console.log('Role filters:', roleFilters);
-    console.log('Matches role:', matchesRole);
-    console.log('Matches search:', matchesSearch);
-    console.log('Final result:', matchesSearch && matchesRole);
+    console.log("Matrix:", matrix.name);
+    console.log("Current user email:", userEmail);
+    console.log("Hosts:", matrix.hosts);
+    console.log("Is host:", isHost);
+    console.log("Is participant:", isParticipant);
+    console.log("Is both:", isBoth);
+    console.log("Role filters:", roleFilters);
+    console.log("Matches role:", matchesRole);
+    console.log("Matches search:", matchesSearch);
+    console.log("Final result:", matchesSearch && matchesRole);
 
     return matchesSearch && matchesRole;
   });
 
-  const transformItemsForPdf = (items: CarverMatrix['items']) => {
-    return items.map(item => {
+  const transformItemsForPdf = (items: CarverMatrix["items"]) => {
+    return items.map((item) => {
       const getAverageScore = (scores: any) => {
-        if (typeof scores === 'number') return scores;
-        const values = Object.values(scores || {}).filter(score => score !== undefined && score !== null) as number[];
-        return values.length > 0 ? values.reduce((sum, score) => sum + score, 0) / values.length : 0;
+        if (typeof scores === "number") return scores;
+        const values = Object.values(scores || {}).filter(
+          (score) => score !== undefined && score !== null
+        ) as number[];
+        return values.length > 0
+          ? values.reduce((sum, score) => sum + score, 0) / values.length
+          : 0;
       };
 
       return {
@@ -185,13 +203,39 @@ const ViewMatrix: React.FC = () => {
         recoverability: { default: getAverageScore(item.recoverability) },
         vulnerability: { default: getAverageScore(item.vulnerability) },
         effect: { default: getAverageScore(item.effect) },
-        recognizability: { default: getAverageScore(item.recognizability) }
+        recognizability: { default: getAverageScore(item.recognizability) },
       };
     });
   };
 
+  const handleOpenDeleteDialog = (matrix: CarverMatrix) => {
+    setMatrixToDelete(matrix);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setMatrixToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!matrixToDelete) return;
+
+    try {
+      await axios.delete(`/api/carvermatrices/${matrixToDelete.matrixId}`, {
+        withCredentials: true,
+      });
+      setMatrices((prev) =>
+        prev.filter((m) => m.matrixId !== matrixToDelete.matrixId)
+      );
+      handleCloseDeleteDialog();
+    } catch (error) {
+      console.error("Failed to delete matrix:", error);
+    }
+  };
+
   return (
-    <Box 
+    <Box
       sx={{
         display: "flex",
         minHeight: "100vh",
@@ -208,7 +252,8 @@ const ViewMatrix: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/military-pattern.svg')",
+          backgroundImage:
+            "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/military-pattern.svg')",
           backgroundSize: "100px 100px",
           backgroundPosition: "center",
           opacity: 0.1,
@@ -256,33 +301,35 @@ const ViewMatrix: React.FC = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+                  <SearchIcon sx={{ color: "rgba(255, 255, 255, 0.7)" }} />
                 </InputAdornment>
               ),
             }}
             sx={{
-              '& .MuiOutlinedInput-root': {
-                color: '#ffffff',
-                '& fieldset': {
-                  borderColor: 'rgba(255, 255, 255, 0.23)',
+              "& .MuiOutlinedInput-root": {
+                color: "#ffffff",
+                "& fieldset": {
+                  borderColor: "rgba(255, 255, 255, 0.23)",
                 },
-                '&:hover fieldset': {
-                  borderColor: '#014093',
+                "&:hover fieldset": {
+                  borderColor: "#014093",
                 },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#014093',
+                "&.Mui-focused fieldset": {
+                  borderColor: "#014093",
                 },
               },
             }}
           />
 
           <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <FilterListIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <FilterListIcon
+                sx={{ color: "rgba(255, 255, 255, 0.7)", mr: 1 }}
+              />
               <Typography
                 variant="subtitle2"
                 sx={{
-                  color: 'rgba(255, 255, 255, 0.7)',
+                  color: "rgba(255, 255, 255, 0.7)",
                   fontWeight: "bold",
                   textTransform: "uppercase",
                   letterSpacing: "1px",
@@ -291,57 +338,61 @@ const ViewMatrix: React.FC = () => {
                 Filter by Role
               </Typography>
             </Box>
-            <FormControl component="fieldset" sx={{ width: '100%' }}>
+            <FormControl component="fieldset" sx={{ width: "100%" }}>
               <FormGroup>
                 <FormControlLabel
                   control={
                     <Checkbox
                       checked={roleFilters.host}
-                      onChange={() => handleRoleFilterChange('host')}
+                      onChange={() => handleRoleFilterChange("host")}
                       sx={{
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        '&.Mui-checked': {
-                          color: '#014093',
+                        color: "rgba(255, 255, 255, 0.7)",
+                        "&.Mui-checked": {
+                          color: "#014093",
                         },
                       }}
                     />
                   }
                   label={
-                    <Typography sx={{ color: '#ffffff' }}>Host</Typography>
+                    <Typography sx={{ color: "#ffffff" }}>Host</Typography>
                   }
                 />
                 <FormControlLabel
                   control={
                     <Checkbox
                       checked={roleFilters.participant}
-                      onChange={() => handleRoleFilterChange('participant')}
+                      onChange={() => handleRoleFilterChange("participant")}
                       sx={{
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        '&.Mui-checked': {
-                          color: '#014093',
+                        color: "rgba(255, 255, 255, 0.7)",
+                        "&.Mui-checked": {
+                          color: "#014093",
                         },
                       }}
                     />
                   }
                   label={
-                    <Typography sx={{ color: '#ffffff' }}>Participant</Typography>
+                    <Typography sx={{ color: "#ffffff" }}>
+                      Participant
+                    </Typography>
                   }
                 />
                 <FormControlLabel
                   control={
                     <Checkbox
                       checked={roleFilters.both}
-                      onChange={() => handleRoleFilterChange('both')}
+                      onChange={() => handleRoleFilterChange("both")}
                       sx={{
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        '&.Mui-checked': {
-                          color: '#014093',
+                        color: "rgba(255, 255, 255, 0.7)",
+                        "&.Mui-checked": {
+                          color: "#014093",
                         },
                       }}
                     />
                   }
                   label={
-                    <Typography sx={{ color: '#ffffff' }}>Host & Participant</Typography>
+                    <Typography sx={{ color: "#ffffff" }}>
+                      Host & Participant
+                    </Typography>
                   }
                 />
               </FormGroup>
@@ -349,12 +400,14 @@ const ViewMatrix: React.FC = () => {
           </Box>
 
           <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <FilterListIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <FilterListIcon
+                sx={{ color: "rgba(255, 255, 255, 0.7)", mr: 1 }}
+              />
               <Typography
                 variant="subtitle2"
                 sx={{
-                  color: 'rgba(255, 255, 255, 0.7)',
+                  color: "rgba(255, 255, 255, 0.7)",
                   fontWeight: "bold",
                   textTransform: "uppercase",
                   letterSpacing: "1px",
@@ -363,15 +416,19 @@ const ViewMatrix: React.FC = () => {
                 Role-Based Matrix Filter
               </Typography>
             </Box>
-            <FormControl component="fieldset" sx={{ width: '100%' }}>
+            <FormControl component="fieldset" sx={{ width: "100%" }}>
               <RadioGroup
                 value={roleBasedFilter}
-                onChange={(e) => setRoleBasedFilter(e.target.value as 'all' | 'enabled' | 'disabled')}
+                onChange={(e) =>
+                  setRoleBasedFilter(
+                    e.target.value as "all" | "enabled" | "disabled"
+                  )
+                }
                 sx={{
-                  '& .MuiRadio-root': {
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    '&.Mui-checked': {
-                      color: '#014093',
+                  "& .MuiRadio-root": {
+                    color: "rgba(255, 255, 255, 0.7)",
+                    "&.Mui-checked": {
+                      color: "#014093",
                     },
                   },
                 }}
@@ -380,21 +437,27 @@ const ViewMatrix: React.FC = () => {
                   value="all"
                   control={<Radio />}
                   label={
-                    <Typography sx={{ color: '#ffffff' }}>All Matrices</Typography>
+                    <Typography sx={{ color: "#ffffff" }}>
+                      All Matrices
+                    </Typography>
                   }
                 />
                 <FormControlLabel
                   value="enabled"
                   control={<Radio />}
                   label={
-                    <Typography sx={{ color: '#ffffff' }}>Role-Based Only</Typography>
+                    <Typography sx={{ color: "#ffffff" }}>
+                      Role-Based Only
+                    </Typography>
                   }
                 />
                 <FormControlLabel
                   value="disabled"
                   control={<Radio />}
                   label={
-                    <Typography sx={{ color: '#ffffff' }}>Non-Role-Based Only</Typography>
+                    <Typography sx={{ color: "#ffffff" }}>
+                      Non-Role-Based Only
+                    </Typography>
                   }
                 />
               </RadioGroup>
@@ -402,21 +465,23 @@ const ViewMatrix: React.FC = () => {
           </Box>
         </Box>
 
-        <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+        <Box
+          sx={{ mt: 1, pt: 1, borderTop: "1px solid rgba(255, 255, 255, 0.1)" }}
+        >
           <Button
             variant="contained"
             onClick={() => navigate(ROUTES.createMatrix)}
             fullWidth
             startIcon={<AddIcon />}
             sx={{
-              backgroundColor: '#014093',
-              color: '#ffffff',
-              textTransform: 'uppercase',
-              fontWeight: 'bold',
-              letterSpacing: '1px',
-              padding: '8px 0',
-              '&:hover': {
-                backgroundColor: '#012B61',
+              backgroundColor: "#014093",
+              color: "#ffffff",
+              textTransform: "uppercase",
+              fontWeight: "bold",
+              letterSpacing: "1px",
+              padding: "8px 0",
+              "&:hover": {
+                backgroundColor: "#012B61",
               },
             }}
           >
@@ -456,14 +521,21 @@ const ViewMatrix: React.FC = () => {
                   display: "flex",
                   flexDirection: "column",
                   minHeight: "200px",
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
+                  "&:hover": {
+                    transform: "translateY(-2px)",
                     backgroundColor: "rgba(255, 255, 255, 0.08)",
-                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
                   },
                 }}
               >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    mb: 1,
+                  }}
+                >
                   <Typography
                     variant="h6"
                     sx={{
@@ -502,7 +574,7 @@ const ViewMatrix: React.FC = () => {
                   {matrix.description || "No description"}
                 </Typography>
 
-                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
                   <Typography
                     variant="caption"
                     sx={{
@@ -512,7 +584,8 @@ const ViewMatrix: React.FC = () => {
                       borderRadius: "12px",
                     }}
                   >
-                    {matrix.items.length} {matrix.items.length === 1 ? 'Target' : 'Targets'}
+                    {matrix.items.length}{" "}
+                    {matrix.items.length === 1 ? "Target" : "Targets"}
                   </Typography>
                   {matrix.randomAssignment && (
                     <Typography
@@ -579,43 +652,65 @@ const ViewMatrix: React.FC = () => {
                   <Typography
                     variant="caption"
                     sx={{
-                      color: matrix.hosts.includes(userEmail || "") && matrix.participants.includes(userEmail || "")
-                        ? "#4D9FFF"
-                        : matrix.hosts.includes(userEmail || "")
-                        ? "#4D9FFF"
-                        : "#00E676",
+                      color:
+                        matrix.hosts.includes(userEmail || "") &&
+                        matrix.participants.includes(userEmail || "")
+                          ? "#4D9FFF"
+                          : matrix.hosts.includes(userEmail || "")
+                            ? "#4D9FFF"
+                            : "#00E676",
                       textTransform: "uppercase",
                       letterSpacing: "0.5px",
                       fontWeight: "bold",
                       textShadow: "0 0 10px rgba(255, 255, 255, 0.1)",
                     }}
                   >
-                    {matrix.roleBased ? (
-                      matrix.hosts.includes(userEmail || "") && matrix.participants.includes(userEmail || "")
+                    {matrix.roleBased
+                      ? matrix.hosts.includes(userEmail || "") &&
+                        matrix.participants.includes(userEmail || "")
                         ? "Host & Participant"
                         : matrix.hosts.includes(userEmail || "")
-                        ? "Host"
-                        : "Participant"
-                    ) : null}
+                          ? "Host"
+                          : "Participant"
+                      : null}
                   </Typography>
                   <Box sx={{ display: "flex", gap: 1 }}>
                     {matrix.hosts.includes(userEmail || "") && (
-                      <ExportPdfButton 
-                        config={{
-                          name: matrix.name,
-                          description: matrix.description,
-                          randomAssignment: matrix.randomAssignment,
-                          roleBased: matrix.roleBased,
-                          fivePointScoring: matrix.fivePointScoring,
-                          cMulti: matrix.cMulti,
-                          aMulti: matrix.aMulti,
-                          rMulti: matrix.rMulti,
-                          vMulti: matrix.vMulti,
-                          eMulti: matrix.eMulti,
-                          r2Multi: matrix.r2Multi
-                        }} 
-                        items={transformItemsForPdf(matrix.items)} 
-                      />
+                      <>
+                        <ExportPdfButton
+                          config={{
+                            name: matrix.name,
+                            description: matrix.description,
+                            randomAssignment: matrix.randomAssignment,
+                            roleBased: matrix.roleBased,
+                            fivePointScoring: matrix.fivePointScoring,
+                            cMulti: matrix.cMulti,
+                            aMulti: matrix.aMulti,
+                            rMulti: matrix.rMulti,
+                            vMulti: matrix.vMulti,
+                            eMulti: matrix.eMulti,
+                            r2Multi: matrix.r2Multi,
+                          }}
+                          items={transformItemsForPdf(matrix.items)}
+                        />
+                        <Tooltip title="Delete Matrix">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDeleteDialog(matrix);
+                            }}
+                            sx={{
+                              color: "#f44336",
+                              "&:hover": {
+                                backgroundColor: "rgba(244, 67, 54, 0.1)",
+                              },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </>
                     )}
                     <Tooltip title="Open Matrix">
                       <IconButton
@@ -626,9 +721,9 @@ const ViewMatrix: React.FC = () => {
                           navigate(url);
                         }}
                         sx={{
-                          color: '#4D9FFF',
-                          '&:hover': {
-                            backgroundColor: 'rgba(77, 159, 255, 0.1)',
+                          color: "#4D9FFF",
+                          "&:hover": {
+                            backgroundColor: "rgba(77, 159, 255, 0.1)",
                           },
                         }}
                       >
@@ -652,6 +747,24 @@ const ViewMatrix: React.FC = () => {
           )}
         </Box>
       </Box>
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+        <DialogTitle sx={{ fontWeight: "bold" }}>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to permanently delete the selected matrix?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            color="error"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
