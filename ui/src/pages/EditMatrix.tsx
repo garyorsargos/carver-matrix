@@ -1,4 +1,6 @@
+console.log("EditMatrix.tsx module is being loaded");
 import React, { useState, useMemo, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -19,13 +21,16 @@ import {
   LinearProgress,
   Chip,
   CircularProgress,
+  Modal,
 } from "@mui/material";
 import MatrixExplorer from "../components/custom/search/matrixExplorer";
 import CategoryGroup from "../components/custom/editMatrix/categoryGroup";
 import {
   MultiMatrixProvider,
   useMultiMatrix,
+  MatrixImage
 } from "../components/custom/multiMatrixProvider";
+console.log("MultiMatrixProvider imported:", !!MultiMatrixProvider, "useMultiMatrix imported:", !!useMultiMatrix);
 import MatrixLoader from "../components/custom/matrixLoader";
 import { ExportPdfButton } from "../components/custom/pdfExport/ExportPdfButton";
 import axios from "axios";
@@ -35,11 +40,30 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import DownloadIcon from '@mui/icons-material/Download';
+import CloseIcon from '@mui/icons-material/Close';
+
+interface MatrixItem {
+  itemId: number;
+  itemName: string;
+  criticality: Record<string, any>;
+  accessibility: Record<string, any>;
+  recoverability: Record<string, any>;
+  vulnerability: Record<string, any>;
+  effect: Record<string, any>;
+  recognizability: Record<string, any>;
+  createdAt: string;
+  targetUsers: any[];
+  images: MatrixImage[] | null;
+  [key: string]: any;
+}
 
 // Host Pane Component
 const HostPane: React.FC<{
   config: any;
-  items: any[];
+  items: MatrixItem[];
   categories: string[];
 }> = ({ config, items, categories }) => {
   // Add category mapping for correct property access
@@ -121,7 +145,7 @@ const HostPane: React.FC<{
   }, [categoryCompletions, categories]);
 
   // Calculate average scores with multipliers for the matrix view
-  const getAverageScore = (item: any, category: string): number => {
+  const getAverageScore = (item: MatrixItem, category: string): number => {
     const key = categoryToPropertyMap[category];
     const scores = item[key] || {};
     const values = Object.values(scores) as number[];
@@ -377,11 +401,34 @@ const HostPane: React.FC<{
 };
 
 const EditMatrixContent: React.FC = () => {
-  const { config, rawItems, updates } = useMultiMatrix();
+  const location = useLocation();
+  
+  const { 
+    config, 
+    rawItems, 
+    updates, 
+    hasItemImages, 
+    getItemImages 
+  } = useMultiMatrix();
+  
   const currentEmail = config.currentUserEmail;
+  const isRoleBased = config.roleBased;
+  const isHost = isRoleBased && currentEmail ? config.hosts?.includes(currentEmail) : false;
+  const isParticipant = isRoleBased && currentEmail ? config.participants?.includes(currentEmail) : false;
+
   const [successToast, setSuccessToast] = useState(false);
   const [errorToast, setErrorToast] = useState(false);
-  
+  const [openImageModal, setOpenImageModal] = useState(false);
+  const [selectedItemImages, setSelectedItemImages] = useState<MatrixImage[]>([]);
+  const [fullViewImage, setFullViewImage] = useState<MatrixImage | null>(null);
+  const [activeView, setActiveView] = useState<'host' | 'participant'>(
+    isRoleBased && currentEmail
+      ? isHost && !isParticipant
+        ? 'host'
+        : 'participant'
+      : 'participant'
+  );
+
   const categoriesConst = [
     "Criticality",
     "Accessibility",
@@ -411,23 +458,6 @@ const EditMatrixContent: React.FC = () => {
     "Recognizability": "How easily the target can be identified. Higher values mean the target is more recognizable and requires less preparation to identify.",
   };
 
-  // Determine user roles if roleBased is enabled.
-  const isRoleBased = config.roleBased;
-  const isHost =
-    isRoleBased && currentEmail ? config.hosts?.includes(currentEmail) : false;
-  const isParticipant =
-    isRoleBased && currentEmail ? config.participants?.includes(currentEmail) : false;
-
-  const [activeView, setActiveView] = useState<'host' | 'participant'>(() => {
-    // Set initial view based on user role
-    if (isRoleBased && currentEmail) {
-      if (isHost && !isParticipant) return 'host';
-      if (isParticipant && !isHost) return 'participant';
-      return 'participant'; // Default for users with both roles
-    }
-    return 'participant'; // Default for non-role-based matrices
-  });
-
   // Force view to host if user is only a host
   useEffect(() => {
     if (isRoleBased && isHost && !isParticipant) {
@@ -448,7 +478,7 @@ const EditMatrixContent: React.FC = () => {
         if (config.randomAssignment) {
           // For random assignment, use targetUsers
           return rawItems.filter(
-            (item: any) =>
+            (item: MatrixItem) =>
               Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
           );
         } else {
@@ -461,7 +491,7 @@ const EditMatrixContent: React.FC = () => {
           if (config.randomAssignment) {
             // For random assignment, use targetUsers
             return rawItems.filter(
-              (item: any) =>
+              (item: MatrixItem) =>
                 Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
             );
           } else {
@@ -477,15 +507,10 @@ const EditMatrixContent: React.FC = () => {
     return rawItems;
   }, [isRoleBased, isHost, isParticipant, rawItems, currentEmail, activeView, config.randomAssignment, config.participants]);
 
-  // Debugging: log when displayedItems changes.
-  useEffect(() => {
-    console.log("Displayed items count:", displayedItems.length);
-  }, [displayedItems]);
-
   // Build matrix map and sorted target names.
   const matrixMap = useMemo(() => {
     const map = new Map<string, Map<string, number>>();
-    displayedItems.forEach((item: any) => {
+    displayedItems.forEach((item: MatrixItem) => {
       const categoryMap = new Map<string, number>();
       categories.forEach(category => {
         const key = categoryToPropertyMap[category];
@@ -503,11 +528,15 @@ const EditMatrixContent: React.FC = () => {
     return Array.from(matrixMap.keys()).sort((a, b) => a.localeCompare(b));
   }, [matrixMap]);
 
+  // Get matrix ID from URL
+  const getMatrixId = () => {
+    const params = new URLSearchParams(location.search);
+    return params.get("matrixId");
+  };
+
   const handleSubmitUpdates = () => {
-    const params = new URLSearchParams(window.location.search);
-    const matrixId = params.get("matrixId");
+    const matrixId = getMatrixId();
     if (!matrixId) {
-      console.error("matrixId query parameter is missing.");
       setErrorToast(true);
       return;
     }
@@ -528,20 +557,16 @@ const EditMatrixContent: React.FC = () => {
       return formattedUpdate;
     });
 
-    console.log("Sending formatted updates:", formattedUpdates);
-
     axios
       .put(`/api/carvermatrices/${matrixId}/carveritems/update`, formattedUpdates)
-      .then((response) => {
-        console.log("Updates submitted successfully", response);
+      .then(() => {
         setSuccessToast(true);
-        // Add 1.5 second delay before refreshing
+        // Add delay before refreshing
         setTimeout(() => {
           window.location.reload();
         }, 1500);
       })
-      .catch((error) => {
-        console.error("Error submitting updates", error);
+      .catch(() => {
         setErrorToast(true);
       });
   };
@@ -552,6 +577,79 @@ const EditMatrixContent: React.FC = () => {
 
   const handleViewChange = (_: React.SyntheticEvent, newValue: 'host' | 'participant') => {
     setActiveView(newValue);
+  };
+
+  const handleImageClick = (itemId: number) => {
+    // Use the provider function to get images for this item
+    const images = getItemImages(itemId);
+    setSelectedItemImages(images);
+    setOpenImageModal(true);
+  };
+
+  const handleCloseImageModal = () => {
+    setOpenImageModal(false);
+    setSelectedItemImages([]);
+    setFullViewImage(null);
+  };
+
+  const handleDownloadImage = (image: MatrixImage) => {
+    // Create a temporary anchor element
+    const link = document.createElement('a');
+    link.href = image.imageUrl;
+    // Extract filename from URL or use a default name
+    const filename = image.imageUrl.split('/').pop() || `target-image-${image.imageId}.jpg`;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleOpenFullView = (image: MatrixImage) => {
+    setFullViewImage(image);
+  };
+
+  const handleCloseFullView = () => {
+    setFullViewImage(null);
+  };
+
+  // Render target cell with paperclip icon if images are available
+  const renderTargetCell = (target: string) => {
+    const item = displayedItems.find(item => item.itemName === target);
+    const itemId = item ? Number(item.itemId) : null;
+    
+    // Check if this target has any images using the provider function
+    const hasImages = itemId !== null && hasItemImages(itemId);
+    
+    return (
+      <TableCell
+        key={target}
+        sx={{
+          color: "#ffffff",
+          fontWeight: "bold",
+          fontFamily: "'Roboto Condensed', sans-serif",
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {target}
+          {hasImages && (
+            <Tooltip title="View Images">
+              <IconButton
+                size="small"
+                onClick={() => itemId && handleImageClick(itemId)}
+                sx={{
+                  color: '#014093',
+                  '&:hover': {
+                    backgroundColor: 'rgba(1, 64, 147, 0.1)',
+                  },
+                }}
+              >
+                <AttachFileIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
+      </TableCell>
+    );
   };
 
   return (
@@ -948,15 +1046,7 @@ const EditMatrixContent: React.FC = () => {
                   <TableBody>
                     {targets.map((target) => (
                       <TableRow key={target}>
-                        <TableCell
-                          sx={{
-                            color: "#ffffff",
-                            fontWeight: "bold",
-                            fontFamily: "'Roboto Condensed', sans-serif",
-                          }}
-                        >
-                          {target}
-                        </TableCell>
+                        {renderTargetCell(target)}
                         {categories.map((category) => {
                           const item = displayedItems.find(item => item.itemName === target);
                           const key = categoryToPropertyMap[category];
@@ -987,6 +1077,221 @@ const EditMatrixContent: React.FC = () => {
           </Box>
         </Box>
       </Box>
+
+      {/* Image Display Modal */}
+      <Modal
+        open={openImageModal}
+        onClose={handleCloseImageModal}
+        aria-labelledby="image-display-modal"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80%',
+            maxWidth: 1000,
+            maxHeight: '90vh',
+            bgcolor: '#1a1a1a',
+            color: '#ffffff',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            overflow: 'auto',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Typography variant="h6" component="h2" sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Target Images ({selectedItemImages.length})
+            <IconButton 
+              onClick={handleCloseImageModal}
+              sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+            >
+              ✕
+            </IconButton>
+          </Typography>
+
+          {selectedItemImages.length === 0 ? (
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', my: 4 }}>
+              No images available for this target.
+            </Typography>
+          ) : (
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gap: 3,
+              mt: 2
+            }}>
+              {selectedItemImages.map((image, index) => (
+                <Paper
+                  key={index}
+                  sx={{
+                    position: 'relative',
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    transition: 'transform 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'scale(1.02)',
+                      '& .image-actions': {
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      paddingTop: '75%', // 4:3 aspect ratio
+                      width: '100%',
+                    }}
+                  >
+                    <img
+                      src={image.imageUrl}
+                      alt={`Target image ${index + 1}`}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                      }}
+                    />
+                    <Box
+                      className="image-actions"
+                      sx={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: 1,
+                        padding: '8px',
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+                        opacity: 0,
+                        transition: 'opacity 0.2s ease-in-out',
+                      }}
+                    >
+                      <Tooltip title="View Full Size">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOpenFullView(image)}
+                          sx={{
+                            color: '#fff',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            },
+                          }}
+                        >
+                          <ZoomInIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Download">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDownloadImage(image)}
+                          sx={{
+                            color: '#fff',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            },
+                          }}
+                        >
+                          <DownloadIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                </Paper>
+              ))}
+            </Box>
+          )}
+        </Box>
+      </Modal>
+
+      {/* Full View Modal */}
+      <Modal
+        open={!!fullViewImage}
+        onClose={handleCloseFullView}
+        aria-labelledby="full-image-modal"
+      >
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            bgcolor: 'rgba(0, 0, 0, 0.95)',
+            p: 2,
+          }}
+        >
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'flex-end',
+            mb: 2
+          }}>
+            <IconButton
+              onClick={handleCloseFullView}
+              sx={{ color: '#fff' }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Box sx={{ 
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'auto',
+          }}>
+            {fullViewImage && (
+              <img
+                src={fullViewImage.imageUrl}
+                alt="Full size target image"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                }}
+              />
+            )}
+          </Box>
+          {fullViewImage && (
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center',
+              mt: 2,
+              gap: 2
+            }}>
+              <Tooltip title="Download">
+                <IconButton
+                  onClick={() => handleDownloadImage(fullViewImage)}
+                  sx={{
+                    color: '#fff',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    },
+                  }}
+                >
+                  <DownloadIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          )}
+        </Box>
+      </Modal>
     </Box>
   );
 };

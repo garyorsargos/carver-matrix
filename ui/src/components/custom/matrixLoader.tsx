@@ -3,7 +3,13 @@ import axios from "axios";
 import { useMultiMatrix } from "./multiMatrixProvider";
 
 const MatrixLoader: React.FC = () => {
-  const { setMultiMatrix, setConfig, setItemIdMap, setRawItems } = useMultiMatrix();
+  const { 
+    setMultiMatrix, 
+    setConfig, 
+    setItemIdMap, 
+    setRawItems,
+    setItemImages 
+  } = useMultiMatrix();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -61,6 +67,15 @@ const MatrixLoader: React.FC = () => {
             // Save raw items into provider (we'll let the UI decide which ones to display)
             setRawItems(matrixData.items);
 
+            // Load images data into the provider context if available
+            if (matrixData.images && Array.isArray(matrixData.images)) {
+              console.log("Loading images into context:", matrixData.images.length);
+              setItemImages(matrixData.images);
+            } else {
+              console.log("No images found in matrix data");
+              setItemImages([]);
+            }
+
             // Set the config, including hosts, participants, and the current user's email.
             setConfig({
               r2Multi: matrixData.r2Multi,
@@ -114,7 +129,7 @@ const MatrixLoader: React.FC = () => {
       .catch((error) => {
         console.error("Error fetching user info:", error);
       });
-  }, [setMultiMatrix, setConfig, setItemIdMap, setRawItems]);
+  }, [setMultiMatrix, setConfig, setItemIdMap, setRawItems, setItemImages]);
 
   return null;
 };
