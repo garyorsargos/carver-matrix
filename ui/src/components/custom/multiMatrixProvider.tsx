@@ -2,6 +2,13 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 
 export type MultiMatrix = Map<string, Map<string, number>>;
 
+// Add interface for image data
+export interface MatrixImage {
+  itemId: number;
+  imageId: number;
+  imageUrl: string;
+}
+
 export type ConfigType = {
   r2Multi: number;
   randomAssignment: boolean;
@@ -32,6 +39,13 @@ export type MultiMatrixContextType = {
   // New rawItems state to store the full items list from the API:
   rawItems: any[];
   setRawItems: React.Dispatch<React.SetStateAction<any[]>>;
+  // New state for storing image data:
+  itemImages: MatrixImage[];
+  setItemImages: React.Dispatch<React.SetStateAction<MatrixImage[]>>;
+  // Helper function to check if an item has images
+  hasItemImages: (itemId: number) => boolean;
+  // Helper function to get images for a specific item
+  getItemImages: (itemId: number) => MatrixImage[];
 };
 
 const initialMultiMatrix: MultiMatrix = new Map([
@@ -103,6 +117,17 @@ export const MultiMatrixProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [itemIdMap, setItemIdMap] = useState<Map<string, number>>(new Map());
   const [updates, setUpdates] = useState<any[]>([]);
   const [rawItems, setRawItems] = useState<any[]>([]);
+  const [itemImages, setItemImages] = useState<MatrixImage[]>([]);
+
+  // Helper function to check if an item has associated images
+  const hasItemImages = (itemId: number): boolean => {
+    return itemImages.some(img => Number(img.itemId) === Number(itemId));
+  };
+
+  // Helper function to get all images for a specific item
+  const getItemImages = (itemId: number): MatrixImage[] => {
+    return itemImages.filter(img => Number(img.itemId) === Number(itemId));
+  };
 
   const contextValue: MultiMatrixContextType = {
     multiMatrix,
@@ -115,6 +140,10 @@ export const MultiMatrixProvider: React.FC<{ children: ReactNode }> = ({ childre
     setUpdates,
     rawItems,
     setRawItems,
+    itemImages,
+    setItemImages,
+    hasItemImages,
+    getItemImages,
   };
 
   return (
