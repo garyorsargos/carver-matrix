@@ -288,7 +288,7 @@ export const generateMatrixPdf = ({ config, matrixMap }: MatrixData) => {
     pdf.setFontSize(12);
     pdf.text(`${index + 1}. ${item.target}`, margin, yOffset);
     pdf.setFont("helvetica", "normal");
-    pdf.text(`Score: ${item.totalScore.toFixed(2)}`, margin + 100, yOffset);
+    pdf.text(`Score: ${Number(item.totalScore.toFixed(1))}`, margin + 100, yOffset);
     yOffset += 10;
   });
 
