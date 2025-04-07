@@ -3,6 +3,7 @@ package com.fmc.starterApp.models.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -73,6 +74,7 @@ public class CarverMatrixUnitTest {
         String[] hosts = { "host1@example.com", "host2@example.com" };
         String[] participants = { "participant1@example.com" };
         List<CarverItem> items = new ArrayList<>();  // Start with an empty list.
+        ArrayList<Map<String, Object>> images = new ArrayList<>();
         
         // Create a dummy User2.
         User2 user = new User2();
@@ -81,7 +83,7 @@ public class CarverMatrixUnitTest {
         user.setEmail("userformatrix@example.com");
 
         CarverMatrix matrix = new CarverMatrix(2L, user, "Matrix AllArgs", "Detailed description for matrix.", now, hosts, participants, items,
-                1.0, 1.2, 0.8, 0.5, 1.1, 0.9, true, false, true);
+                1.0, 1.2, 0.8, 0.5, 1.1, 0.9, true, false, true,images);
 
         assertEquals(2L, matrix.getMatrixId());
         assertEquals(user, matrix.getUser());
@@ -127,6 +129,7 @@ public class CarverMatrixUnitTest {
         String[] hosts = { "host@example.com" };
         String[] participants = { "participant@example.com" };
         List<CarverItem> items = new ArrayList<>();
+        ArrayList<Map<String, Object>> images = new ArrayList<>();
 
         // We no longer enforce a non-null check on user, so passing null for user should work.
         CarverMatrix matrixWithNullUser = new CarverMatrix(
@@ -139,7 +142,7 @@ public class CarverMatrixUnitTest {
                 participants, 
                 items,
                 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 
-                false, false, false
+                false, false, false, images
         );
         // Assert that matrix is created with a null user.
         assertNull(matrixWithNullUser.getUser(), "User should be allowed to be null");
@@ -151,7 +154,7 @@ public class CarverMatrixUnitTest {
         dummyUser.setEmail("dummy@example.com");
         NullPointerException ex = assertThrows(NullPointerException.class, () ->
             new CarverMatrix(1L, dummyUser, null, "Valid Description", now, hosts, participants, items,
-                    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, false, false, false)
+                    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, false, false, false,images)
         );
         assertTrue(ex.getMessage().contains("name"));
     }
@@ -217,11 +220,12 @@ public class CarverMatrixUnitTest {
         user.setUserId(50L);
         user.setUsername("TestUser");
         user.setEmail("testuser@example.com");
+        ArrayList<Map<String, Object>> images = new ArrayList<>();
 
         CarverMatrix matrix1 = new CarverMatrix(1L, user, "Matrix", "Description", now, hosts, participants, items,
-                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, true, false, true);
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, true, false, true, images);
         CarverMatrix matrix2 = new CarverMatrix(1L, user, "Matrix", "Description", now, hosts, participants, items,
-                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, true, false, true);
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, true, false, true, images);
 
         // Expect that matrix1 and matrix2 are not equal because they are distinct objects.
         assertNotEquals(matrix1, matrix2, "Different instances with identical fields should not be equal");
@@ -238,13 +242,15 @@ public class CarverMatrixUnitTest {
         String[] hosts = { "host@example.com" };
         String[] participants = { "participant@example.com" };
         List<CarverItem> items = new ArrayList<>();
+        ArrayList<Map<String, Object>> images = new ArrayList<>();
+
         User2 user = new User2();
         user.setUserId(60L);
         user.setUsername("ToStringUser");
         user.setEmail("tostringuser@example.com");
 
         CarverMatrix matrix = new CarverMatrix(2L, user, "ToStringMatrix", "Test Description", now, hosts, participants, items,
-                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, false, true, false);
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, false, true, false, images);
         String str = matrix.toString();
         assertNotNull(str, "toString() should not return null");
         // Check that key fields appear in the output.

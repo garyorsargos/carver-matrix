@@ -164,6 +164,7 @@ public class CarverMatrixService {
      */
     public CarverMatrix createCarverMatrix(CarverMatrix matrix, Long userId) {
         User2 user = user2Repository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        if(matrix==null) throw new IllegalArgumentException("CarverMatrix must not be null");
 
         matrix.setUser(user);
 

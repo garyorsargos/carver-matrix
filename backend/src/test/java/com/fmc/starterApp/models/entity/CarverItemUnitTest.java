@@ -1,7 +1,9 @@
 package com.fmc.starterApp.models.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -118,8 +120,9 @@ public class CarverItemUnitTest {
         eff.put("score", 5);
         Map<String, Integer> recog = new HashMap<>();
         recog.put("score", 6);
+        ArrayList<String> images = new ArrayList<String>();
 
-        CarverItem item = new CarverItem(10L, matrix, "AllArgsItem", crit, acc, recov, vul, eff, recog, targets, now);
+        CarverItem item = new CarverItem(10L, matrix, "AllArgsItem", crit, acc, recov, vul, eff, recog, targets, images, now);
 
         assertEquals(10L, item.getItemId());
         assertEquals(matrix, item.getCarverMatrix());
@@ -167,7 +170,7 @@ public class CarverItemUnitTest {
 
         // Passing null for itemName should trigger a NullPointerException.
         NullPointerException ex = assertThrows(NullPointerException.class, () ->
-            new CarverItem(1L, matrix, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), targets, now));
+            new CarverItem(1L, matrix, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), targets, new ArrayList<String>(),now));
         assertTrue(ex.getMessage().contains("itemName"));
     }
 
@@ -233,8 +236,9 @@ public class CarverItemUnitTest {
         eff.put("score", 2);
         Map<String, Integer> recog = new HashMap<>();
         recog.put("score", 2);
+        ArrayList<String> images = new ArrayList<String>();
 
-        CarverItem item = new CarverItem(20L, matrix, "ToStringItem", crit, acc, recov, vul, eff, recog, targets, now);
+        CarverItem item = new CarverItem(20L, matrix, "ToStringItem", crit, acc, recov, vul, eff, recog, targets, images, now);
         String str = item.toString();
         assertNotNull(str);
         assertTrue(str.contains("ToStringItem"), "toString() should include the itemName");
