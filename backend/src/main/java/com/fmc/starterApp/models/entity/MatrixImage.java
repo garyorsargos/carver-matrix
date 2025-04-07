@@ -55,12 +55,12 @@ public class MatrixImage {
      * The {@link CarverMatrix} to which this image belongs.
      */
     @ManyToOne
-    @JoinColumn(name = "matrix_id", nullable = false)
+    @JoinColumn(name = "matrix_id", nullable = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private CarverMatrix carverMatrix;
 
     @ManyToOne
-    @JoinColumn(name = "item_id", nullable = false)
+    @JoinColumn(name = "item_id", nullable = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private CarverItem carverItem;
 

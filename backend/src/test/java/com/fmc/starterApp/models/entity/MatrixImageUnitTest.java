@@ -1,13 +1,12 @@
 package com.fmc.starterApp.models.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.LocalDateTime;
-import java.util.Set;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -64,7 +63,7 @@ public class MatrixImageUnitTest {
         matrix.setName("Matrix2");
 
         LocalDateTime now = LocalDateTime.now();
-        MatrixImage image = new MatrixImage(10L, matrix, "http://example.com/image.png", now);
+        MatrixImage image = new MatrixImage(10L, matrix, null, "http://example.com/image.png", now);
 
         assertEquals(10L, image.getImageId());
         assertEquals(matrix, image.getCarverMatrix());
@@ -98,7 +97,7 @@ public class MatrixImageUnitTest {
 
         // Passing null for imageUrl should trigger a NullPointerException.
         NullPointerException ex = assertThrows(NullPointerException.class, () ->
-            new MatrixImage(1L, matrix, null, now));
+            new MatrixImage(1L, matrix, null, null, now));
         assertTrue(ex.getMessage().contains("imageUrl"));
     }
 
@@ -159,7 +158,7 @@ public class MatrixImageUnitTest {
         matrix.setMatrixId(5L);
         matrix.setName("MatrixTest");
         LocalDateTime now = LocalDateTime.now();
-        MatrixImage image = new MatrixImage(20L, matrix, "http://example.com/image.png", now);
+        MatrixImage image = new MatrixImage(20L, matrix, null, "http://example.com/image.png", now);
         String str = image.toString();
         assertNotNull(str, "toString() should not return null");
         assertTrue(str.contains("http://example.com/image.png"), "toString() should include the imageUrl");

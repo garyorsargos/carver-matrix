@@ -245,8 +245,8 @@ public class MatrixImageRepositoryDataAccessTest {
         assertThat(images.size()).isGreaterThanOrEqualTo(2);
 
         matrixImageRepository.deleteAll(List.of(image1, image2));
-        Optional<MatrixImage> fetched1 = matrixImageRepository.findById(image1.getImageId());
-        Optional<MatrixImage> fetched2 = matrixImageRepository.findById(image2.getImageId());
+        Optional<MatrixImage> fetched1 = matrixImageRepository.findByImageId(image1.getImageId());
+        Optional<MatrixImage> fetched2 = matrixImageRepository.findByImageId(image2.getImageId());
         assertThat(fetched1).isNotPresent();
         assertThat(fetched2).isNotPresent();
     }
