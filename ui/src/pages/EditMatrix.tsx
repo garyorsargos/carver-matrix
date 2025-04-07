@@ -503,7 +503,13 @@ const EditMatrixContent: React.FC = () => {
         }
       }
     }
-    // Not roleBased: show all items
+    // Not roleBased: still respect random assignment if enabled
+    if (config.randomAssignment) {
+      return rawItems.filter(
+        (item: MatrixItem) =>
+          Array.isArray(item.targetUsers) && item.targetUsers.includes(currentEmail)
+      );
+    }
     return rawItems;
   }, [isRoleBased, isHost, isParticipant, rawItems, currentEmail, activeView, config.randomAssignment, config.participants]);
 
