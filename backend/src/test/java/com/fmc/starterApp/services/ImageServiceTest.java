@@ -85,7 +85,7 @@ public class ImageServiceTest {
                 MediaType.IMAGE_JPEG_VALUE, "image content".getBytes());
 
         // Act: call uploadImage.
-        String url = imageService.uploadImage(file, matrix.getMatrixId());
+        String url = imageService.uploadImage(file, matrix.getMatrixId(),null);
 
         // Assert: verify that the URL is non-null.
         assertNotNull(url, "Expected a non-null URL for the uploaded image");
@@ -106,7 +106,7 @@ public class ImageServiceTest {
     @Test
     void testUploadImage_NullFile() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> imageService.uploadImage(null, 1L),
+                () -> imageService.uploadImage(null, 1L,null),
                 "Expected uploadImage to throw IllegalArgumentException for null file");
         assertThat(ex.getMessage()).contains("MultipartFile must not be null");
     }
@@ -120,7 +120,7 @@ public class ImageServiceTest {
         MockMultipartFile file = new MockMultipartFile("file", "test.jpg",
                 MediaType.IMAGE_JPEG_VALUE, "content".getBytes());
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> imageService.uploadImage(file, null),
+                () -> imageService.uploadImage(file,null, null),
                 "Expected uploadImage to throw IllegalArgumentException for null matrixId");
         assertThat(ex.getMessage()).contains("MatrixId must not be null");
     }
@@ -135,7 +135,7 @@ public class ImageServiceTest {
         MockMultipartFile file = new MockMultipartFile("file", "",
                 MediaType.IMAGE_JPEG_VALUE, "content".getBytes());
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> imageService.uploadImage(file, 1L),
+                () -> imageService.uploadImage(file, 1L, null),
                 "Expected uploadImage to throw IllegalArgumentException for invalid file name");
         assertThat(ex.getMessage()).contains("Invalid file name");
     }
@@ -163,7 +163,7 @@ public class ImageServiceTest {
                 MediaType.IMAGE_JPEG_VALUE, "dummy content".getBytes());
 
         // Act: call uploadImage.
-        String url = imageService.uploadImage(file, matrix.getMatrixId());
+        String url = imageService.uploadImage(file, matrix.getMatrixId(), null);
 
         // Assert: the URL should contain the cleaned filename (invalid characters replaced by underscores).
         assertNotNull(url);
@@ -192,7 +192,7 @@ public class ImageServiceTest {
 
         // Act & Assert: expect a RuntimeException.
         RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> imageService.uploadImage(file, savedMatrix.getMatrixId()),
+                () -> imageService.uploadImage(file, savedMatrix.getMatrixId(), null),
                 "Expected uploadImage to throw RuntimeException when S3 upload fails");
         assertThat(ex.getMessage()).contains("Failed to upload file to S3");
     }
@@ -218,7 +218,7 @@ public class ImageServiceTest {
                 MediaType.IMAGE_JPEG_VALUE, "integration content".getBytes());
 
         // Act: upload the image.
-        String url = imageService.uploadImage(file, matrixSaved.getMatrixId());
+        String url = imageService.uploadImage(file, matrixSaved.getMatrixId(), null);
 
         // Assert: verify the returned URL is non-null and that a MatrixImage is saved.
         assertNotNull(url);
@@ -238,7 +238,7 @@ public class ImageServiceTest {
     @Test
     void testUploadImage_ThrowsExceptionForNullFile() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> imageService.uploadImage(null, 1L),
+                () -> imageService.uploadImage(null, 1L, null),
                 "Expected uploadImage to throw IllegalArgumentException for null file");
         assertThat(ex.getMessage()).contains("MultipartFile must not be null");
     }
@@ -252,7 +252,7 @@ public class ImageServiceTest {
         MockMultipartFile file = new MockMultipartFile("file", "test.jpg",
                 MediaType.IMAGE_JPEG_VALUE, "content".getBytes());
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> imageService.uploadImage(file, null),
+                () -> imageService.uploadImage(file, null, null),
                 "Expected uploadImage to throw IllegalArgumentException for null matrixId");
         assertThat(ex.getMessage()).contains("MatrixId must not be null");
     }
@@ -279,7 +279,7 @@ public class ImageServiceTest {
 
         // Act & Assert.
         RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> imageService.uploadImage(file, matrixSaved.getMatrixId()),
+                () -> imageService.uploadImage(file, matrixSaved.getMatrixId(), null),
                 "Expected uploadImage to throw RuntimeException for unexpected errors");
         assertThat(ex.getMessage()).contains("Failed to upload file to S3");
     }
