@@ -72,7 +72,7 @@ export const ExportPdfButton: React.FC<ExportPdfButtonProps> = ({ config, items 
         
         // Apply multiplier
         const multiplier = Number(config[multiplierKey]) || 1;
-        const finalScore = average * multiplier;
+        const finalScore = Number((average * multiplier).toFixed(1));
         
         console.log(`Category ${category}:`, { scores, average, multiplier, finalScore }); // Debug log
         
