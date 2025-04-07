@@ -472,7 +472,7 @@
       "emailVerified": true,
       "firstName": "Jared",
       "lastName": "Dev",
-      "email": "jareddev.carver@gmail.com",
+      "email": "admin@email.com",
       "credentials": [
         {
           "id": "722c5271-6546-48f0-b1bd-88495a6e5d12",
@@ -501,7 +501,7 @@
       "emailVerified": true,
       "firstName": "Generic",
       "lastName": "User",
-      "email": "user@starter-app.zeus.socom.dev",
+      "email": "user@email.com",
       "credentials": [
         {
           "id": "dfba722a-7942-4b9b-8874-8adc71f2bee6",
@@ -1459,10 +1459,10 @@
     "password": "xyxo bujs gjjo wlif",
     "port": "587",
     "host": "smtp.gmail.com",
-    "replyTo": "jareddev.carver@gmail.com",
-    "from": "jareddev.carver@gmail.com",
+    "replyTo": "admin@email.com",
+    "from": "admin@email.com",
     "fromDisplayName": "Carver Matrix Team",
-    "user": "jareddev.carver@gmail.com"
+    "user": "admin@email.com"
   },
   "eventsEnabled": false,
   "eventsListeners": ["jboss-logging"],

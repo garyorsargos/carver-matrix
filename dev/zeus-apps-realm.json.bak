@@ -1183,10 +1183,10 @@
     "password" : "xyxo bujs gjjo wlif",
     "port" : "587",
     "host" : "smtp.gmail.com",
-    "replyTo" : "jareddev.carver@gmail.com",
-    "from" : "jareddev.carver@gmail.com",
+    "replyTo" : "admin@email.com",
+    "from" : "admin@email.com",
     "fromDisplayName" : "Carver Matrix Team",
-    "user" : "jareddev.carver@gmail.com"
+    "user" : "admin@email.com"
   },
   "eventsEnabled" : false,
   "eventsListeners" : [ "jboss-logging" ],
