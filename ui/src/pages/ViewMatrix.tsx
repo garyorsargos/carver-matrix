@@ -186,7 +186,7 @@ const ViewMatrix: React.FC = () => {
 
   const transformItemsForPdf = (items: CarverMatrix["items"]) => {
     return items.map((item) => {
-      const getAverageScore = (scores: any) => {
+      const getAverageScore = (scores: number | Record<string, number | undefined | null>) => {
         if (typeof scores === "number") return scores;
         const values = Object.values(scores || {}).filter(
           (score) => score !== undefined && score !== null
@@ -238,10 +238,11 @@ const ViewMatrix: React.FC = () => {
     <Box
       sx={{
         display: "flex",
-        minHeight: "100vh",
+        height: "100vh",
         backgroundColor: "#1a1a1a",
         color: "#ffffff",
         position: "relative",
+        overflow: "hidden",
       }}
     >
       {/* Background Pattern */}
@@ -275,6 +276,8 @@ const ViewMatrix: React.FC = () => {
           gap: 2,
           position: "relative",
           zIndex: 1,
+          overflowY: "auto",
+          overflowX: "hidden",
         }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -494,257 +497,280 @@ const ViewMatrix: React.FC = () => {
       <Box
         sx={{
           flex: 1,
-          padding: 3,
           position: "relative",
           zIndex: 1,
-          overflow: "auto",
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
         }}
       >
         <Box
           sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-            gap: 2,
-            alignContent: "start",
+            p: 3,
+            overflowY: "auto",
+            overflowX: "hidden",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            pb: 12,
           }}
         >
-          {filteredMatrices.length > 0 ? (
-            filteredMatrices.map((matrix) => (
-              <Paper
-                key={matrix.matrixId}
-                sx={{
-                  p: 2,
-                  backgroundColor: "rgba(255, 255, 255, 0.05)",
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  transition: "all 0.2s ease-in-out",
-                  display: "flex",
-                  flexDirection: "column",
-                  minHeight: "200px",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    backgroundColor: "rgba(255, 255, 255, 0.08)",
-                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                  },
-                }}
-              >
-                <Box
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+              gap: 2,
+              alignContent: "start",
+              width: "100%",
+            }}
+          >
+            {filteredMatrices.length > 0 ? (
+              filteredMatrices.map((matrix) => (
+                <Paper
+                  key={matrix.matrixId}
                   sx={{
+                    p: 2,
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    backdropFilter: "blur(10px)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    transition: "all 0.2s ease-in-out",
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    mb: 1,
+                    flexDirection: "column",
+                    minHeight: "200px",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      backgroundColor: "rgba(255, 255, 255, 0.08)",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                    },
                   }}
                 >
-                  <Typography
-                    variant="h6"
+                  <Box
                     sx={{
-                      color: "#ffffff",
-                      fontWeight: "bold",
-                      fontFamily: "'Roboto Condensed', sans-serif",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      mb: 1,
+                      gap: 2,
                     }}
                   >
-                    {matrix.name}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "rgba(255, 255, 255, 0.5)",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {new Date(matrix.createdAt).toLocaleDateString()}
-                  </Typography>
-                </Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: "#ffffff",
+                        fontWeight: "bold",
+                        fontFamily: "'Roboto Condensed', sans-serif",
+                        maxWidth: "calc(100% - 80px)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                      }}
+                    >
+                      {matrix.name}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "rgba(255, 255, 255, 0.5)",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {new Date(matrix.createdAt).toLocaleDateString()}
+                    </Typography>
+                  </Box>
 
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: "rgba(255, 255, 255, 0.7)",
-                    mb: 2,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: "vertical",
-                    flex: 1,
-                    minHeight: "4.5em",
-                  }}
-                >
-                  {matrix.description || "No description"}
-                </Typography>
-
-                <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
                   <Typography
-                    variant="caption"
+                    variant="body2"
                     sx={{
-                      color: "rgba(255, 255, 255, 0.5)",
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      padding: "2px 8px",
-                      borderRadius: "12px",
+                      color: "rgba(255, 255, 255, 0.7)",
+                      mb: 2,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      flex: 1,
+                      minHeight: "4.5em",
                     }}
                   >
-                    {matrix.items.length}{" "}
-                    {matrix.items.length === 1 ? "Target" : "Targets"}
+                    {matrix.description || "No description"}
                   </Typography>
-                  {matrix.randomAssignment && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "rgba(255, 255, 255, 0.5)",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                        padding: "2px 8px",
-                        borderRadius: "12px",
-                      }}
-                    >
-                      Random
-                    </Typography>
-                  )}
-                  {matrix.roleBased && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "rgba(255, 255, 255, 0.5)",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                        padding: "2px 8px",
-                        borderRadius: "12px",
-                      }}
-                    >
-                      Role Based
-                    </Typography>
-                  )}
-                  {matrix.fivePointScoring ? (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "rgba(255, 255, 255, 0.5)",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                        padding: "2px 8px",
-                        borderRadius: "12px",
-                      }}
-                    >
-                      5-Point Scale
-                    </Typography>
-                  ) : (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "rgba(255, 255, 255, 0.5)",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                        padding: "2px 8px",
-                        borderRadius: "12px",
-                      }}
-                    >
-                      10-Point Scale
-                    </Typography>
-                  )}
-                </Box>
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mt: "auto",
-                    pt: 1,
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color:
-                        matrix.hosts.includes(userEmail || "") &&
-                        matrix.participants.includes(userEmail || "")
-                          ? "#4D9FFF"
-                          : matrix.hosts.includes(userEmail || "")
-                            ? "#4D9FFF"
-                            : "#00E676",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      fontWeight: "bold",
-                      textShadow: "0 0 10px rgba(255, 255, 255, 0.1)",
-                    }}
-                  >
-                    {matrix.roleBased
-                      ? matrix.hosts.includes(userEmail || "") &&
-                        matrix.participants.includes(userEmail || "")
-                        ? "Host & Participant"
-                        : matrix.hosts.includes(userEmail || "")
-                          ? "Host"
-                          : "Participant"
-                      : null}
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 1 }}>
-                    {matrix.hosts.includes(userEmail || "") && (
-                      <>
-                        <ExportPdfButton
-                          config={{
-                            name: matrix.name,
-                            description: matrix.description,
-                            randomAssignment: matrix.randomAssignment,
-                            roleBased: matrix.roleBased,
-                            fivePointScoring: matrix.fivePointScoring,
-                            cMulti: matrix.cMulti,
-                            aMulti: matrix.aMulti,
-                            rMulti: matrix.rMulti,
-                            vMulti: matrix.vMulti,
-                            eMulti: matrix.eMulti,
-                            r2Multi: matrix.r2Multi,
-                          }}
-                          items={transformItemsForPdf(matrix.items)}
-                        />
-                        <Tooltip title="Delete Matrix">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenDeleteDialog(matrix);
-                            }}
-                            sx={{
-                              color: "#f44336",
-                              "&:hover": {
-                                backgroundColor: "rgba(244, 67, 54, 0.1)",
-                              },
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </>
-                    )}
-                    <Tooltip title="Open Matrix">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
-                          navigate(url);
-                        }}
+                  <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "rgba(255, 255, 255, 0.5)",
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "2px 8px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      {matrix.items.length}{" "}
+                      {matrix.items.length === 1 ? "Target" : "Targets"}
+                    </Typography>
+                    {matrix.randomAssignment && (
+                      <Typography
+                        variant="caption"
                         sx={{
-                          color: "#4D9FFF",
-                          "&:hover": {
-                            backgroundColor: "rgba(77, 159, 255, 0.1)",
-                          },
+                          color: "rgba(255, 255, 255, 0.5)",
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
                         }}
                       >
-                        <OpenInNewIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                        Random
+                      </Typography>
+                    )}
+                    {matrix.roleBased && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "rgba(255, 255, 255, 0.5)",
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
+                        }}
+                      >
+                        Role Based
+                      </Typography>
+                    )}
+                    {matrix.fivePointScoring ? (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "rgba(255, 255, 255, 0.5)",
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
+                        }}
+                      >
+                        5-Point Scale
+                      </Typography>
+                    ) : (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "rgba(255, 255, 255, 0.5)",
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
+                        }}
+                      >
+                        10-Point Scale
+                      </Typography>
+                    )}
                   </Box>
-                </Box>
-              </Paper>
-            ))
-          ) : (
-            <Typography
-              sx={{
-                color: "rgba(255, 255, 255, 0.7)",
-                textAlign: "center",
-                gridColumn: "1 / -1",
-              }}
-            >
-              No matrices found.
-            </Typography>
-          )}
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mt: "auto",
+                      pt: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          matrix.hosts.includes(userEmail || "") &&
+                          matrix.participants.includes(userEmail || "")
+                            ? "#4D9FFF"
+                            : matrix.hosts.includes(userEmail || "")
+                              ? "#4D9FFF"
+                              : "#00E676",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        fontWeight: "bold",
+                        textShadow: "0 0 10px rgba(255, 255, 255, 0.1)",
+                      }}
+                    >
+                      {matrix.roleBased
+                        ? matrix.hosts.includes(userEmail || "") &&
+                          matrix.participants.includes(userEmail || "")
+                          ? "Host & Participant"
+                          : matrix.hosts.includes(userEmail || "")
+                            ? "Host"
+                            : "Participant"
+                        : null}
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      {matrix.hosts.includes(userEmail || "") && (
+                        <>
+                          <ExportPdfButton
+                            config={{
+                              name: matrix.name,
+                              description: matrix.description,
+                              randomAssignment: matrix.randomAssignment,
+                              roleBased: matrix.roleBased,
+                              fivePointScoring: matrix.fivePointScoring,
+                              cMulti: matrix.cMulti,
+                              aMulti: matrix.aMulti,
+                              rMulti: matrix.rMulti,
+                              vMulti: matrix.vMulti,
+                              eMulti: matrix.eMulti,
+                              r2Multi: matrix.r2Multi,
+                            }}
+                            items={transformItemsForPdf(matrix.items)}
+                          />
+                          <Tooltip title="Delete Matrix">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenDeleteDialog(matrix);
+                              }}
+                              sx={{
+                                color: "#f44336",
+                                "&:hover": {
+                                  backgroundColor: "rgba(244, 67, 54, 0.1)",
+                                },
+                              }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      )}
+                      <Tooltip title="Open Matrix">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const url = `/EditMatrix?matrixId=${matrix.matrixId}`;
+                            navigate(url);
+                          }}
+                          sx={{
+                            color: "#4D9FFF",
+                            "&:hover": {
+                              backgroundColor: "rgba(77, 159, 255, 0.1)",
+                            },
+                          }}
+                        >
+                          <OpenInNewIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                </Paper>
+              ))
+            ) : (
+              <Typography
+                sx={{
+                  color: "rgba(255, 255, 255, 0.7)",
+                  textAlign: "center",
+                  gridColumn: "1 / -1",
+                }}
+              >
+                No matrices found.
+              </Typography>
+            )}
+          </Box>
         </Box>
       </Box>
       <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>

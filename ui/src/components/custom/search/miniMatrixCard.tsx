@@ -3,14 +3,12 @@ import { Typography, Paper } from "@mui/material";
 
 interface MiniMatrixCardProps {
   title: string;
-  description: string;
   onSelectMatrix: () => void;
   titleColor?: string;
 }
 
 const MiniMatrixCard: React.FC<MiniMatrixCardProps> = ({
   title,
-  description,
   onSelectMatrix,
   titleColor = "#ffffff",
 }) => {
@@ -31,10 +29,10 @@ const MiniMatrixCard: React.FC<MiniMatrixCardProps> = ({
           transform: "translateY(-2px)",
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
         },
-        minHeight: "80px",
+        minHeight: "60px",
         display: 'flex',
         flexDirection: 'column',
-        gap: 1,
+        justifyContent: 'center',
         boxSizing: 'border-box',
       }}
       onClick={onSelectMatrix}
@@ -51,21 +49,6 @@ const MiniMatrixCard: React.FC<MiniMatrixCardProps> = ({
         }}
       >
         {title || ""}
-      </Typography>
-      <Typography 
-        variant="caption" 
-        sx={{ 
-          display: "-webkit-box",
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-          fontSize: "0.8rem",
-          lineHeight: 1.4,
-          color: "rgba(255, 255, 255, 0.7)",
-          flex: 1,
-        }}
-      >
-        {description || ""}
       </Typography>
     </Paper>
   );
