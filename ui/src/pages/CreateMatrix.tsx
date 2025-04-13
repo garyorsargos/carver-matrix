@@ -23,7 +23,7 @@ import {
   Modal,
   IconButton,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { whoamiUpsert, createMatrix } from "./apiService";
 import SendIcon from "@mui/icons-material/Send";
@@ -67,6 +67,27 @@ export const CreateMatrix: React.FC = () => {
   };
 
   const [multipliers, setMultipliers] = useState(initialMultipliers);
+
+  // Fetch the current user's email when the component loads
+  useEffect(() => {
+    const fetchUserEmail = async () => {
+      try {
+        const whoamiUpsertResponse = await whoamiUpsert();
+        const rawData = whoamiUpsertResponse.data;
+        const firstObjectEnd = rawData.indexOf("}") + 1;
+        const firstObjectStr = rawData.substring(0, firstObjectEnd);
+        const parsedFirstObject = JSON.parse(firstObjectStr);
+        const { email } = parsedFirstObject;
+        
+        // Initialize the participants list with the current user as a host
+        setParticipantsData([{ email: email, role: "Host" }]);
+      } catch (error) {
+        console.error("Error fetching user email:", error);
+      }
+    };
+    
+    fetchUserEmail();
+  }, []);
 
   const carverOrder = [
     { key: "Criticality", header: "C" },
@@ -296,7 +317,7 @@ export const CreateMatrix: React.FC = () => {
       const firstObjectEnd = rawData.indexOf("}") + 1;
       const firstObjectStr = rawData.substring(0, firstObjectEnd);
       const parsedFirstObject = JSON.parse(firstObjectStr);
-      const { userId, email } = parsedFirstObject;
+      const { userId } = parsedFirstObject;
 
       const items = targets.map((target, index) => ({
         itemName: target,
@@ -308,15 +329,15 @@ export const CreateMatrix: React.FC = () => {
         recognizability: {},
         images: targetImages[index] || []
       }));
-      const hosts = [
-        email,
-        ...participantsData
-          .map((p) =>
-            p.role === "Host" || p.role === "Host and Participant" ? p.email : null
-          )
-          .filter((email): email is string => email !== null),
-      ];
 
+      // Get hosts from the participants list
+      const hosts = participantsData
+        .map((p) =>
+          p.role === "Host" || p.role === "Host and Participant" ? p.email : null
+        )
+        .filter((email): email is string => email !== null);
+
+      // Get participants from the participants list
       const participantEmails = participantsData
         .map((p) =>
           p.role === "Participant" || p.role === "Host and Participant" ? p.email : null
