@@ -87,7 +87,7 @@ public class User2Service {
             // Extract user details from JWT claims.
             String keycloakId = jwt.getClaim("sub");
             String username = jwt.getClaim("preferred_username");
-            String email = jwt.getClaim("email");
+            String email = jwt.getClaim("email").toString().trim().toLowerCase();
             String firstName = jwt.getClaim("given_name");
             String lastName = jwt.getClaim("family_name");
             String fullName = jwt.getClaim("name");
@@ -212,7 +212,7 @@ public class User2Service {
             String firstName = jwt.getClaim("given_name");
             String lastName = jwt.getClaim("family_name");
             String fullName = jwt.getClaim("name");
-            String email = jwt.getClaim("email");
+            String email = jwt.getClaim("email").toString().trim().toLowerCase();
 
             // Extract roles from the "resource_access" claim.
             List<String> starterAppRole = new ArrayList<>();
