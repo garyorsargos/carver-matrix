@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.fmc.starterApp.models.entity.CarverItem;
 import com.fmc.starterApp.models.entity.CarverMatrix;
@@ -179,7 +177,7 @@ public class CarverMatrixController {
     public ResponseEntity<?> searchCarverMatrices(@RequestParam Map<String, String> searchParams, @AuthenticationPrincipal Jwt jwt) {
         try {
             // Get user's email from JWT token
-            String userEmail = jwt.getClaim("email");
+            String userEmail = jwt.getClaim("email").toString().trim().toLowerCase();
             if (userEmail == null || userEmail.isEmpty()) {
                 return ResponseEntity.badRequest().body("User email not found in token");
             }

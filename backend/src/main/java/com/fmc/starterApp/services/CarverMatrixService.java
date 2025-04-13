@@ -179,6 +179,18 @@ public class CarverMatrixService {
         matrix.setRoleBased(matrix.getRoleBased());
         matrix.setFivePointScoring(matrix.getFivePointScoring());
 
+        List<String> participantList = new ArrayList<>(Arrays.asList(matrix.getParticipants()));
+        for(int i = 0; i<participantList.size(); i++){
+            participantList.set(i, participantList.get(i).toLowerCase().trim());
+        }
+        matrix.setParticipants(participantList.toArray(new String[0]));
+
+        List<String> hostList = new ArrayList<>(Arrays.asList(matrix.getHosts()));
+        for(int i = 0; i<hostList.size(); i++){
+            hostList.set(i, hostList.get(i).toLowerCase().trim());
+        }
+        matrix.setHosts(hostList.toArray(new String[0]));
+
         if (matrix.getItems() != null) {
             for (CarverItem item : matrix.getItems()) {
                 item.setCarverMatrix(matrix);
