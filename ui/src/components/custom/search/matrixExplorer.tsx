@@ -387,7 +387,6 @@ const MatrixExplorer: React.FC = () => {
           <MiniMatrixCard
             key={matrix.matrixId}
             title={matrix.name}
-            description={matrix.description}
             onSelectMatrix={() => handleMatrixSelect(matrix.matrixId)}
             titleColor="#ffffff"
           />

@@ -6,8 +6,10 @@ import {
   Grid,
   Divider,
   Skeleton,
+  Button,
 } from '@mui/material';
 import axios from 'axios';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 interface UserData {
   userId: number;
@@ -78,6 +80,10 @@ const Profile: React.FC = () => {
       </Grid>
     </Grid>
   );
+
+  const handleAdvancedSettings = () => {
+    window.open('https://keycloak.zeus.socom.dev/realms/zeus-apps/account/', '_blank');
+  };
 
   return (
     <Box
@@ -159,6 +165,28 @@ const Profile: React.FC = () => {
                 label="Member Since"
                 value={new Date(userData.createdAt).toLocaleDateString()}
               />
+              
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<SettingsIcon />}
+                  onClick={handleAdvancedSettings}
+                  sx={{
+                    color: '#ffffff',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    '&:hover': {
+                      borderColor: '#014093',
+                      backgroundColor: 'rgba(1, 64, 147, 0.1)',
+                    },
+                    textTransform: 'uppercase',
+                    fontWeight: 'bold',
+                    letterSpacing: '0.5px',
+                    padding: '8px 24px',
+                  }}
+                >
+                  Advanced Settings
+                </Button>
+              </Box>
             </Box>
           )
         )}
