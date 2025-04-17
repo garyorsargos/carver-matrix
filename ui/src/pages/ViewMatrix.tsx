@@ -176,12 +176,14 @@ const ViewMatrix: React.FC = () => {
     console.log("Is host:", isHost);
     console.log("Is participant:", isParticipant);
     console.log("Is both:", isBoth);
-    console.log("Role filters:", roleFilters);
     console.log("Matches role:", matchesRole);
-    console.log("Matches search:", matchesSearch);
-    console.log("Final result:", matchesSearch && matchesRole);
 
     return matchesSearch && matchesRole;
+  });
+
+  // Sort matrices by timestamp (newest first)
+  const sortedMatrices = [...filteredMatrices].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   const transformItemsForPdf = (items: CarverMatrix["items"]) => {
@@ -525,8 +527,8 @@ const ViewMatrix: React.FC = () => {
               width: "100%",
             }}
           >
-            {filteredMatrices.length > 0 ? (
-              filteredMatrices.map((matrix) => (
+            {sortedMatrices.length > 0 ? (
+              sortedMatrices.map((matrix) => (
                 <Paper
                   key={matrix.matrixId}
                   sx={{

@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GlobalContext } from "../../context/GlobalContext";
+import { useUnsavedChanges } from "../../context/UnsavedChangesContext";
 import {
   ADMIN_ROUTES,
   blueTheme,
@@ -39,6 +40,7 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
   const location = useLocation();
   const [height, setHeight] = useState<number>(window.innerHeight);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { hasUnsavedChanges, showUnsavedChangesDialog } = useUnsavedChanges();
 
   // Map routes to display names for breadcrumbs
   const routeNames = {
@@ -65,7 +67,11 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
 
   const handleProfile = () => {
     handleProfileMenuClose();
-    navigate(ROUTES.profile);
+    if (hasUnsavedChanges) {
+      showUnsavedChangesDialog(() => navigate(ROUTES.profile));
+    } else {
+      navigate(ROUTES.profile);
+    }
   };
 
   const handleLogout = () => {
@@ -134,7 +140,7 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
   const getBreadcrumbs = () => {
     const pathnames = location.pathname.split('/').filter((x) => x);
     let currentPath = '';
-    let breadcrumbPaths: string[] = [];
+    const breadcrumbPaths: string[] = [];
 
     // Build the breadcrumb paths array
     pathnames.forEach((value) => {
@@ -150,6 +156,14 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
       breadcrumbPaths.push(currentPath);
     });
 
+    const handleNavigation = (path: string) => {
+      if (hasUnsavedChanges) {
+        showUnsavedChangesDialog(() => navigate(path));
+      } else {
+        navigate(path);
+      }
+    };
+
     return (
       <Breadcrumbs 
         separator={<NavigateNextIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1.2rem' }} />}
@@ -157,7 +171,7 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
       >
         <Link
           component="button"
-          onClick={() => navigate(ROUTES.landing)}
+          onClick={() => handleNavigation(ROUTES.landing)}
           sx={{
             color: '#ffffff',
             textDecoration: 'none',
@@ -189,7 +203,7 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
             <Link
               key={path}
               component="button"
-              onClick={() => navigate(path)}
+              onClick={() => handleNavigation(path)}
               sx={{
                 color: '#ffffff',
                 textDecoration: 'none',
@@ -234,7 +248,13 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
                   flex: 1,
                 }}
               >
-                <IconButton onClick={() => navigate(ROUTES.landing)}>
+                <IconButton onClick={() => {
+                  if (hasUnsavedChanges) {
+                    showUnsavedChangesDialog(() => navigate(ROUTES.landing));
+                  } else {
+                    navigate(ROUTES.landing);
+                  }
+                }}>
                   <img src="/AIDIV-logo.svg" />
                 </IconButton>
                 {getBreadcrumbs()}
@@ -252,7 +272,13 @@ export const Redirect: React.FC<RedirectProps> = ({ children }) => {
                   <>
                     <Typography variant="h6">Dashboard</Typography>
                     <Stack>
-                      <IconButton onClick={() => navigate(ROUTES.admin)}>
+                      <IconButton onClick={() => {
+                        if (hasUnsavedChanges) {
+                          showUnsavedChangesDialog(() => navigate(ROUTES.admin));
+                        } else {
+                          navigate(ROUTES.admin);
+                        }
+                      }}>
                         <SpaceDashboardOutlined
                           sx={{ color: "#FFF" }}
                         ></SpaceDashboardOutlined>
