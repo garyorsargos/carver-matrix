@@ -1,6 +1,6 @@
 console.log("EditMatrix.tsx module is being loaded");
 import React, { useState, useMemo, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -22,6 +22,11 @@ import {
   Chip,
   CircularProgress,
   Modal,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import MatrixExplorer from "../components/custom/search/matrixExplorer";
 import CategoryGroup from "../components/custom/editMatrix/categoryGroup";
@@ -44,25 +49,69 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
+import { useUnsavedChanges } from "../context/UnsavedChangesContext";
+
+// Define the MatrixConfig interface
+interface MatrixConfig {
+  name: string;
+  description: string;
+  currentUserEmail?: string;
+  randomAssignment: boolean;
+  roleBased: boolean;
+  fivePointScoring: boolean;
+  hosts?: string[];
+  participants?: string[];
+  cMulti: number;
+  aMulti: number;
+  rMulti: number;
+  vMulti: number;
+  eMulti: number;
+  r2Multi: number;
+  [key: string]: string | number | boolean | string[] | undefined; // Add index signature
+}
+
+// Define the MatrixUpdate interface
+interface MatrixUpdate {
+  itemId: number;
+  [key: string]: unknown;
+}
 
 interface MatrixItem {
   itemId: number;
   itemName: string;
-  criticality: Record<string, any>;
-  accessibility: Record<string, any>;
-  recoverability: Record<string, any>;
-  vulnerability: Record<string, any>;
-  effect: Record<string, any>;
-  recognizability: Record<string, any>;
+  criticality: Record<string, number>;
+  accessibility: Record<string, number>;
+  recoverability: Record<string, number>;
+  vulnerability: Record<string, number>;
+  effect: Record<string, number>;
+  recognizability: Record<string, number>;
   createdAt: string;
-  targetUsers: any[];
+  targetUsers: string[];
   images: MatrixImage[] | null;
-  [key: string]: any;
+  [key: string]: unknown;
+}
+
+// Define the ConfigType interface to match what ExportPdfButton expects
+interface ConfigType {
+  r2Multi: number;
+  randomAssignment: boolean;
+  roleBased: boolean;
+  fivePointScoring: boolean;
+  cMulti: number;
+  aMulti: number;
+  rMulti: number;
+  vMulti: number;
+  eMulti: number;
+  description: string;
+  name: string;
+  hosts?: string[];
+  participants?: string[];
+  currentUserEmail?: string;
 }
 
 // Host Pane Component
 const HostPane: React.FC<{
-  config: any;
+  config: MatrixConfig;
   items: MatrixItem[];
   categories: string[];
 }> = ({ config, items, categories }) => {
@@ -98,7 +147,7 @@ const HostPane: React.FC<{
       if (config.randomAssignment) {
         // For random assignment: check if all assigned users have submitted scores
         items.forEach(item => {
-          const scores = item[key] || {};
+          const scores = (item[key] as Record<string, number>) || {};
           const targetUsers = item.targetUsers || [];
           if (targetUsers.length === 0) return; // Skip if no users assigned
           
@@ -116,11 +165,11 @@ const HostPane: React.FC<{
         const participants = config.participants || [];
         if (participants.length === 0) return;
 
-        let totalPossibleSubmissions = items.length * participants.length;
+        const totalPossibleSubmissions = items.length * participants.length;
         let totalSubmissions = 0;
 
         items.forEach(item => {
-          const scores = item[key] || {};
+          const scores = (item[key] as Record<string, number>) || {};
           const submittedUsers = participants.filter((user: string) => 
             scores[user] !== undefined && scores[user] > 0
           );
@@ -147,16 +196,69 @@ const HostPane: React.FC<{
   // Calculate average scores with multipliers for the matrix view
   const getAverageScore = (item: MatrixItem, category: string): number => {
     const key = categoryToPropertyMap[category];
-    const scores = item[key] || {};
+    const scores = (item[key] as Record<string, number>) || {};
     const values = Object.values(scores) as number[];
     
     if (values.length === 0) return 0;
     
     const average = values.reduce((sum, score) => sum + score, 0) / values.length;
-    const multiplier = config[categoryToMultiplierMap[category]] || 1;
+    const multiplierKey = categoryToMultiplierMap[category];
+    const multiplier = (config[multiplierKey] as number) || 1;
     
     return Number((average * multiplier).toFixed(1));
   };
+
+  // Calculate participant progress
+  const participantProgress = useMemo(() => {
+    const progress: { [email: string]: number } = {};
+    
+    if (!config.participants || config.participants.length === 0) {
+      return progress;
+    }
+
+    config.participants.forEach((participant: string) => {
+      let totalPossibleSubmissions = 0;
+      let completedSubmissions = 0;
+
+      if (config.randomAssignment) {
+        // For random assignment, count only assigned items
+        items.forEach(item => {
+          if (Array.isArray(item.targetUsers) && item.targetUsers.includes(participant)) {
+            totalPossibleSubmissions += categories.length;
+            
+            // Count completed categories for this item
+            categories.forEach(category => {
+              const key = categoryToPropertyMap[category];
+              const scores = (item[key] as Record<string, number>) || {};
+              if (scores[participant] !== undefined && scores[participant] > 0) {
+                completedSubmissions++;
+              }
+            });
+          }
+        });
+      } else {
+        // For non-random assignment, all items are possible
+        totalPossibleSubmissions = items.length * categories.length;
+        
+        // Count all completed submissions
+        items.forEach(item => {
+          categories.forEach(category => {
+            const key = categoryToPropertyMap[category];
+            const scores = (item[key] as Record<string, number>) || {};
+            if (scores[participant] !== undefined && scores[participant] > 0) {
+              completedSubmissions++;
+            }
+          });
+        });
+      }
+      
+      progress[participant] = totalPossibleSubmissions > 0 
+        ? (completedSubmissions / totalPossibleSubmissions) * 100 
+        : 0;
+    });
+    
+    return progress;
+  }, [items, categories, config.randomAssignment, config.participants, categoryToPropertyMap]);
 
   return (
     <Box sx={{ p: 2 }}>
@@ -278,7 +380,7 @@ const HostPane: React.FC<{
               <Box key={category} sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                   <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    {category.charAt(0)} ({config[categoryToMultiplierMap[category]]}x)
+                    {category.charAt(0)} ({String(config[categoryToMultiplierMap[category]] || 1)}x)
                   </Typography>
                   <Typography sx={{ color: '#fff' }}>
                     {Math.round(categoryCompletions[category])}%
@@ -301,8 +403,146 @@ const HostPane: React.FC<{
           </Paper>
         </Grid>
 
-        {/* Matrix Overview */}
+        {/* Participants Overview */}
         <Grid item xs={12} sx={{ mt: 4 }}>
+          <Paper
+            sx={{
+              p: 2,
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <GroupsIcon sx={{ color: '#fff' }} />
+              <Typography variant="h6" sx={{ color: '#fff' }}>Matrix Participants</Typography>
+            </Box>
+            <Grid container spacing={3}>
+              {/* Hosts Section */}
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />
+                    Hosts
+                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: 1,
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    '&::-webkit-scrollbar': {
+                      width: '8px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      borderRadius: '4px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '4px',
+                      border: '2px solid rgba(0, 0, 0, 0)',
+                      backgroundClip: 'padding-box',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      },
+                    },
+                  }}>
+                    {config.hosts?.map((host: string, index: number) => (
+                      <Paper
+                        key={index}
+                        sx={{
+                          p: 1,
+                          backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        }}
+                      >
+                        <PersonIcon sx={{ color: '#4D9FFF', fontSize: 20 }} />
+                        <Typography sx={{ color: '#fff', fontSize: '0.9rem' }}>{host}</Typography>
+                      </Paper>
+                    ))}
+                  </Box>
+                </Box>
+              </Grid>
+
+              {/* Participants Section */}
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <PersonIcon sx={{ fontSize: 20 }} />
+                    Participants
+                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: 1,
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    '&::-webkit-scrollbar': {
+                      width: '8px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      borderRadius: '4px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '4px',
+                      border: '2px solid rgba(0, 0, 0, 0)',
+                      backgroundClip: 'padding-box',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      },
+                    },
+                  }}>
+                    {config.participants?.map((participant: string, index: number) => {
+                      const progress = participantProgress[participant] || 0;
+                      return (
+                        <Paper
+                          key={index}
+                          sx={{
+                            p: 1,
+                            backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 0.5,
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <PersonIcon sx={{ color: '#00E676', fontSize: 20 }} />
+                            <Typography sx={{ color: '#fff', fontSize: '0.9rem', flex: 1 }}>{participant}</Typography>
+                            <Typography sx={{ color: '#fff', fontSize: '0.8rem', minWidth: '40px', textAlign: 'right' }}>
+                              {Math.round(progress)}%
+                            </Typography>
+                          </Box>
+                          <LinearProgress
+                            variant="determinate"
+                            value={progress}
+                            sx={{
+                              height: 4,
+                              borderRadius: 2,
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              '& .MuiLinearProgress-bar': {
+                                backgroundColor: '#00E676',
+                              },
+                            }}
+                          />
+                        </Paper>
+                      );
+                    })}
+                  </Box>
+                </Box>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
+
+        {/* Matrix Overview */}
+        <Grid item xs={12} sx={{ mt: 1.75 }}>
           <Paper
             sx={{
               p: 2,
@@ -331,7 +571,7 @@ const HostPane: React.FC<{
                   },
                 }}
               >
-                <ExportPdfButton config={config} items={items} />
+                <ExportPdfButton config={config as ConfigType} items={items} />
               </Box>
             </Box>
             <TableContainer>
@@ -402,6 +642,7 @@ const HostPane: React.FC<{
 
 const EditMatrixContent: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   
   const { 
     config, 
@@ -410,6 +651,8 @@ const EditMatrixContent: React.FC = () => {
     hasItemImages, 
     getItemImages 
   } = useMultiMatrix();
+  
+  const { setHasUnsavedChanges, hasUnsavedChanges } = useUnsavedChanges();
   
   const currentEmail = config.currentUserEmail;
   const isRoleBased = config.roleBased;
@@ -428,6 +671,10 @@ const EditMatrixContent: React.FC = () => {
         : 'participant'
       : 'participant'
   );
+  
+  // New state for tracking unsaved changes and navigation
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const [unsavedChangesDialogOpen, setUnsavedChangesDialogOpen] = useState(false);
 
   const categoriesConst = [
     "Criticality",
@@ -464,6 +711,36 @@ const EditMatrixContent: React.FC = () => {
       setActiveView('host');
     }
   }, [isRoleBased, isHost, isParticipant]);
+
+  // Track changes to the updates array
+  useEffect(() => {
+    if (updates.length > 0) {
+      setHasUnsavedChanges(true);
+    } else {
+      setHasUnsavedChanges(false);
+    }
+  }, [updates, setHasUnsavedChanges]);
+
+  // Reset unsaved changes after successful save
+  useEffect(() => {
+    if (successToast) {
+      setHasUnsavedChanges(false);
+    }
+  }, [successToast, setHasUnsavedChanges]);
+
+  // Handle dialog actions
+  const handleStayOnPage = () => {
+    setUnsavedChangesDialogOpen(false);
+    setPendingNavigation(null);
+  };
+
+  const handleLeavePage = () => {
+    setUnsavedChangesDialogOpen(false);
+    if (pendingNavigation) {
+      navigate(pendingNavigation);
+      setPendingNavigation(null);
+    }
+  };
 
   // Compute displayed items based on role
   const displayedItems = useMemo(() => {
@@ -548,14 +825,14 @@ const EditMatrixContent: React.FC = () => {
     }
 
     // Format updates to send only the current user's scores
-    const formattedUpdates = updates.map((update: any) => {
-      const formattedUpdate: any = { itemId: update.itemId };
+    const formattedUpdates = updates.map((update: MatrixUpdate) => {
+      const formattedUpdate: Record<string, unknown> = { itemId: update.itemId };
       
       // For each category in the update
       Object.entries(update).forEach(([key, value]) => {
         if (key !== 'itemId') {
           // If the value is an object with user scores, get current user's score
-          const scores = value as { [email: string]: number };
+          const scores = value as Record<string, number>;
           formattedUpdate[key] = scores[currentEmail || ''] || 0;
         }
       });
@@ -567,6 +844,7 @@ const EditMatrixContent: React.FC = () => {
       .put(`/api/carvermatrices/${matrixId}/carveritems/update`, formattedUpdates)
       .then(() => {
         setSuccessToast(true);
+        setHasUnsavedChanges(false);
         // Add delay before refreshing
         setTimeout(() => {
           window.location.reload();
@@ -578,7 +856,13 @@ const EditMatrixContent: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    window.location.reload();
+    // Use handleNavigation instead of direct window.location.reload
+    if (hasUnsavedChanges && activeView === 'participant') {
+      setPendingNavigation(window.location.pathname);
+      setUnsavedChangesDialogOpen(true);
+    } else {
+      window.location.reload();
+    }
   };
 
   const handleViewChange = (_: React.SyntheticEvent, newValue: 'host' | 'participant') => {
@@ -657,6 +941,22 @@ const EditMatrixContent: React.FC = () => {
       </TableCell>
     );
   };
+
+  // Add a useEffect to handle browser navigation events
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && activeView === 'participant') {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges, activeView]);
 
   return (
     <Box 
@@ -854,7 +1154,7 @@ const EditMatrixContent: React.FC = () => {
                 fontFamily: "'Roboto Condensed', sans-serif",
               }}
             >
-              {config.name || "Matrix Editor"}
+              {(config.name as string) || "Matrix Editor"}
             </Typography>
             <Box sx={{ display: "flex", gap: 1, alignItems: 'center' }}>
               {activeView !== 'host' && (
@@ -1298,6 +1598,54 @@ const EditMatrixContent: React.FC = () => {
           )}
         </Box>
       </Modal>
+
+      {/* Unsaved Changes Dialog */}
+      <Dialog
+        open={unsavedChangesDialogOpen}
+        onClose={handleStayOnPage}
+        PaperProps={{
+          sx: {
+            backgroundColor: 'rgba(30, 30, 30, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 2,
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: '#fff', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          Unsaved Changes
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Typography sx={{ color: '#fff' }}>
+            You have unsaved changes. If you leave this page, your changes will be lost. Do you want to continue?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <Button 
+            onClick={handleStayOnPage}
+            sx={{ 
+              color: '#4D9FFF',
+              '&:hover': {
+                backgroundColor: 'rgba(77, 159, 255, 0.1)',
+              }
+            }}
+          >
+            Stay on Page
+          </Button>
+          <Button 
+            onClick={handleLeavePage}
+            sx={{ 
+              color: '#00E676',
+              '&:hover': {
+                backgroundColor: 'rgba(0, 230, 118, 0.1)',
+              }
+            }}
+          >
+            Leave Page
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

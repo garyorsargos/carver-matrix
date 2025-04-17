@@ -1,16 +1,20 @@
 import React from "react";
-import { Typography, Paper } from "@mui/material";
+import { Typography, Paper, Box } from "@mui/material";
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import PersonIcon from '@mui/icons-material/Person';
 
 interface MiniMatrixCardProps {
   title: string;
   onSelectMatrix: () => void;
-  titleColor?: string;
+  isHost?: boolean;
+  isParticipant?: boolean;
 }
 
 const MiniMatrixCard: React.FC<MiniMatrixCardProps> = ({
   title,
   onSelectMatrix,
-  titleColor = "#ffffff",
+  isHost = false,
+  isParticipant = false,
 }) => {
   return (
     <Paper
@@ -37,19 +41,32 @@ const MiniMatrixCard: React.FC<MiniMatrixCardProps> = ({
       }}
       onClick={onSelectMatrix}
     >
-      <Typography 
-        variant="subtitle2" 
-        fontWeight="bold" 
-        color={titleColor} 
-        sx={{ 
-          fontSize: "0.9rem",
-          fontFamily: "'Roboto Condensed', sans-serif",
-          textTransform: "uppercase",
-          letterSpacing: "0.5px",
-        }}
-      >
-        {title || ""}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {isHost && (
+          <AdminPanelSettingsIcon sx={{ color: '#4D9FFF', fontSize: 20 }} />
+        )}
+        {!isHost && isParticipant && (
+          <PersonIcon sx={{ color: '#00E676', fontSize: 20 }} />
+        )}
+        <Typography 
+          variant="subtitle2" 
+          fontWeight="bold" 
+          sx={{ 
+            fontSize: "0.9rem",
+            fontFamily: "'Roboto Condensed', sans-serif",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            color: "#ffffff",
+          }}
+        >
+          {title || ""}
+        </Typography>
+      </Box>
     </Paper>
   );
 };

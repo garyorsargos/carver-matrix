@@ -27,6 +27,7 @@ interface CarverMatrix {
   hosts: string[];
   participants: string[];
   roleBased: boolean;
+  createdAt: string;
 }
 
 const MatrixExplorer: React.FC = () => {
@@ -86,15 +87,16 @@ const MatrixExplorer: React.FC = () => {
   const filteredMatrices = matrices.filter((matrix) => {
     // Text search filter
     const term = searchTerm.toLowerCase();
-    const matchesSearch = matrix.name.toLowerCase().includes(term) ||
+    const matchesSearch =
+      matrix.name.toLowerCase().includes(term) ||
       matrix.description.toLowerCase().includes(term);
 
     // Role-based matrix filter
-    if (roleBasedFilter !== 'all') {
-      if (roleBasedFilter === 'enabled' && !matrix.roleBased) {
+    if (roleBasedFilter !== "all") {
+      if (roleBasedFilter === "enabled" && !matrix.roleBased) {
         return false;
       }
-      if (roleBasedFilter === 'disabled' && matrix.roleBased) {
+      if (roleBasedFilter === "disabled" && matrix.roleBased) {
         return false;
       }
     }
@@ -111,7 +113,7 @@ const MatrixExplorer: React.FC = () => {
 
     // Role-based filtering
     if (!userEmail) {
-      console.log('No user email available');
+      console.log("No user email available");
       return false;
     }
 
@@ -125,18 +127,32 @@ const MatrixExplorer: React.FC = () => {
       matchesRole = isBoth;
     } else {
       if (roleFilters.host) {
-        matchesRole = isHost;
+        matchesRole = isHost; // Show all matrices where user is a host, including those where they are both
       }
       if (roleFilters.participant) {
-        matchesRole = matchesRole || isParticipant;
+        matchesRole = matchesRole || isParticipant; // Show all matrices where user is a participant, including those where they are both
       }
       if (!roleFilters.host && !roleFilters.participant) {
-        matchesRole = true;
+        matchesRole = true; // No role filters selected
       }
     }
 
     return matchesSearch && matchesRole;
   });
+
+  // Sort matrices by timestamp (newest first)
+  const sortedMatrices = [...filteredMatrices].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  // Helper functions to check if user is host or participant
+  const isHost = (matrix: CarverMatrix): boolean => {
+    return userEmail ? matrix.hosts?.includes(userEmail) || false : false;
+  };
+
+  const isParticipant = (matrix: CarverMatrix): boolean => {
+    return userEmail ? matrix.participants?.includes(userEmail) || false : false;
+  };
 
   const handleMatrixSelect = (matrixId: number) => {
     window.location.href = `/EditMatrix?matrixId=${matrixId}`;
@@ -381,16 +397,37 @@ const MatrixExplorer: React.FC = () => {
           gap: 1.5,
           boxSizing: 'border-box',
           pr: 0.5,
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '3px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: '3px',
+            '&:hover': {
+              background: 'rgba(255, 255, 255, 0.3)',
+            },
+          },
         }}
       >
-        {filteredMatrices.map((matrix) => (
-          <MiniMatrixCard
-            key={matrix.matrixId}
-            title={matrix.name}
-            onSelectMatrix={() => handleMatrixSelect(matrix.matrixId)}
-            titleColor="#ffffff"
-          />
-        ))}
+        {sortedMatrices.length > 0 ? (
+          sortedMatrices.map((matrix) => (
+            <MiniMatrixCard
+              key={matrix.matrixId}
+              title={matrix.name}
+              onSelectMatrix={() => handleMatrixSelect(matrix.matrixId)}
+              isHost={isHost(matrix)}
+              isParticipant={isParticipant(matrix)}
+            />
+          ))
+        ) : (
+          <Typography variant="body2" color="text.secondary" align="center">
+            No matrices found
+          </Typography>
+        )}
       </Box>
     </Box>
   );
