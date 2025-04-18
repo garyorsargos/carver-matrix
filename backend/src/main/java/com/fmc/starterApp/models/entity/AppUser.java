@@ -1,6 +1,9 @@
 package com.fmc.starterApp.models.entity;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -80,5 +83,6 @@ public class AppUser {
      * a detailed history of user activity for auditing and monitoring purposes.
      */
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "appUser")
+    @JsonManagedReference
     private List<UserLogs> userTimes;
 }

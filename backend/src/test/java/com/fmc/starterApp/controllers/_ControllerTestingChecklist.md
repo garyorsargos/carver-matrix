@@ -1,7 +1,3 @@
-Below is a comprehensive checklist for testing your controller classes, designed in the same style as the previous checklists.
-
----
-
 # Controller Layer Testing Checklist
 
 This checklist covers the essential tests for your controller layer. It ensures that your REST endpoints are correctly defined, handle HTTP requests and responses as expected, and manage errors and security concerns appropriately.
